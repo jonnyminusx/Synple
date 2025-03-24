@@ -43,6 +43,10 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
 private:
+    void splitBufferByEvents(const juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) const;
+    void handleMidi( const uint8_t data0, const uint8_t data1, const uint8_t data2 ) const;
+    void render(const juce::AudioBuffer<float>& buffer, const int sampleCount, const int bufferOffset) const;
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JLX11AudioProcessor)
 };

@@ -1,6 +1,16 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+namespace
+{
+
+constexpr uint8_t operator""_midi( unsigned long long value ) noexcept
+{
+    return static_cast<uint8_t>( value );
+}
+
+}
+
 //==============================================================================
 JLX11AudioProcessor::JLX11AudioProcessor()
      : AudioProcessor (BusesProperties()
@@ -145,12 +155,14 @@ void JLX11AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
-        juce::ignoreUnused (channelData);
-        // ..do something to the data...
-    }
+    // for (int channel = 0; channel < totalNumInputChannels; ++channel)
+    // {
+    //     auto* channelData = buffer.getWritePointer (channel);
+    //     juce::ignoreUnused (channelData);
+    //     // ..do something to the data...
+    // }
+
+    splitBufferByEvents( buffer, midiMessages );
 }
 
 //==============================================================================
@@ -178,6 +190,55 @@ void JLX11AudioProcessor::setStateInformation (const void* data, int sizeInBytes
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
     juce::ignoreUnused (data, sizeInBytes);
+}
+
+void JLX11AudioProcessor::splitBufferByEvents(const juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) const
+{
+    int bufferOffset{ 0 };
+
+    for ( const auto& midiMetaData : midiMessages )
+    {
+        // Render the audio before this MIDI event, if any.
+        const int samplesThisSegment{ midiMetaData.samplePosition - bufferOffset };
+        if ( samplesThisSegment > 0 )
+        {
+            render( buffer, samplesThisSegment, bufferOffset );
+            bufferOffset += samplesThisSegment;
+        }
+
+        // Handle the MIDI message. Ignore messages such as sysex.
+        if ( midiMetaData.numBytes <= 3 )
+        {
+            const uint8_t data0{ midiMetaData.data[0] };
+            const uint8_t data1{ midiMetaData.numBytes >= 2 ? midiMetaData.data[1] : 0_midi };
+            const uint8_t data2{ midiMetaData.numBytes == 3 ? midiMetaData.data[2] : 0_midi };
+            handleMidi( data0, data1, data2 );
+        }
+    }
+
+    // Render the audio after the last MIDI event, or the full buffer if there were none.
+    const int samplesLastSegment{ buffer.getNumSamples() - bufferOffset };
+    if ( samplesLastSegment > 0 )
+    {
+        render( buffer, samplesLastSegment, bufferOffset );
+    }
+
+    midiMessages.clear();
+}
+
+void JLX11AudioProcessor::handleMidi( const uint8_t data0, const uint8_t data1, const uint8_t data2 ) const
+{
+    std::stringstream ss;
+    ss << std::setw(2) << std::setfill('0') << std::hex << (int)data0 << " "
+       << std::setw(2) << std::setfill('0') << std::hex << (int)data1 << " "
+       << std::setw(2) << std::setfill('0') << std::hex << (int)data2;
+
+    DBG( ss.str() );
+}
+
+void JLX11AudioProcessor::render([[maybe_unused]] const juce::AudioBuffer<float>& buffer, [[maybe_unused]] const int sampleCount, [[maybe_unused]] const int bufferOffset) const
+{
+    // Do nothing yet.
 }
 
 //==============================================================================
