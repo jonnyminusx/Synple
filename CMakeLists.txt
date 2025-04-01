@@ -28,6 +28,8 @@ CPMAddPackage(
 
 # Make sure you include any new source files here
 set(SourceFiles
+        source/NoiseGenerator.cpp
+        source/NoiseGenerator.h
         source/PluginEditor.cpp
         source/PluginEditor.h
         source/PluginProcessor.cpp

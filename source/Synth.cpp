@@ -16,6 +16,7 @@ void Synth::deallocateResources() const
 void Synth::reset()
 {
     voice_.reset();
+    noiseGenerator_.reset();
 }
 
 void Synth::render([[maybe_unused]] float **outputBuffers, [[maybe_unused]] int sampleCount) const

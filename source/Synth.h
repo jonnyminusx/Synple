@@ -1,5 +1,6 @@
 #pragma once
 
+#include "NoiseGenerator.h"
 #include "Voice.h"
 #include <cstdint>
 
@@ -20,4 +21,5 @@ class Synth
 
     float sampleRate_{0.0f};
     Voice voice_;
+    NoiseGenerator noiseGenerator_;
 };
