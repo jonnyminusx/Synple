@@ -1,26 +1,15 @@
 #pragma once
 
+#include <optional>
+
 class Voice
 {
   public:
     void reset();
-
-    void noteOn(const int note, const int velocity)
-    {
-        note_ = note;
-        velocity_ = velocity;
-    }
-
-    void noteOff(const int note)
-    {
-        if (note_ == note)
-        {
-            note_ = 0;
-            velocity_ = 0;
-        }
-    }
+    void noteOn(const int note, const int velocity);
+    void noteOff(const int note);
 
   private:
-    int note_{0};
+    std::optional<int> note_;
     int velocity_{0};
 };

@@ -10,7 +10,7 @@ class Synth
 
     void allocateResources(const double sampleRate, const int samplesPerBlock);
     void deallocateResources() const;
-    void reset() const;
+    void reset();
     void render(float **outputBuffers, int sampleCount) const;
     void midiMessage(const uint8_t data0, const uint8_t data1, const uint8_t data2);
 

@@ -97,6 +97,7 @@ void JLX11AudioProcessor::changeProgramName(int index, const juce::String &newNa
 void JLX11AudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
     synth_.allocateResources(sampleRate, samplesPerBlock);
+    reset();
 }
 
 void JLX11AudioProcessor::releaseResources()
@@ -159,6 +160,11 @@ void JLX11AudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::M
     // }
 
     splitBufferByEvents(buffer, midiMessages);
+}
+
+void JLX11AudioProcessor::reset()
+{
+    synth_.reset();
 }
 
 //==============================================================================

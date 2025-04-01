@@ -20,6 +20,8 @@ class JLX11AudioProcessor final : public juce::AudioProcessor
     void processBlock(juce::AudioBuffer<float> &, juce::MidiBuffer &) override;
     using AudioProcessor::processBlock;
 
+    void reset() override;
+
     //==============================================================================
     juce::AudioProcessorEditor *createEditor() override;
     bool hasEditor() const override;
