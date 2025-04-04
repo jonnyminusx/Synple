@@ -34,10 +34,11 @@ set(SourceFiles
         source/PluginEditor.h
         source/PluginProcessor.cpp
         source/PluginProcessor.h
-        source/Synth.cpp
-        source/Synth.h
-        source/Voice.cpp
-        source/Voice.h
+        source/synth/INoiseGenerator.h
+        source/synth/Synth.cpp
+        source/synth/Synth.h
+        source/synth/Voice.cpp
+        source/synth/Voice.h
 )
 
 # Change these to your own preferences

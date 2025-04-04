@@ -1,5 +1,8 @@
 #include "Voice.h"
 
+namespace synth
+{
+
 void Voice::reset()
 {
     note_ = std::nullopt;
@@ -20,3 +23,5 @@ void Voice::noteOff(const int note)
         velocity_ = 0;
     }
 }
+
+} // namespace synth

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Synth.h"
+#include "synth/Synth.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 
 //==============================================================================
@@ -50,7 +50,7 @@ class JLX11AudioProcessor final : public juce::AudioProcessor
     void handleMidi(const uint8_t data0, const uint8_t data1, const uint8_t data2);
     void render(const juce::AudioBuffer<float> &buffer, const int sampleCount, const int bufferOffset) const;
 
-    Synth synth_;
+    synth::Synth synth_;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(JLX11AudioProcessor)

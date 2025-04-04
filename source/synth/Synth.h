@@ -1,13 +1,17 @@
 #pragma once
 
-#include "NoiseGenerator.h"
 #include "Voice.h"
 #include <cstdint>
+
+namespace synth
+{
+
+class INoiseGenerator;
 
 class Synth
 {
   public:
-    Synth();
+    Synth(INoiseGenerator *noiseGenerator);
 
     void allocateResources(const double sampleRate, const int samplesPerBlock);
     void deallocateResources() const;
@@ -21,5 +25,7 @@ class Synth
 
     float sampleRate_{0.0f};
     Voice voice_;
-    NoiseGenerator noiseGenerator_;
+    std::unique_ptr<INoiseGenerator> noiseGenerator_;
 };
+
+} // namespace synth

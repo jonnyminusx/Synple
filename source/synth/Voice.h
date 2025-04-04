@@ -2,6 +2,9 @@
 
 #include <optional>
 
+namespace synth
+{
+
 class Voice
 {
   public:
@@ -13,3 +16,5 @@ class Voice
     std::optional<int> note_;
     int velocity_{0};
 };
+
+} // namespace synth

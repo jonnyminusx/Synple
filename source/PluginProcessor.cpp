@@ -1,4 +1,5 @@
 #include "PluginProcessor.h"
+#include "NoiseGenerator.h"
 #include "PluginEditor.h"
 
 namespace
@@ -20,7 +21,8 @@ JLX11AudioProcessor::JLX11AudioProcessor()
 #endif
                          .withOutput("Output", juce::AudioChannelSet::stereo(), true)
 #endif
-      )
+                         ),
+      synth_(new NoiseGenerator())
 {
 }
 

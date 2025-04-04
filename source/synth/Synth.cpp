@@ -1,7 +1,13 @@
 #include "Synth.h"
+#include "INoiseGenerator.h"
+#include <cassert>
 
-Synth::Synth() : sampleRate_(44100.0f)
+namespace synth
 {
+
+Synth::Synth(INoiseGenerator *noiseGenerator) : sampleRate_(44100.0f), noiseGenerator_(noiseGenerator)
+{
+    assert(noiseGenerator_);
 }
 
 void Synth::allocateResources(const double sampleRate, [[maybe_unused]] const int samplesPerBlock)
@@ -16,7 +22,7 @@ void Synth::deallocateResources() const
 void Synth::reset()
 {
     voice_.reset();
-    noiseGenerator_.reset();
+    noiseGenerator_->reset();
 }
 
 void Synth::render([[maybe_unused]] float **outputBuffers, [[maybe_unused]] int sampleCount) const
@@ -69,3 +75,5 @@ void Synth::noteOff(const int note)
 {
     voice_.noteOff(note);
 }
+
+} // namespace synth
