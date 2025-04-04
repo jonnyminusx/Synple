@@ -3,7 +3,8 @@
 
 //==============================================================================
 AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(JLX11AudioProcessor &p)
-    : AudioProcessorEditor(&p), processorRef(p)
+    : AudioProcessorEditor(&p),
+      processorRef(p)
 {
     juce::ignoreUnused(processorRef);
     // Make sure that before the constructor has finished, you've set the

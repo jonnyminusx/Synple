@@ -7,6 +7,7 @@ namespace synth
 {
 
 class INoiseGenerator;
+class IAudioBuffer;
 
 class Synth
 {
@@ -16,7 +17,7 @@ class Synth
     void allocateResources(const double sampleRate, const int samplesPerBlock);
     void deallocateResources() const;
     void reset();
-    void render(float **outputBuffers, int sampleCount) const;
+    void render(IAudioBuffer &audioBuffer, int sampleCount) const;
     void midiMessage(const uint8_t data0, const uint8_t data1, const uint8_t data2);
 
   private:

@@ -1,4 +1,5 @@
 #include "PluginProcessor.h"
+#include "AudioBuffer.h"
 #include "NoiseGenerator.h"
 #include "PluginEditor.h"
 
@@ -196,7 +197,7 @@ void JLX11AudioProcessor::setStateInformation(const void *data, int sizeInBytes)
     juce::ignoreUnused(data, sizeInBytes);
 }
 
-void JLX11AudioProcessor::splitBufferByEvents(const juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages)
+void JLX11AudioProcessor::splitBufferByEvents(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages)
 {
     int bufferOffset{0};
 
@@ -232,19 +233,15 @@ void JLX11AudioProcessor::splitBufferByEvents(const juce::AudioBuffer<float> &bu
 
 void JLX11AudioProcessor::handleMidi(const uint8_t data0, const uint8_t data1, const uint8_t data2)
 {
-    // std::stringstream ss;
-    // ss << std::setw(2) << std::setfill('0') << std::hex << (int)data0 << " " << std::setw(2) << std::setfill('0')
-    //    << std::hex << (int)data1 << " " << std::setw(2) << std::setfill('0') << std::hex << (int)data2;
-
-    // DBG(ss.str());
-
     synth_.midiMessage(data0, data1, data2);
 }
 
-void JLX11AudioProcessor::render([[maybe_unused]] const juce::AudioBuffer<float> &buffer,
-                                 [[maybe_unused]] const int sampleCount, [[maybe_unused]] const int bufferOffset) const
+void JLX11AudioProcessor::render(juce::AudioBuffer<float> &buffer,
+                                 const int sampleCount,
+                                 [[maybe_unused]] const int bufferOffset) const
 {
-    // Do nothing yet.
+    AudioBuffer audioBuffer{buffer, bufferOffset};
+    synth_.render(audioBuffer, sampleCount);
 }
 
 //==============================================================================

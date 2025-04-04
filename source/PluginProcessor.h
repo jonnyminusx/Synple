@@ -46,9 +46,9 @@ class JLX11AudioProcessor final : public juce::AudioProcessor
     void setStateInformation(const void *data, int sizeInBytes) override;
 
   private:
-    void splitBufferByEvents(const juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages);
+    void splitBufferByEvents(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages);
     void handleMidi(const uint8_t data0, const uint8_t data1, const uint8_t data2);
-    void render(const juce::AudioBuffer<float> &buffer, const int sampleCount, const int bufferOffset) const;
+    void render(juce::AudioBuffer<float> &buffer, const int sampleCount, const int bufferOffset) const;
 
     synth::Synth synth_;
 

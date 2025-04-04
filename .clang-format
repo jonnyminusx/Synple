@@ -3,3 +3,9 @@ Language: Cpp
 IndentWidth: 4
 UseTab: Never
 ColumnLimit: 120
+BinPackArguments: false
+BinPackParameters: OnePerLine
+BinPackLongBracedList: false
+PackConstructorInitializers: CurrentLine
+AllowAllArgumentsOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: true

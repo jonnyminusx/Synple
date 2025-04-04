@@ -25,7 +25,7 @@ void Synth::reset()
     noiseGenerator_->reset();
 }
 
-void Synth::render([[maybe_unused]] float **outputBuffers, [[maybe_unused]] int sampleCount) const
+void Synth::render([[maybe_unused]] IAudioBuffer &audioBuffer, [[maybe_unused]] int sampleCount) const
 {
 }
 
