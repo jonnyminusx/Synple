@@ -91,7 +91,7 @@ const juce::String JLX11AudioProcessor::getProgramName(int index)
     return {};
 }
 
-void JLX11AudioProcessor::changeProgramName(int index, const juce::String &newName)
+void JLX11AudioProcessor::changeProgramName(int index, const juce::String& newName)
 {
     juce::ignoreUnused(index, newName);
 }
@@ -108,7 +108,7 @@ void JLX11AudioProcessor::releaseResources()
     synth_.deallocateResources();
 }
 
-bool JLX11AudioProcessor::isBusesLayoutSupported(const BusesLayout &layouts) const
+bool JLX11AudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
 {
 #if JucePlugin_IsMidiEffect
     juce::ignoreUnused(layouts);
@@ -132,7 +132,7 @@ bool JLX11AudioProcessor::isBusesLayoutSupported(const BusesLayout &layouts) con
 #endif
 }
 
-void JLX11AudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages)
+void JLX11AudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ignoreUnused(midiMessages);
 
@@ -176,13 +176,13 @@ bool JLX11AudioProcessor::hasEditor() const
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-juce::AudioProcessorEditor *JLX11AudioProcessor::createEditor()
+juce::AudioProcessorEditor* JLX11AudioProcessor::createEditor()
 {
     return new AudioPluginAudioProcessorEditor(*this);
 }
 
 //==============================================================================
-void JLX11AudioProcessor::getStateInformation(juce::MemoryBlock &destData)
+void JLX11AudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
@@ -190,18 +190,18 @@ void JLX11AudioProcessor::getStateInformation(juce::MemoryBlock &destData)
     juce::ignoreUnused(destData);
 }
 
-void JLX11AudioProcessor::setStateInformation(const void *data, int sizeInBytes)
+void JLX11AudioProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
     juce::ignoreUnused(data, sizeInBytes);
 }
 
-void JLX11AudioProcessor::splitBufferByEvents(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages)
+void JLX11AudioProcessor::splitBufferByEvents(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     int bufferOffset{0};
 
-    for (const auto &midiMetaData : midiMessages)
+    for (const auto& midiMetaData : midiMessages)
     {
         // Render the audio before this MIDI event, if any.
         const int samplesThisSegment{midiMetaData.samplePosition - bufferOffset};
@@ -236,17 +236,17 @@ void JLX11AudioProcessor::handleMidi(const uint8_t data0, const uint8_t data1, c
     synth_.midiMessage(data0, data1, data2);
 }
 
-void JLX11AudioProcessor::render(juce::AudioBuffer<float> &buffer,
+void JLX11AudioProcessor::render(juce::AudioBuffer<float>& buffer,
                                  const int sampleCount,
                                  [[maybe_unused]] const int bufferOffset) const
 {
-    AudioBuffer audioBuffer{buffer, bufferOffset};
-    synth_.render(audioBuffer, sampleCount);
+    AudioBuffer audioBuffer{buffer, bufferOffset, bufferOffset + sampleCount};
+    synth_.render(audioBuffer);
 }
 
 //==============================================================================
 // This creates new instances of the plugin..
-juce::AudioProcessor *JUCE_CALLTYPE createPluginFilter()
+juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new JLX11AudioProcessor();
 }

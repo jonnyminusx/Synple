@@ -6,11 +6,14 @@
 class AudioBuffer : public synth::IAudioBuffer
 {
   public:
-    AudioBuffer(juce::AudioBuffer<float> &buffer, const int bufferOffset) : buffer_(buffer), bufferOffset_(bufferOffset)
-    {
-    }
+    AudioBuffer(juce::AudioBuffer<float>& buffer, const int startSampleIndex, const int endSampleIndex);
+    virtual float& sample(const int channel, const int sample) final;
+    virtual float sample(const int channel, const int sample) const final;
+    virtual int sampleCount() const final;
+    virtual int channelCount() const final;
 
   private:
-    [[maybe_unused]] juce::AudioBuffer<float> &buffer_;
-    [[maybe_unused]] int bufferOffset_{0};
+    juce::AudioBuffer<float>& buffer_;
+    int startSampleIndex_{0};
+    int endSampleIndex_{0};
 };

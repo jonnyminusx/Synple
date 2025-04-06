@@ -12,6 +12,10 @@ class Voice
     void noteOn(const int note, const int velocity);
     void noteOff(const int note);
 
+    std::optional<int> note() const;
+    int velocity() const;
+    float velocityNormalised() const;
+
   private:
     std::optional<int> note_;
     int velocity_{0};

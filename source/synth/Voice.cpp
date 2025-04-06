@@ -24,4 +24,19 @@ void Voice::noteOff(const int note)
     }
 }
 
+std::optional<int> Voice::note() const
+{
+    return note_;
+}
+
+int Voice::velocity() const
+{
+    return velocity_;
+}
+
+float Voice::velocityNormalised() const
+{
+    return static_cast<float>(velocity_) / 127.0f;
+}
+
 } // namespace synth

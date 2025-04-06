@@ -1,11 +1,12 @@
 #include "Synth.h"
+#include "IAudioBuffer.h"
 #include "INoiseGenerator.h"
 #include <cassert>
 
 namespace synth
 {
 
-Synth::Synth(INoiseGenerator *noiseGenerator) : sampleRate_(44100.0f), noiseGenerator_(noiseGenerator)
+Synth::Synth(INoiseGenerator* noiseGenerator) : sampleRate_(44100.0f), noiseGenerator_(noiseGenerator)
 {
     assert(noiseGenerator_);
 }
@@ -25,8 +26,19 @@ void Synth::reset()
     noiseGenerator_->reset();
 }
 
-void Synth::render([[maybe_unused]] IAudioBuffer &audioBuffer, [[maybe_unused]] int sampleCount) const
+void Synth::render(IAudioBuffer& audioBuffer) const
 {
+    for (int sampleIndex = 0; sampleIndex < audioBuffer.sampleCount(); ++sampleIndex)
+    {
+        const float noise{noiseGenerator_->nextValue()};
+        const float output{voice_.note().has_value() ? noise * voice_.velocityNormalised() * 0.5f : 0.0f};
+
+        audioBuffer.sample(0, sampleIndex) = output;
+        if (audioBuffer.channelCount() > 1)
+        {
+            audioBuffer.sample(1, sampleIndex) = output;
+        }
+    }
 }
 
 void Synth::midiMessage(const uint8_t data0, const uint8_t data1, const uint8_t data2)

@@ -9,3 +9,4 @@ BinPackLongBracedList: false
 PackConstructorInitializers: CurrentLine
 AllowAllArgumentsOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true
+PointerAlignment: Left

@@ -12,12 +12,12 @@ class IAudioBuffer;
 class Synth
 {
   public:
-    Synth(INoiseGenerator *noiseGenerator);
+    Synth(INoiseGenerator* noiseGenerator);
 
     void allocateResources(const double sampleRate, const int samplesPerBlock);
     void deallocateResources() const;
     void reset();
-    void render(IAudioBuffer &audioBuffer, int sampleCount) const;
+    void render(IAudioBuffer& audioBuffer) const;
     void midiMessage(const uint8_t data0, const uint8_t data1, const uint8_t data2);
 
   private:

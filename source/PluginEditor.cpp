@@ -2,7 +2,7 @@
 #include "PluginProcessor.h"
 
 //==============================================================================
-AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(JLX11AudioProcessor &p)
+AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(JLX11AudioProcessor& p)
     : AudioProcessorEditor(&p),
       processorRef(p)
 {
@@ -17,7 +17,7 @@ AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
 }
 
 //==============================================================================
-void AudioPluginAudioProcessorEditor::paint(juce::Graphics &g)
+void AudioPluginAudioProcessorEditor::paint(juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
