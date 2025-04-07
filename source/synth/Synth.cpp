@@ -1,16 +1,8 @@
 #include "Synth.h"
 #include "../utils/protectYourEars.h"
-#include "IAudioBuffer.h"
-#include "INoiseGenerator.h"
-#include <cassert>
 
 namespace synth
 {
-
-Synth::Synth(INoiseGenerator* noiseGenerator) : sampleRate_(44100.0f), noiseGenerator_(noiseGenerator)
-{
-    assert(noiseGenerator_);
-}
 
 void Synth::allocateResources(const double sampleRate, [[maybe_unused]] const int samplesPerBlock)
 {
@@ -24,14 +16,14 @@ void Synth::deallocateResources() const
 void Synth::reset()
 {
     voice_.reset();
-    noiseGenerator_->reset();
+    noiseGenerator_.reset();
 }
 
-void Synth::render(IAudioBuffer& audioBuffer) const
+void Synth::render(AudioBuffer& audioBuffer)
 {
     for (int sampleIndex = 0; sampleIndex < audioBuffer.sampleCount(); ++sampleIndex)
     {
-        const float noise{noiseGenerator_->nextValue()};
+        const float noise{noiseGenerator_.nextValue()};
         const float output{voice_.note().has_value() ? noise * voice_.velocityNormalised() * 0.5f : 0.0f};
 
         audioBuffer.sample(0, sampleIndex) = output;

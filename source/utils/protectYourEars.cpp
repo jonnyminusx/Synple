@@ -3,7 +3,6 @@
 #include <juce_core/juce_core.h>
 
 #include <cmath>
-#include <iostream>
 
 namespace utils
 {
@@ -21,7 +20,7 @@ void printWarning([[maybe_unused]] const std::string& problem,
 
 } // namespace
 
-void protectYourEars(synth::IAudioBuffer& buffer)
+void protectYourEars(synth::AudioBuffer& buffer)
 {
     for (int channel = 0; channel < buffer.channelCount(); ++channel)
     {

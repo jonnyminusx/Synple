@@ -1,5 +1,8 @@
 #include "AudioBuffer.h"
 
+namespace synth
+{
+
 AudioBuffer::AudioBuffer(juce::AudioBuffer<float>& buffer, const int startSampleIndex, const int endSampleIndex)
     : buffer_(buffer),
       startSampleIndex_(startSampleIndex),
@@ -45,3 +48,5 @@ void AudioBuffer::clear(const int channel)
 
     buffer_.clear(channel, startSampleIndex_, sampleCount());
 }
+
+} // namespace synth

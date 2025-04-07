@@ -1,7 +1,7 @@
 #include "PluginProcessor.h"
-#include "AudioBuffer.h"
-#include "NoiseGenerator.h"
 #include "PluginEditor.h"
+#include "synth/AudioBuffer.h"
+#include "synth/NoiseGenerator.h"
 
 namespace
 {
@@ -22,8 +22,7 @@ JLX11AudioProcessor::JLX11AudioProcessor()
 #endif
                          .withOutput("Output", juce::AudioChannelSet::stereo(), true)
 #endif
-                         ),
-      synth_(new NoiseGenerator())
+      )
 {
 }
 
@@ -238,9 +237,9 @@ void JLX11AudioProcessor::handleMidi(const uint8_t data0, const uint8_t data1, c
 
 void JLX11AudioProcessor::render(juce::AudioBuffer<float>& buffer,
                                  const int sampleCount,
-                                 [[maybe_unused]] const int bufferOffset) const
+                                 [[maybe_unused]] const int bufferOffset)
 {
-    AudioBuffer audioBuffer{buffer, bufferOffset, bufferOffset + sampleCount};
+    synth::AudioBuffer audioBuffer{buffer, bufferOffset, bufferOffset + sampleCount};
     synth_.render(audioBuffer);
 }
 

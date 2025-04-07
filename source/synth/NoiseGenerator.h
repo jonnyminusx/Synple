@@ -1,9 +1,11 @@
 #pragma once
 
-#include "synth/INoiseGenerator.h"
 #include <juce_core/juce_core.h>
 
-class NoiseGenerator : public synth::INoiseGenerator
+namespace synth
+{
+
+class NoiseGenerator
 {
   public:
     void reset();
@@ -12,3 +14,5 @@ class NoiseGenerator : public synth::INoiseGenerator
   private:
     juce::Random random_;
 };
+
+} // namespace synth

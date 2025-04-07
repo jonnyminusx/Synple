@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../synth/IAudioBuffer.h"
+#include "../synth/AudioBuffer.h"
 
 namespace utils
 {
 
-void protectYourEars(synth::IAudioBuffer& buffer);
+void protectYourEars(synth::AudioBuffer& buffer);
 
 } // namespace utils
