@@ -12,6 +12,7 @@ class IAudioBuffer
     virtual float sample(const int channel, const int sample) const = 0;
     virtual int sampleCount() const = 0;
     virtual int channelCount() const = 0;
+    virtual void clear(int channel) = 0;
 };
 
 } // namespace synth

@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.24)
 # Change to your project name
 project(JLX11 VERSION 0.0.1)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_XCODE_GENERATE_SCHEME OFF)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -28,6 +28,7 @@ CPMAddPackage(
 
 # Make sure you include any new source files here
 set(SourceFiles
+        source/AudioBuffer.cpp
         source/AudioBuffer.h
         source/NoiseGenerator.cpp
         source/NoiseGenerator.h
@@ -41,6 +42,8 @@ set(SourceFiles
         source/synth/Synth.h
         source/synth/Voice.cpp
         source/synth/Voice.h
+        source/utils/protectYourEars.cpp
+        source/utils/protectYourEars.h
 )
 
 # Change these to your own preferences

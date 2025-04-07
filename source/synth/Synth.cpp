@@ -1,4 +1,5 @@
 #include "Synth.h"
+#include "../utils/protectYourEars.h"
 #include "IAudioBuffer.h"
 #include "INoiseGenerator.h"
 #include <cassert>
@@ -39,6 +40,8 @@ void Synth::render(IAudioBuffer& audioBuffer) const
             audioBuffer.sample(1, sampleIndex) = output;
         }
     }
+
+    utils::protectYourEars(audioBuffer);
 }
 
 void Synth::midiMessage(const uint8_t data0, const uint8_t data1, const uint8_t data2)

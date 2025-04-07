@@ -7,10 +7,12 @@ class AudioBuffer : public synth::IAudioBuffer
 {
   public:
     AudioBuffer(juce::AudioBuffer<float>& buffer, const int startSampleIndex, const int endSampleIndex);
+
     virtual float& sample(const int channel, const int sample) final;
     virtual float sample(const int channel, const int sample) const final;
     virtual int sampleCount() const final;
     virtual int channelCount() const final;
+    virtual void clear(const int channel) final;
 
   private:
     juce::AudioBuffer<float>& buffer_;

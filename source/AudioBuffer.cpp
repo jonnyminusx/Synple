@@ -37,3 +37,11 @@ int AudioBuffer::channelCount() const
 {
     return buffer_.getNumChannels();
 }
+
+void AudioBuffer::clear(const int channel)
+{
+    jassert(channel >= 0);
+    jassert(channel < channelCount());
+
+    buffer_.clear(channel, startSampleIndex_, sampleCount());
+}
