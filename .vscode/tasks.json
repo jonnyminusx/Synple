@@ -6,7 +6,7 @@
         {
             "label": "Run AudioPluginHost",
             "type": "shell",
-            "command": "${workspaceFolder}/build/_deps/juce-build/extras/AudioPluginHost/AudioPluginHost_artefacts/Debug/AudioPluginHost.app/Contents/MacOS/AudioPluginHost",
+            "command": "${workspaceFolder}/build/_deps/juce-build/extras/AudioPluginHost/AudioPluginHost_artefacts/AudioPluginHost.app/Contents/MacOS/AudioPluginHost",
             "presentation": {
                 "echo": true,
                 "reveal": "always",

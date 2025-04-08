@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Oscillator.h"
 #include <optional>
 
 namespace synth
@@ -13,12 +14,13 @@ class Voice
     void noteOff(const int note);
 
     std::optional<int> note() const;
-    int velocity() const;
-    float velocityNormalised() const;
+    float render();
+
+    void setSampleRate(const float sampleRate);
 
   private:
     std::optional<int> note_;
-    int velocity_{0};
+    Oscillator oscillator_;
 };
 
 } // namespace synth

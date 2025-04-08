@@ -6,13 +6,16 @@ namespace synth
 void Voice::reset()
 {
     note_ = std::nullopt;
-    velocity_ = 0;
+    oscillator_.reset();
 }
 
 void Voice::noteOn(const int note, const int velocity)
 {
     note_ = note;
-    velocity_ = velocity;
+    oscillator_.setAmplitude(0.5f * (static_cast<float>(velocity) / 127.0f));
+    oscillator_.setFrequency(440.0f * std::pow(2.0f, (note - 69) / 12.0f));
+    oscillator_.setPhaseOffset(0.0f);
+    oscillator_.reset();
 }
 
 void Voice::noteOff(const int note)
@@ -20,7 +23,6 @@ void Voice::noteOff(const int note)
     if (note_ == note)
     {
         note_ = std::nullopt;
-        velocity_ = 0;
     }
 }
 
@@ -29,14 +31,14 @@ std::optional<int> Voice::note() const
     return note_;
 }
 
-int Voice::velocity() const
+float Voice::render()
 {
-    return velocity_;
+    return note_.has_value() ? oscillator_.nextSample() : 0.0f;
 }
 
-float Voice::velocityNormalised() const
+void Voice::setSampleRate(const float sampleRate)
 {
-    return static_cast<float>(velocity_) / 127.0f;
+    oscillator_.setSampleRate(sampleRate);
 }
 
 } // namespace synth

@@ -36,6 +36,8 @@ set(SourceFiles
         source/synth/AudioBuffer.h
         source/synth/NoiseGenerator.cpp
         source/synth/NoiseGenerator.h
+        source/synth/Oscillator.cpp
+        source/synth/Oscillator.h
         source/synth/Synth.cpp
         source/synth/Synth.h
         source/synth/Voice.cpp
