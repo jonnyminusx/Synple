@@ -7,6 +7,7 @@ namespace synth
 void Synth::allocateResources(const double sampleRate, [[maybe_unused]] const int samplesPerBlock)
 {
     sampleRate_ = static_cast<float>(sampleRate);
+    voice_.setSampleRate(sampleRate_);
 }
 
 void Synth::deallocateResources() const
@@ -23,8 +24,7 @@ void Synth::render(AudioBuffer& audioBuffer)
 {
     for (int sampleIndex = 0; sampleIndex < audioBuffer.sampleCount(); ++sampleIndex)
     {
-        const float noise{noiseGenerator_.nextValue()};
-        const float output{voice_.note().has_value() ? noise * voice_.velocityNormalised() * 0.5f : 0.0f};
+        const float output{voice_.render()};
 
         audioBuffer.sample(0, sampleIndex) = output;
         if (audioBuffer.channelCount() > 1)
