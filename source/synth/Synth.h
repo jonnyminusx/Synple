@@ -13,7 +13,7 @@ class AudioBuffer;
 class Synth
 {
   public:
-    void allocateResources(const double sampleRate, const int samplesPerBlock);
+    void allocateResources(const float sampleRate, const int samplesPerBlock);
     void deallocateResources() const;
     void reset();
     void render(AudioBuffer& audioBuffer);
@@ -23,7 +23,6 @@ class Synth
     void noteOn(const int note, const int velocity);
     void noteOff(const int note);
 
-    float sampleRate_{0.0f};
     Voice voice_;
     NoiseGenerator noiseGenerator_;
 };

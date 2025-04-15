@@ -98,7 +98,7 @@ void JLX11AudioProcessor::changeProgramName(int index, const juce::String& newNa
 //==============================================================================
 void JLX11AudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-    synth_.allocateResources(sampleRate, samplesPerBlock);
+    synth_.allocateResources(static_cast<float>(sampleRate), samplesPerBlock);
     reset();
 }
 

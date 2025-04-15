@@ -12,7 +12,8 @@
                 "reveal": "always",
                 "focus": false,
                 "panel": "new"
-            }
+            },
+            "problemMatcher": []
         },
         {
             "type": "cmake",

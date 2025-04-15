@@ -11,10 +11,11 @@ void Voice::reset()
 
 void Voice::noteOn(const int note, const int velocity)
 {
+    const float frequency{440.0f * std::pow(2.0f, (note - 69) / 12.0f)};
+
     note_ = note;
     oscillator_.setAmplitude(0.5f * (static_cast<float>(velocity) / 127.0f));
-    oscillator_.setFrequency(440.0f * std::pow(2.0f, (note - 69) / 12.0f));
-    oscillator_.setPhaseOffset(0.0f);
+    oscillator_.setIncrement(frequency / sampleRate_);
     oscillator_.reset();
 }
 
@@ -38,7 +39,7 @@ float Voice::render()
 
 void Voice::setSampleRate(const float sampleRate)
 {
-    oscillator_.setSampleRate(sampleRate);
+    sampleRate_ = sampleRate;
 }
 
 } // namespace synth

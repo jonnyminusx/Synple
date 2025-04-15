@@ -20,6 +20,7 @@ class Voice
 
   private:
     std::optional<int> note_;
+    float sampleRate_{0.0f};
     Oscillator oscillator_;
 };
 

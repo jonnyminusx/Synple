@@ -4,10 +4,9 @@
 namespace synth
 {
 
-void Synth::allocateResources(const double sampleRate, [[maybe_unused]] const int samplesPerBlock)
+void Synth::allocateResources(const float sampleRate, [[maybe_unused]] const int samplesPerBlock)
 {
-    sampleRate_ = static_cast<float>(sampleRate);
-    voice_.setSampleRate(sampleRate_);
+    voice_.setSampleRate(sampleRate);
 }
 
 void Synth::deallocateResources() const
