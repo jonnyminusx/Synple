@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.24)
 project(JLX11 VERSION 0.0.1)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_COMPILER /usr/bin/clang++)
 set(CMAKE_XCODE_GENERATE_SCHEME OFF)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 

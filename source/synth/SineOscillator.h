@@ -9,20 +9,17 @@ class Oscillator
     void reset();
     void setAmplitude(const float amplitude);
     void setIncrement(const float increment);
-    void setFrequency(const float frequency);
-    void setSampleRate(const float sampleRate);
 
     float nextSample();
-    float nextBandLimitedSample();
 
   private:
     float amplitude_{0.0f};
     float increment_{0.0f};
     float phase_{0.0f};
 
-    float frequency_{0.0f};
-    float sampleRate_{0.0f};
-    float phaseBandLimited_{0.0f};
+    float sin0{0.0f};
+    float sin1{0.0f};
+    float dsin{0.0f};
 };
 
 } // namespace synth

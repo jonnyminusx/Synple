@@ -16,7 +16,8 @@ constexpr float tau = 2.0f * pi;
 
 void Oscillator::reset()
 {
-    phase_ = 0;
+    phase_ = 0.0f;
+    phaseBandLimited_ = -0.5f;
 }
 
 void Oscillator::setAmplitude(const float amplitude)
@@ -24,20 +25,50 @@ void Oscillator::setAmplitude(const float amplitude)
     amplitude_ = amplitude;
 }
 
+void Oscillator::setFrequency(const float frequency)
+{
+    frequency_ = frequency;
+}
+
 void Oscillator::setIncrement(const float increment)
 {
     increment_ = increment;
 }
 
-float Oscillator::nextSample()
+void Oscillator::setSampleRate(const float sampleRate)
 {
-    phase_ += increment_;
-    if (phase_ >= 1.0f)
+    sampleRate_ = sampleRate;
+}
+
+float Oscillator::nextBandLimitedSample()
+{
+    phaseBandLimited_ += increment_;
+
+    if (phaseBandLimited_ >= 1.0f)
     {
-        phase_ -= 1.0f;
+        phaseBandLimited_ -= 1.0f;
     }
 
-    return amplitude_ * std::sinf(tau * phase_);
+    const float nyquist{sampleRate_ / 2.0f};
+    float output{0.0f};
+    float harmonicFrequency{frequency_};
+    float i{1.0f};
+    float m{2.0f / pi};
+
+    while (harmonicFrequency < nyquist)
+    {
+        output += m * std::sinf(tau * phaseBandLimited_ * i) / i;
+        harmonicFrequency += frequency_;
+        i += 1.0f;
+        m = -m;
+    }
+
+    return output;
+}
+
+float Oscillator::nextSample()
+{
+    return nextBandLimitedSample() * amplitude_;
 }
 
 } // namespace synth
