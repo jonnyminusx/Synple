@@ -15,9 +15,7 @@ void Voice::noteOn(const int note, const int velocity)
 
     note_ = note;
     oscillator_.setAmplitude(0.5f * (static_cast<float>(velocity) / 127.0f));
-    oscillator_.setIncrement(frequency / sampleRate_);
-    oscillator_.setFrequency(frequency);
-    oscillator_.setSampleRate(sampleRate_);
+    oscillator_.setPeriod(sampleRate_ / frequency);
     oscillator_.reset();
 }
 
