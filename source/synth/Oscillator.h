@@ -19,6 +19,10 @@ class Oscillator
     float increment_{0.0f};
     float phase_{0.0f};
     float phaseMax_{0.0f};
+
+    float sin0_{0.0f};
+    float sin1_{0.0f};
+    float dsin_{0.0f};
 };
 
 } // namespace synth
