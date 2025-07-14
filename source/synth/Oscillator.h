@@ -23,6 +23,8 @@ class Oscillator
     float sin0_{0.0f};
     float sin1_{0.0f};
     float dsin_{0.0f};
+
+    float dc_{0.0f};
 };
 
 } // namespace synth

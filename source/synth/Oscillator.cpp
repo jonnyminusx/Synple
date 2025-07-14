@@ -18,6 +18,7 @@ void Oscillator::reset()
 {
     increment_ = 0.0f;
     phase_ = 0.0f;
+    dc_ = 0.0f;
 }
 
 void Oscillator::setAmplitude(const float amplitude)
@@ -40,6 +41,7 @@ float Oscillator::nextSample()
     {
         const float halfPeriod{period_ / 2.0f};
         phaseMax_ = std::floor(0.5f + halfPeriod) - 0.5f;
+        dc_ = 0.5f * amplitude_ / phaseMax_;
         phaseMax_ *= pi;
 
         increment_ = phaseMax_ / halfPeriod;
@@ -73,7 +75,7 @@ float Oscillator::nextSample()
         output = sin0_ / phase_;
     }
 
-    return output;
+    return output - dc_;
 }
 
 } // namespace synth

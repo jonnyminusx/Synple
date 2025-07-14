@@ -6,6 +6,7 @@ namespace synth
 void Voice::reset()
 {
     note_ = std::nullopt;
+    saw_ = 0.0f;
     oscillator_.reset();
 }
 
@@ -34,7 +35,14 @@ std::optional<int> Voice::note() const
 
 float Voice::render()
 {
-    return note_.has_value() ? oscillator_.nextSample() : 0.0f;
+    if (!note_.has_value())
+    {
+        return 0.0f;
+    }
+
+    saw_ = saw_ * 0.997f + oscillator_.nextSample();
+
+    return saw_;
 }
 
 void Voice::setSampleRate(const float sampleRate)
