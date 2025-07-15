@@ -11,6 +11,13 @@ constexpr uint8_t operator""_midi(unsigned long long value) noexcept
     return static_cast<uint8_t>(value);
 }
 
+template <typename T>
+inline static void castParameter(juce::AudioProcessorValueTreeState& apvts, const juce::ParameterID& id, T& destination)
+{
+    destination = dynamic_cast<T>(apvts.getParameter(id.getParamID()));
+    jassert(destination && "parameter does not exist or wrong type");
+}
+
 } // namespace
 
 //==============================================================================
@@ -24,6 +31,32 @@ JLX11AudioProcessor::JLX11AudioProcessor()
 #endif
       )
 {
+    castParameter(apvts_, ParameterID::oscMix, oscMixParam_);
+    castParameter(apvts_, ParameterID::oscTune, oscTuneParam_);
+    castParameter(apvts_, ParameterID::oscFine, oscFineParam_);
+    castParameter(apvts_, ParameterID::glideMode, glideModeParam_);
+    castParameter(apvts_, ParameterID::glideRate, glideRateParam_);
+    castParameter(apvts_, ParameterID::glideBend, glideBendParam_);
+    castParameter(apvts_, ParameterID::filterFreq, filterFreqParam_);
+    castParameter(apvts_, ParameterID::filterReso, filterResoParam_);
+    castParameter(apvts_, ParameterID::filterEnv, filterEnvParam_);
+    castParameter(apvts_, ParameterID::filterLFO, filterLFOParam_);
+    castParameter(apvts_, ParameterID::filterVelocity, filterVelocityParam_);
+    castParameter(apvts_, ParameterID::filterAttack, filterAttackParam_);
+    castParameter(apvts_, ParameterID::filterDecay, filterDecayParam_);
+    castParameter(apvts_, ParameterID::filterSustain, filterSustainParam_);
+    castParameter(apvts_, ParameterID::filterRelease, filterReleaseParam_);
+    castParameter(apvts_, ParameterID::envAttack, envAttackParam_);
+    castParameter(apvts_, ParameterID::envDecay, envDecayParam_);
+    castParameter(apvts_, ParameterID::envSustain, envSustainParam_);
+    castParameter(apvts_, ParameterID::envRelease, envReleaseParam_);
+    castParameter(apvts_, ParameterID::lfoRate, lfoRateParam_);
+    castParameter(apvts_, ParameterID::vibrato, vibratoParam_);
+    castParameter(apvts_, ParameterID::noise, noiseParam_);
+    castParameter(apvts_, ParameterID::octave, octaveParam_);
+    castParameter(apvts_, ParameterID::tuning, tuningParam_);
+    castParameter(apvts_, ParameterID::outputLevel, outputLevelParam_);
+    castParameter(apvts_, ParameterID::polyMode, polyModeParam_);
 }
 
 JLX11AudioProcessor::~JLX11AudioProcessor()
@@ -136,6 +169,11 @@ void JLX11AudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
     juce::ignoreUnused(midiMessages);
 
     juce::ScopedNoDenormals noDenormals;
+
+    float noiseMix{noiseParam_->get() / 100.0f};
+    noiseMix *= noiseMix;
+    synth_.setNoiseMix(noiseMix * 0.06f);
+
     auto totalNumInputChannels = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 

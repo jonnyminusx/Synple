@@ -89,34 +89,34 @@ class JLX11AudioProcessor final : public juce::AudioProcessor
 
     synth::Synth synth_;
 
-    juce::AudioParameterFloat* oscMixParam;
-    juce::AudioParameterFloat* oscTuneParam;
-    juce::AudioParameterFloat* oscFineParam;
-    juce::AudioParameterChoice* glideModeParam;
-    juce::AudioParameterFloat* glideRateParam;
-    juce::AudioParameterFloat* glideBendParam;
-    juce::AudioParameterFloat* filterFreqParam;
-    juce::AudioParameterFloat* filterResoParam;
-    juce::AudioParameterFloat* filterEnvParam;
-    juce::AudioParameterFloat* filterLFOParam;
-    juce::AudioParameterFloat* filterVelocityParam;
-    juce::AudioParameterFloat* filterAttackParam;
-    juce::AudioParameterFloat* filterDecayParam;
-    juce::AudioParameterFloat* filterSustainParam;
-    juce::AudioParameterFloat* filterReleaseParam;
-    juce::AudioParameterFloat* envAttackParam;
-    juce::AudioParameterFloat* envDecayParam;
-    juce::AudioParameterFloat* envSustainParam;
-    juce::AudioParameterFloat* envReleaseParam;
-    juce::AudioParameterFloat* lfoRateParam;
-    juce::AudioParameterFloat* vibratoParam;
-    juce::AudioParameterFloat* noiseParam;
-    juce::AudioParameterFloat* octaveParam;
-    juce::AudioParameterFloat* tuningParam;
-    juce::AudioParameterFloat* outputLevelParam;
-    juce::AudioParameterChoice* polyModeParam;
+    juce::AudioParameterFloat* oscMixParam_;
+    juce::AudioParameterFloat* oscTuneParam_;
+    juce::AudioParameterFloat* oscFineParam_;
+    juce::AudioParameterChoice* glideModeParam_;
+    juce::AudioParameterFloat* glideRateParam_;
+    juce::AudioParameterFloat* glideBendParam_;
+    juce::AudioParameterFloat* filterFreqParam_;
+    juce::AudioParameterFloat* filterResoParam_;
+    juce::AudioParameterFloat* filterEnvParam_;
+    juce::AudioParameterFloat* filterLFOParam_;
+    juce::AudioParameterFloat* filterVelocityParam_;
+    juce::AudioParameterFloat* filterAttackParam_;
+    juce::AudioParameterFloat* filterDecayParam_;
+    juce::AudioParameterFloat* filterSustainParam_;
+    juce::AudioParameterFloat* filterReleaseParam_;
+    juce::AudioParameterFloat* envAttackParam_;
+    juce::AudioParameterFloat* envDecayParam_;
+    juce::AudioParameterFloat* envSustainParam_;
+    juce::AudioParameterFloat* envReleaseParam_;
+    juce::AudioParameterFloat* lfoRateParam_;
+    juce::AudioParameterFloat* vibratoParam_;
+    juce::AudioParameterFloat* noiseParam_;
+    juce::AudioParameterFloat* octaveParam_;
+    juce::AudioParameterFloat* tuningParam_;
+    juce::AudioParameterFloat* outputLevelParam_;
+    juce::AudioParameterChoice* polyModeParam_;
 
-    juce::AudioProcessorValueTreeState apvts{*this, nullptr, "Parameters", createParameterLayout()};
+    juce::AudioProcessorValueTreeState apvts_{*this, nullptr, "Parameters", createParameterLayout()};
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(JLX11AudioProcessor)
