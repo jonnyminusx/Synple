@@ -210,17 +210,17 @@ juce::AudioProcessorEditor* JLX11AudioProcessor::createEditor()
 //==============================================================================
 void JLX11AudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
-    juce::ignoreUnused(destData);
+    copyXmlToBinary(*apvts_.copyState().createXml(), destData);
 }
 
 void JLX11AudioProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
-    juce::ignoreUnused(data, sizeInBytes);
+    std::unique_ptr<juce::XmlElement> xml{getXmlFromBinary(data, sizeInBytes)};
+    if (xml && xml->hasTagName(apvts_.state.getType()))
+    {
+        apvts_.replaceState(juce::ValueTree::fromXml(*xml));
+        parametersChanged_.store(true);
+    }
 }
 
 void JLX11AudioProcessor::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier&)
