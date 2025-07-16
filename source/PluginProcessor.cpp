@@ -31,36 +31,39 @@ JLX11AudioProcessor::JLX11AudioProcessor()
 #endif
       )
 {
-    castParameter(apvts_, ParameterID::oscMix, oscMixParam_);
-    castParameter(apvts_, ParameterID::oscTune, oscTuneParam_);
-    castParameter(apvts_, ParameterID::oscFine, oscFineParam_);
-    castParameter(apvts_, ParameterID::glideMode, glideModeParam_);
-    castParameter(apvts_, ParameterID::glideRate, glideRateParam_);
-    castParameter(apvts_, ParameterID::glideBend, glideBendParam_);
-    castParameter(apvts_, ParameterID::filterFreq, filterFreqParam_);
-    castParameter(apvts_, ParameterID::filterReso, filterResoParam_);
-    castParameter(apvts_, ParameterID::filterEnv, filterEnvParam_);
-    castParameter(apvts_, ParameterID::filterLFO, filterLFOParam_);
-    castParameter(apvts_, ParameterID::filterVelocity, filterVelocityParam_);
-    castParameter(apvts_, ParameterID::filterAttack, filterAttackParam_);
-    castParameter(apvts_, ParameterID::filterDecay, filterDecayParam_);
-    castParameter(apvts_, ParameterID::filterSustain, filterSustainParam_);
-    castParameter(apvts_, ParameterID::filterRelease, filterReleaseParam_);
-    castParameter(apvts_, ParameterID::envAttack, envAttackParam_);
-    castParameter(apvts_, ParameterID::envDecay, envDecayParam_);
-    castParameter(apvts_, ParameterID::envSustain, envSustainParam_);
-    castParameter(apvts_, ParameterID::envRelease, envReleaseParam_);
-    castParameter(apvts_, ParameterID::lfoRate, lfoRateParam_);
-    castParameter(apvts_, ParameterID::vibrato, vibratoParam_);
-    castParameter(apvts_, ParameterID::noise, noiseParam_);
-    castParameter(apvts_, ParameterID::octave, octaveParam_);
-    castParameter(apvts_, ParameterID::tuning, tuningParam_);
-    castParameter(apvts_, ParameterID::outputLevel, outputLevelParam_);
-    castParameter(apvts_, ParameterID::polyMode, polyModeParam_);
+    castParameter(apvts_, parameter_id::oscMix, oscMixParam_);
+    castParameter(apvts_, parameter_id::oscTune, oscTuneParam_);
+    castParameter(apvts_, parameter_id::oscFine, oscFineParam_);
+    castParameter(apvts_, parameter_id::glideMode, glideModeParam_);
+    castParameter(apvts_, parameter_id::glideRate, glideRateParam_);
+    castParameter(apvts_, parameter_id::glideBend, glideBendParam_);
+    castParameter(apvts_, parameter_id::filterFreq, filterFreqParam_);
+    castParameter(apvts_, parameter_id::filterReso, filterResoParam_);
+    castParameter(apvts_, parameter_id::filterEnv, filterEnvParam_);
+    castParameter(apvts_, parameter_id::filterLFO, filterLFOParam_);
+    castParameter(apvts_, parameter_id::filterVelocity, filterVelocityParam_);
+    castParameter(apvts_, parameter_id::filterAttack, filterAttackParam_);
+    castParameter(apvts_, parameter_id::filterDecay, filterDecayParam_);
+    castParameter(apvts_, parameter_id::filterSustain, filterSustainParam_);
+    castParameter(apvts_, parameter_id::filterRelease, filterReleaseParam_);
+    castParameter(apvts_, parameter_id::envAttack, envAttackParam_);
+    castParameter(apvts_, parameter_id::envDecay, envDecayParam_);
+    castParameter(apvts_, parameter_id::envSustain, envSustainParam_);
+    castParameter(apvts_, parameter_id::envRelease, envReleaseParam_);
+    castParameter(apvts_, parameter_id::lfoRate, lfoRateParam_);
+    castParameter(apvts_, parameter_id::vibrato, vibratoParam_);
+    castParameter(apvts_, parameter_id::noise, noiseParam_);
+    castParameter(apvts_, parameter_id::octave, octaveParam_);
+    castParameter(apvts_, parameter_id::tuning, tuningParam_);
+    castParameter(apvts_, parameter_id::outputLevel, outputLevelParam_);
+    castParameter(apvts_, parameter_id::polyMode, polyModeParam_);
+
+    apvts_.state.addListener(this);
 }
 
 JLX11AudioProcessor::~JLX11AudioProcessor()
 {
+    apvts_.state.removeListener(this);
 }
 
 //==============================================================================
@@ -132,6 +135,7 @@ void JLX11AudioProcessor::changeProgramName(int index, const juce::String& newNa
 void JLX11AudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
     synth_.allocateResources(static_cast<float>(sampleRate), samplesPerBlock);
+    parametersChanged_.store(true);
     reset();
 }
 
@@ -170,34 +174,17 @@ void JLX11AudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
 
     juce::ScopedNoDenormals noDenormals;
 
-    float noiseMix{noiseParam_->get() / 100.0f};
-    noiseMix *= noiseMix;
-    synth_.setNoiseMix(noiseMix * 0.06f);
-
     auto totalNumInputChannels = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear(i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    // for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    // {
-    //     auto* channelData = buffer.getWritePointer (channel);
-    //     juce::ignoreUnused (channelData);
-    //     // ..do something to the data...
-    // }
+    bool expected = true;
+    if (isNonRealtime() || parametersChanged_.compare_exchange_strong(expected, false))
+    {
+        update();
+    }
 
     splitBufferByEvents(buffer, midiMessages);
 }
@@ -234,6 +221,17 @@ void JLX11AudioProcessor::setStateInformation(const void* data, int sizeInBytes)
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
     juce::ignoreUnused(data, sizeInBytes);
+}
+
+void JLX11AudioProcessor::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier&)
+{
+    parametersChanged_.store(true);
+}
+
+void JLX11AudioProcessor::update()
+{
+    const float noiseMix = noiseParam_->get() / 100.0f;
+    synth_.setNoiseMix(noiseMix * noiseMix * 0.06f);
 }
 
 void JLX11AudioProcessor::splitBufferByEvents(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
@@ -294,60 +292,60 @@ juce::AudioProcessorValueTreeState::ParameterLayout JLX11AudioProcessor::createP
     };
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
-        ParameterID::oscMix,
+        parameter_id::oscMix,
         "Osc Mix",
         juce::NormalisableRange<float>(0.0f, 100.0f),
         0.0f,
         juce::AudioParameterFloatAttributes().withLabel("%").withStringFromValueFunction(oscMixStringFromValue)));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>(ParameterID::oscTune,
+    layout.add(std::make_unique<juce::AudioParameterFloat>(parameter_id::oscTune,
                                                            "Osc Tune",
                                                            juce::NormalisableRange<float>(-24.0f, 24.0f, 1.0f),
                                                            -12.0f,
                                                            juce::AudioParameterFloatAttributes().withLabel("semi")));
 
     layout.add(
-        std::make_unique<juce::AudioParameterFloat>(ParameterID::oscFine,
+        std::make_unique<juce::AudioParameterFloat>(parameter_id::oscFine,
                                                     "Osc Fine",
                                                     juce::NormalisableRange<float>(-50.0f, 50.0f, 0.1f, 0.3f, true),
                                                     0.0f,
                                                     juce::AudioParameterFloatAttributes().withLabel("cent")));
 
     layout.add(std::make_unique<juce::AudioParameterChoice>(
-        ParameterID::glideMode, "Glide Mode", juce::StringArray{"Off", "Legato", "Always"}, 0));
+        parameter_id::glideMode, "Glide Mode", juce::StringArray{"Off", "Legato", "Always"}, 0));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>(ParameterID::glideRate,
+    layout.add(std::make_unique<juce::AudioParameterFloat>(parameter_id::glideRate,
                                                            "Glide Rate",
                                                            juce::NormalisableRange<float>(0.0f, 100.f, 1.0f),
                                                            35.0f,
                                                            juce::AudioParameterFloatAttributes().withLabel("%")));
 
     layout.add(
-        std::make_unique<juce::AudioParameterFloat>(ParameterID::glideBend,
+        std::make_unique<juce::AudioParameterFloat>(parameter_id::glideBend,
                                                     "Glide Bend",
                                                     juce::NormalisableRange<float>(-36.0f, 36.0f, 0.01f, 0.4f, true),
                                                     0.0f,
                                                     juce::AudioParameterFloatAttributes().withLabel("semi")));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>(ParameterID::filterFreq,
+    layout.add(std::make_unique<juce::AudioParameterFloat>(parameter_id::filterFreq,
                                                            "Filter Freq",
                                                            juce::NormalisableRange<float>(0.0f, 100.0f, 0.1f),
                                                            100.0f,
                                                            juce::AudioParameterFloatAttributes().withLabel("%")));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>(ParameterID::filterReso,
+    layout.add(std::make_unique<juce::AudioParameterFloat>(parameter_id::filterReso,
                                                            "Filter Reso",
                                                            juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
                                                            15.0f,
                                                            juce::AudioParameterFloatAttributes().withLabel("%")));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>(ParameterID::filterEnv,
+    layout.add(std::make_unique<juce::AudioParameterFloat>(parameter_id::filterEnv,
                                                            "Filter Env",
                                                            juce::NormalisableRange<float>(-100.0f, 100.0f, 0.1f),
                                                            50.0f,
                                                            juce::AudioParameterFloatAttributes().withLabel("%")));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>(ParameterID::filterLFO,
+    layout.add(std::make_unique<juce::AudioParameterFloat>(parameter_id::filterLFO,
                                                            "Filter LFO",
                                                            juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
                                                            0.0f,
@@ -358,56 +356,56 @@ juce::AudioProcessorValueTreeState::ParameterLayout JLX11AudioProcessor::createP
     };
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
-        ParameterID::filterVelocity,
+        parameter_id::filterVelocity,
         "Velocity",
         juce::NormalisableRange<float>(-100.0f, 100.0f, 1.0f),
         0.0f,
         juce::AudioParameterFloatAttributes().withLabel("%").withStringFromValueFunction(
             filterVelocityStringFromValue)));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>(ParameterID::filterAttack,
+    layout.add(std::make_unique<juce::AudioParameterFloat>(parameter_id::filterAttack,
                                                            "Filter Attack",
                                                            juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
                                                            0.0f,
                                                            juce::AudioParameterFloatAttributes().withLabel("%")));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>(ParameterID::filterDecay,
+    layout.add(std::make_unique<juce::AudioParameterFloat>(parameter_id::filterDecay,
                                                            "Filter Decay",
                                                            juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
                                                            30.0f,
                                                            juce::AudioParameterFloatAttributes().withLabel("%")));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>(ParameterID::filterSustain,
+    layout.add(std::make_unique<juce::AudioParameterFloat>(parameter_id::filterSustain,
                                                            "Filter Sustain",
                                                            juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
                                                            0.0f,
                                                            juce::AudioParameterFloatAttributes().withLabel("%")));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>(ParameterID::filterRelease,
+    layout.add(std::make_unique<juce::AudioParameterFloat>(parameter_id::filterRelease,
                                                            "Filter Release",
                                                            juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
                                                            25.0f,
                                                            juce::AudioParameterFloatAttributes().withLabel("%")));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>(ParameterID::envAttack,
+    layout.add(std::make_unique<juce::AudioParameterFloat>(parameter_id::envAttack,
                                                            "Env Attack",
                                                            juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
                                                            0.0f,
                                                            juce::AudioParameterFloatAttributes().withLabel("%")));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>(ParameterID::envDecay,
+    layout.add(std::make_unique<juce::AudioParameterFloat>(parameter_id::envDecay,
                                                            "Env Decay",
                                                            juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
                                                            50.0f,
                                                            juce::AudioParameterFloatAttributes().withLabel("%")));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>(ParameterID::envSustain,
+    layout.add(std::make_unique<juce::AudioParameterFloat>(parameter_id::envSustain,
                                                            "Env Sustain",
                                                            juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
                                                            100.0f,
                                                            juce::AudioParameterFloatAttributes().withLabel("%")));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>(ParameterID::envRelease,
+    layout.add(std::make_unique<juce::AudioParameterFloat>(parameter_id::envRelease,
                                                            "Env Release",
                                                            juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
                                                            30.0f,
@@ -419,7 +417,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout JLX11AudioProcessor::createP
     };
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
-        ParameterID::lfoRate,
+        parameter_id::lfoRate,
         "LFO Rate",
         juce::NormalisableRange<float>(),
         0.81f,
@@ -430,35 +428,35 @@ juce::AudioProcessorValueTreeState::ParameterLayout JLX11AudioProcessor::createP
     };
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
-        ParameterID::vibrato,
+        parameter_id::vibrato,
         "Vibrato",
         juce::NormalisableRange<float>(-100.0f, 100.0f, 0.1f),
         0.0f,
         juce::AudioParameterFloatAttributes().withLabel("%").withStringFromValueFunction(vibratoStringFromValue)));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>(ParameterID::noise,
+    layout.add(std::make_unique<juce::AudioParameterFloat>(parameter_id::noise,
                                                            "Noise",
                                                            juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
                                                            0.0f,
                                                            juce::AudioParameterFloatAttributes().withLabel("%")));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
-        ParameterID::octave, "Octave", juce::NormalisableRange<float>(-2.0f, 2.0f, 1.0f), 0.0f));
+        parameter_id::octave, "Octave", juce::NormalisableRange<float>(-2.0f, 2.0f, 1.0f), 0.0f));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>(ParameterID::tuning,
+    layout.add(std::make_unique<juce::AudioParameterFloat>(parameter_id::tuning,
                                                            "Tuning",
                                                            juce::NormalisableRange<float>(-100.0f, 100.0f, 0.1f),
                                                            0.0f,
                                                            juce::AudioParameterFloatAttributes().withLabel("cent")));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>(ParameterID::outputLevel,
+    layout.add(std::make_unique<juce::AudioParameterFloat>(parameter_id::outputLevel,
                                                            "Output Level",
                                                            juce::NormalisableRange<float>(-24.0f, 6.0f, 0.1f),
                                                            0.0f,
                                                            juce::AudioParameterFloatAttributes().withLabel("dB")));
 
     layout.add(std::make_unique<juce::AudioParameterChoice>(
-        ParameterID::polyMode, "Polyphony", juce::StringArray{"Mono", "Poly"}, 1));
+        parameter_id::polyMode, "Polyphony", juce::StringArray{"Mono", "Poly"}, 1));
 
     return layout;
 }

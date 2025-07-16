@@ -3,7 +3,7 @@
 #include "synth/Synth.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 
-namespace ParameterID
+namespace parameter_id
 {
 
 #define PARAMETER_ID(str) const juce::ParameterID str(#str, 1);
@@ -37,10 +37,10 @@ PARAMETER_ID(polyMode)
 
 #undef PARAMETER_ID
 
-} // namespace ParameterID
+} // namespace parameter_id
 
 //==============================================================================
-class JLX11AudioProcessor final : public juce::AudioProcessor
+class JLX11AudioProcessor final : public juce::AudioProcessor, private juce::ValueTree::Listener
 {
   public:
     //==============================================================================
@@ -82,6 +82,9 @@ class JLX11AudioProcessor final : public juce::AudioProcessor
     void setStateInformation(const void* data, int sizeInBytes) override;
 
   private:
+    void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier&) override;
+    void update();
+
     void splitBufferByEvents(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages);
     void handleMidi(const uint8_t data0, const uint8_t data1, const uint8_t data2);
     void render(juce::AudioBuffer<float>& buffer, const int sampleCount, const int bufferOffset);
@@ -117,6 +120,8 @@ class JLX11AudioProcessor final : public juce::AudioProcessor
     juce::AudioParameterChoice* polyModeParam_;
 
     juce::AudioProcessorValueTreeState apvts_{*this, nullptr, "Parameters", createParameterLayout()};
+
+    std::atomic<bool> parametersChanged_{false};
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(JLX11AudioProcessor)
