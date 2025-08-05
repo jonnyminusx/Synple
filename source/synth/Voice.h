@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Envelope.h"
 #include "Oscillator.h"
 #include <optional>
 
@@ -23,6 +24,7 @@ class Voice
     float sampleRate_{0.0f};
     float saw_{0.0f};
     Oscillator oscillator_;
+    Envelope envelope_;
 };
 
 } // namespace synth

@@ -18,6 +18,7 @@ void Voice::noteOn(const int note, const int velocity)
     oscillator_.setAmplitude(0.5f * (static_cast<float>(velocity) / 127.0f));
     oscillator_.setPeriod(sampleRate_ / frequency);
     oscillator_.reset();
+    envelope_.setLevel(1.0f);
 }
 
 void Voice::noteOff(const int note)
@@ -41,8 +42,9 @@ float Voice::render()
     }
 
     saw_ = saw_ * 0.997f + oscillator_.nextSample();
+    const float envelopeValue{envelope_.nextValue()};
 
-    return saw_;
+    return saw_ * envelopeValue;
 }
 
 void Voice::setSampleRate(const float sampleRate)
