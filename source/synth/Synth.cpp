@@ -24,7 +24,7 @@ void Synth::render(AudioBuffer& audioBuffer)
     for (int sampleIndex = 0; sampleIndex < audioBuffer.sampleCount(); ++sampleIndex)
     {
         const float noise{noiseGenerator_.nextValue() * noiseMix_};
-        const float output{voice_.render() + (voice_.note().has_value() ? noise : 0.0f)};
+        const float output{voice_.render(noise)};
 
         audioBuffer.sample(0, sampleIndex) = output;
         if (audioBuffer.channelCount() > 1)

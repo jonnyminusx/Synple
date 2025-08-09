@@ -34,7 +34,7 @@ std::optional<int> Voice::note() const
     return note_;
 }
 
-float Voice::render()
+float Voice::render(const float input)
 {
     if (!note_.has_value())
     {
@@ -42,6 +42,8 @@ float Voice::render()
     }
 
     saw_ = saw_ * 0.997f + oscillator_.nextSample();
+
+    const float ouput{saw_ + input};
     const float envelopeValue{envelope_.nextValue()};
 
     return saw_ * envelopeValue;

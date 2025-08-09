@@ -3,6 +3,8 @@
 class Envelope
 {
   public:
+    const float silence{0.0001f};
+
     void setLevel(const float level)
     {
         level_ = level;

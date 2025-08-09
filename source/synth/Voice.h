@@ -15,7 +15,7 @@ class Voice
     void noteOff(const int note);
 
     std::optional<int> note() const;
-    float render();
+    float render(const float input);
 
     void setSampleRate(const float sampleRate);
 
