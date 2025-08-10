@@ -18,10 +18,8 @@ class Synth
     void reset();
     void render(AudioBuffer& audioBuffer);
     void midiMessage(const uint8_t data0, const uint8_t data1, const uint8_t data2);
-    void setNoiseMix(const float noiseMix)
-    {
-        noiseMix_ = noiseMix;
-    }
+    void setNoiseMix(const float noiseMix);
+    void setEnvelopeDecay(const float decayTime);
 
   private:
     void noteOn(const int note, const int velocity);

@@ -1,21 +1,21 @@
 #pragma once
 
+namespace synth
+{
+
 class Envelope
 {
   public:
-    const float silence{0.0001f};
+    void noteOn();
+    float nextValue();
 
-    void setLevel(const float level)
-    {
-        level_ = level;
-    }
-
-    float nextValue()
-    {
-        level_ *= 0.9999f;
-        return level_;
-    }
+    void setLevel(const float level);
+    void setDecay(const float decaySamples);
 
   private:
     float level_{1.0f};
+    float multiplier_{0.999f};
+    float newMultiplier_{0.999f};
 };
+
+} // namespace synth

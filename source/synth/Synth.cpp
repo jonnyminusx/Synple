@@ -83,4 +83,14 @@ void Synth::noteOff(const int note)
     voice_.noteOff(note);
 }
 
+void Synth::setNoiseMix(const float noiseMix)
+{
+    noiseMix_ = noiseMix;
+}
+
+void Synth::setEnvelopeDecay(const float decayTime)
+{
+    voice_.setEnvelopeDecay(decayTime);
+}
+
 } // namespace synth

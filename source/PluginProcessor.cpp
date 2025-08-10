@@ -255,7 +255,10 @@ void JLX11AudioProcessor::valueTreePropertyChanged(juce::ValueTree&, const juce:
 
 void JLX11AudioProcessor::update()
 {
-    const float noiseMix = noiseParam_->get() / 100.0f;
+    const float decayTime{5.0f * envDecayParam_->get() / 100.0f};
+    synth_.setEnvelopeDecay(decayTime);
+
+    const float noiseMix{noiseParam_->get() / 100.0f};
     synth_.setNoiseMix(noiseMix * noiseMix * 0.06f);
 }
 

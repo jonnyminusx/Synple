@@ -18,6 +18,7 @@ void Voice::noteOn(const int note, const int velocity)
     oscillator_.setAmplitude(0.5f * (static_cast<float>(velocity) / 127.0f));
     oscillator_.setPeriod(sampleRate_ / frequency);
     oscillator_.reset();
+    envelope_.noteOn();
     envelope_.setLevel(1.0f);
 }
 
@@ -43,15 +44,21 @@ float Voice::render(const float input)
 
     saw_ = saw_ * 0.997f + oscillator_.nextSample();
 
-    const float ouput{saw_ + input};
+    const float output{saw_ + input};
     const float envelopeValue{envelope_.nextValue()};
 
-    return saw_ * envelopeValue;
+    return output * envelopeValue;
 }
 
 void Voice::setSampleRate(const float sampleRate)
 {
     sampleRate_ = sampleRate;
+}
+
+void Voice::setEnvelopeDecay(const float decayTime)
+{
+    const float decaySamples{decayTime * sampleRate_};
+    envelope_.setDecay(decaySamples);
 }
 
 } // namespace synth

@@ -18,6 +18,7 @@ class Voice
     float render(const float input);
 
     void setSampleRate(const float sampleRate);
+    void setEnvelopeDecay(const float decayTime);
 
   private:
     std::optional<int> note_;
