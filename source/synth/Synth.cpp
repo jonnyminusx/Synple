@@ -75,6 +75,15 @@ void Synth::midiMessage(const uint8_t data0, const uint8_t data1, const uint8_t 
 
 void Synth::noteOn(const int note, const int velocity)
 {
+    Envelope& envelope = voice_.envelope();
+    envelope.setAttackMultiplier(envelopeAttack_);
+    envelope.setDecayMultiplier(envelopeDecay_);
+    envelope.setSustainLevel(envelopeSustain_);
+    envelope.setReleaseMultiplier(envelopeRelease_);
+    envelope.setLevel(1.0f);
+    envelope.setTarget(envelopeSustain_);
+    envelope.setMultiplier(envelopeDecay_);
+
     voice_.noteOn(note, velocity);
 }
 
@@ -90,7 +99,22 @@ void Synth::setNoiseMix(const float noiseMix)
 
 void Synth::setEnvelopeDecay(const float decayTime)
 {
-    voice_.setEnvelopeDecay(decayTime);
+    envelopeDecay_ = decayTime;
+}
+
+void Synth::setEnvelopeAttack(const float attackTime)
+{
+    envelopeAttack_ = attackTime;
+}
+
+void Synth::setEnvelopeSustain(const float sustainLevel)
+{
+    envelopeSustain_ = sustainLevel;
+}
+
+void Synth::setEnvelopeRelease(const float releaseTime)
+{
+    envelopeRelease_ = releaseTime;
 }
 
 } // namespace synth

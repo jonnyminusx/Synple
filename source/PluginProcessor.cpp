@@ -255,8 +255,21 @@ void JLX11AudioProcessor::valueTreePropertyChanged(juce::ValueTree&, const juce:
 
 void JLX11AudioProcessor::update()
 {
-    const float decayTime{5.0f * envDecayParam_->get() / 100.0f};
-    synth_.setEnvelopeDecay(decayTime);
+    const float sampleRate{static_cast<float>(getSampleRate())};
+    const float inverseSampleRate{1.0f / sampleRate};
+
+    synth_.setEnvelopeAttack(std::exp(-inverseSampleRate * std::exp(5.5f - 0.075f * envAttackParam_->get())));
+    synth_.setEnvelopeDecay(std::exp(-inverseSampleRate * std::exp(5.5f - 0.075f * envDecayParam_->get())));
+    synth_.setEnvelopeSustain(envSustainParam_->get() / 100.0f);
+    const float releaseParamValue{envReleaseParam_->get()};
+    if (releaseParamValue < 1.0f)
+    {
+        synth_.setEnvelopeRelease(0.75f);
+    }
+    else
+    {
+        synth_.setEnvelopeRelease(std::exp(-inverseSampleRate * std::exp(5.5f - 0.075f * releaseParamValue)));
+    }
 
     const float noiseMix{noiseParam_->get() / 100.0f};
     synth_.setNoiseMix(noiseMix * noiseMix * 0.06f);

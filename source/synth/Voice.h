@@ -13,17 +13,20 @@ class Voice
     void reset();
     void noteOn(const int note, const int velocity);
     void noteOff(const int note);
-
-    std::optional<int> note() const;
+    void release();
     float render(const float input);
 
+    const Envelope& envelope() const;
+    Envelope& envelope();
+
     void setSampleRate(const float sampleRate);
-    void setEnvelopeDecay(const float decayTime);
 
   private:
-    std::optional<int> note_;
+    int note_{0};
+
     float sampleRate_{0.0f};
     float saw_{0.0f};
+
     Oscillator oscillator_;
     Envelope envelope_;
 };

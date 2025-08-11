@@ -5,9 +5,10 @@ namespace synth
 
 void Voice::reset()
 {
-    note_ = std::nullopt;
+    note_ = 0;
     saw_ = 0.0f;
     oscillator_.reset();
+    envelope_.reset();
 }
 
 void Voice::noteOn(const int note, const int velocity)
@@ -18,27 +19,26 @@ void Voice::noteOn(const int note, const int velocity)
     oscillator_.setAmplitude(0.5f * (static_cast<float>(velocity) / 127.0f));
     oscillator_.setPeriod(sampleRate_ / frequency);
     oscillator_.reset();
-    envelope_.noteOn();
-    envelope_.setLevel(1.0f);
 }
 
 void Voice::noteOff(const int note)
 {
     if (note_ == note)
     {
-        note_ = std::nullopt;
+        envelope_.release();
     }
 }
 
-std::optional<int> Voice::note() const
+void Voice::release()
 {
-    return note_;
+    envelope_.release();
 }
 
 float Voice::render(const float input)
 {
-    if (!note_.has_value())
+    if (!envelope_.isActive())
     {
+        envelope_.reset();
         return 0.0f;
     }
 
@@ -55,10 +55,14 @@ void Voice::setSampleRate(const float sampleRate)
     sampleRate_ = sampleRate;
 }
 
-void Voice::setEnvelopeDecay(const float decayTime)
+const Envelope& Voice::envelope() const
 {
-    const float decaySamples{decayTime * sampleRate_};
-    envelope_.setDecay(decaySamples);
+    return envelope_;
+}
+
+Envelope& Voice::envelope()
+{
+    return envelope_;
 }
 
 } // namespace synth
