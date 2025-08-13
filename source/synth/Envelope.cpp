@@ -16,6 +16,13 @@ void Envelope::reset()
     multiplier_ = 0.0f;
 }
 
+void Envelope::attack()
+{
+    level_ += silence + silence;
+    target_ = 2.0f;
+    multiplier_ = attackMultiplier_;
+}
+
 void Envelope::release()
 {
     target_ = 0.0f;
@@ -25,6 +32,11 @@ void Envelope::release()
 bool Envelope::isActive() const
 {
     return level_ > silence;
+}
+
+bool Envelope::isInAttack() const
+{
+    return target_ >= 2.0f;
 }
 
 void Envelope::setLevel(const float level)
@@ -65,6 +77,13 @@ void Envelope::setReleaseMultiplier(const float releaseMultiplier)
 float Envelope::nextValue()
 {
     level_ = multiplier_ * (level_ - target_) + target_;
+
+    if (level_ + target_ > 3.0f)
+    {
+        multiplier_ = decayMultiplier_;
+        target_ = sustainLevel_;
+    }
+
     return level_;
 }
 

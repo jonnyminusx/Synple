@@ -80,9 +80,7 @@ void Synth::noteOn(const int note, const int velocity)
     envelope.setDecayMultiplier(envelopeDecay_);
     envelope.setSustainLevel(envelopeSustain_);
     envelope.setReleaseMultiplier(envelopeRelease_);
-    envelope.setLevel(1.0f);
-    envelope.setTarget(envelopeSustain_);
-    envelope.setMultiplier(envelopeDecay_);
+    envelope.attack();
 
     voice_.noteOn(note, velocity);
 }

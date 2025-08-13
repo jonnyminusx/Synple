@@ -8,8 +8,10 @@ class Envelope
   public:
     float nextValue();
     void reset();
+    void attack();
     void release();
     bool isActive() const;
+    bool isInAttack() const;
 
     void setLevel(const float level);
     void setTarget(const float target);
