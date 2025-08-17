@@ -20,14 +20,22 @@ class Voice
     Envelope& envelope();
 
     void setSampleRate(const float sampleRate);
+    void setOscillatorMix(const float oscillatorMix);
+    void setOscillatorDetune(const float semi, const float cent);
+    void setTune(const float tune);
 
   private:
     int note_{0};
 
     float sampleRate_{0.0f};
     float saw_{0.0f};
+    float oscillatorMix_{0.0f};
+    float oscillatorDetune_{0.0f};
+    float period_{0.0f};
+    float tune_{0.0f};
 
-    Oscillator oscillator_;
+    Oscillator oscillator1_;
+    Oscillator oscillator2_;
     Envelope envelope_;
 };
 

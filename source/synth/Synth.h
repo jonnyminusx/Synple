@@ -19,6 +19,9 @@ class Synth
     void render(AudioBuffer& audioBuffer);
     void midiMessage(const uint8_t data0, const uint8_t data1, const uint8_t data2);
     void setNoiseMix(const float noiseMix);
+    void setOscillatorMix(const float oscillatorMix);
+    void setOscillatorDetune(const float semi, const float cent);
+    void setTune(const float tune);
 
     void setEnvelopeDecay(const float decayTime);
     void setEnvelopeAttack(const float attackTime);

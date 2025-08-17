@@ -255,6 +255,10 @@ void JLX11AudioProcessor::valueTreePropertyChanged(juce::ValueTree&, const juce:
 
 void JLX11AudioProcessor::update()
 {
+    synth_.setOscillatorMix(oscMixParam_->get() / 100.0f);
+    synth_.setOscillatorDetune(oscTuneParam_->get(), oscFineParam_->get());
+    synth_.setTune((octaveParam_->get() * 12.0f) + (tuningParam_->get() / 100.f));
+
     const float sampleRate{static_cast<float>(getSampleRate())};
     const float inverseSampleRate{1.0f / sampleRate};
 

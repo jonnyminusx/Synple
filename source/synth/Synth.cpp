@@ -95,6 +95,21 @@ void Synth::setNoiseMix(const float noiseMix)
     noiseMix_ = noiseMix;
 }
 
+void Synth::setOscillatorMix(const float oscillatorMix)
+{
+    voice_.setOscillatorMix(oscillatorMix);
+}
+
+void Synth::setOscillatorDetune(const float semi, const float cent)
+{
+    voice_.setOscillatorDetune(semi, cent);
+}
+
+void Synth::setTune(const float tune)
+{
+    voice_.setTune(tune);
+}
+
 void Synth::setEnvelopeDecay(const float decayTime)
 {
     envelopeDecay_ = decayTime;
