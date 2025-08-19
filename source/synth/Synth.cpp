@@ -67,6 +67,7 @@ void Synth::midiMessage(const uint8_t data0, const uint8_t data1, const uint8_t 
     case 0xD0: // Channel Aftertouch
         break;
     case 0xE0: // Pitch Bend
+        voice_.setPitchBend(std::exp(-0.000014102f * data1 + (128 * data2) - 8192));
         break;
     default:
         break;

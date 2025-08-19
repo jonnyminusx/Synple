@@ -23,6 +23,7 @@ class Voice
     void setOscillatorMix(const float oscillatorMix);
     void setOscillatorDetune(const float semi, const float cent);
     void setTune(const float tune);
+    void setPitchBend(const float pitchBend);
 
   private:
     int note_{0};
@@ -33,6 +34,7 @@ class Voice
     float oscillatorDetune_{0.0f};
     float period_{0.0f};
     float tune_{0.0f};
+    float pitchBend_{0.0f};
 
     Oscillator oscillator1_;
     Oscillator oscillator2_;

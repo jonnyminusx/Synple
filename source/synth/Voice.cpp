@@ -3,6 +3,23 @@
 namespace synth
 {
 
+namespace
+{
+
+float calculatePeriod(const int note, const float tune, const float detune)
+{
+    float period{tune * std::exp(-0.05776226505f * float(note))};
+
+    while (period < 6.0f || (period * detune) < 6.0f)
+    {
+        period += period;
+    }
+
+    return period;
+}
+
+} // namespace
+
 void Voice::reset()
 {
     note_ = 0;
@@ -10,15 +27,15 @@ void Voice::reset()
     oscillator1_.reset();
     oscillator2_.reset();
     envelope_.reset();
+    pitchBend_ = 1.0f;
 }
 
 void Voice::noteOn(const int note, const int velocity)
 {
-    const float frequency{440.0f * std::pow(2.0f, ((note - 69) + tune_) / 12.0f)};
     const float osciillator1Amplitude{0.5f * (static_cast<float>(velocity) / 127.0f)};
 
     note_ = note;
-    period_ = sampleRate_ / frequency;
+    period_ = calculatePeriod(note, tune_, oscillatorDetune_);
     oscillator1_.setAmplitude(osciillator1Amplitude);
     oscillator2_.setAmplitude(osciillator1Amplitude * oscillatorMix_);
 }
@@ -38,8 +55,9 @@ void Voice::release()
 
 float Voice::render(const float input)
 {
-    oscillator1_.setPeriod(period_);
-    oscillator2_.setPeriod(period_ * oscillatorDetune_);
+    const float period{period_ * pitchBend_};
+    oscillator1_.setPeriod(period);
+    oscillator2_.setPeriod(period * oscillatorDetune_);
 
     if (!envelope_.isActive())
     {
@@ -76,6 +94,11 @@ void Voice::setOscillatorDetune(const float semi, const float cent)
 void Voice::setTune(const float tune)
 {
     tune_ = tune;
+}
+
+void Voice::setPitchBend(const float pitchBend)
+{
+    pitchBend_ = pitchBend;
 }
 
 const Envelope& Voice::envelope() const

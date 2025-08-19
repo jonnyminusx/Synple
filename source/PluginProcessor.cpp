@@ -255,12 +255,16 @@ void JLX11AudioProcessor::valueTreePropertyChanged(juce::ValueTree&, const juce:
 
 void JLX11AudioProcessor::update()
 {
-    synth_.setOscillatorMix(oscMixParam_->get() / 100.0f);
-    synth_.setOscillatorDetune(oscTuneParam_->get(), oscFineParam_->get());
-    synth_.setTune((octaveParam_->get() * 12.0f) + (tuningParam_->get() / 100.f));
-
     const float sampleRate{static_cast<float>(getSampleRate())};
     const float inverseSampleRate{1.0f / sampleRate};
+
+    synth_.setOscillatorMix(oscMixParam_->get() / 100.0f);
+    synth_.setOscillatorDetune(oscTuneParam_->get(), oscFineParam_->get());
+
+    const float octave{octaveParam_->get()};
+    const float tuning{tuningParam_->get()};
+    const float tuneInSemi{-36.3763f - 12.0f * octave - tuning / 100.0f};
+    synth_.setTune(sampleRate * std::exp(0.05776226505f * tuneInSemi));
 
     synth_.setEnvelopeAttack(std::exp(-inverseSampleRate * std::exp(5.5f - 0.075f * envAttackParam_->get())));
     synth_.setEnvelopeDecay(std::exp(-inverseSampleRate * std::exp(5.5f - 0.075f * envDecayParam_->get())));
