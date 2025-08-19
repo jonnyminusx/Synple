@@ -1,10 +1,16 @@
 #include "Voice.h"
 
+#include "Output.h"
+#include <algorithm>
+#include <numbers>
+
 namespace synth
 {
 
 namespace
 {
+
+constexpr float piOver4{std::numbers::pi_v<float> / 4.0f};
 
 float calculatePeriod(const int note, const float tune, const float detune)
 {
@@ -28,6 +34,8 @@ void Voice::reset()
     oscillator2_.reset();
     envelope_.reset();
     pitchBend_ = 1.0f;
+    panLeft_ = 0.707f;
+    panRight_ = 0.707f;
 }
 
 void Voice::noteOn(const int note, const int velocity)
@@ -53,8 +61,17 @@ void Voice::release()
     envelope_.release();
 }
 
-float Voice::render(const float input)
+void Voice::updatePanning()
 {
+    const float panning{std::clamp((note_ - 60) / 24.0f, -1.0f, 1.0f)};
+    panLeft_ = std::sin(piOver4 * (1.0f - panning));
+    panRight_ = std::sin(piOver4 * (1.0f + panning));
+}
+
+Output Voice::render(const float input)
+{
+    Output output;
+
     const float period{period_ * pitchBend_};
     oscillator1_.setPeriod(period);
     oscillator2_.setPeriod(period * oscillatorDetune_);
@@ -62,7 +79,7 @@ float Voice::render(const float input)
     if (!envelope_.isActive())
     {
         envelope_.reset();
-        return 0.0f;
+        return output;
     }
 
     const float sample1{oscillator1_.nextSample()};
@@ -70,10 +87,13 @@ float Voice::render(const float input)
 
     saw_ = saw_ * 0.997f + sample1 - sample2;
 
-    const float output{saw_ + input};
-    const float envelopeValue{envelope_.nextValue()};
+    output.left = (saw_ + input) * envelope_.nextValue();
+    output.right = output.left;
 
-    return output * envelopeValue;
+    output.left *= panLeft_;
+    output.right *= panRight_;
+
+    return output;
 }
 
 void Voice::setSampleRate(const float sampleRate)

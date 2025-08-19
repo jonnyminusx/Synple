@@ -40,6 +40,7 @@ set(SourceFiles
         source/synth/NoiseGenerator.h
         source/synth/Oscillator.cpp
         source/synth/Oscillator.h
+        source/synth/Output.h
         source/synth/SineOscillator.cpp
         source/synth/SineOscillator.h
         source/synth/Synth.cpp

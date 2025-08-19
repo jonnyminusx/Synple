@@ -1,5 +1,6 @@
 #include "Synth.h"
 #include "../utils/protectYourEars.h"
+#include "Output.h"
 
 namespace synth
 {
@@ -24,12 +25,17 @@ void Synth::render(AudioBuffer& audioBuffer)
     for (int sampleIndex = 0; sampleIndex < audioBuffer.sampleCount(); ++sampleIndex)
     {
         const float noise{noiseGenerator_.nextValue() * noiseMix_};
-        const float output{voice_.render(noise)};
 
-        audioBuffer.sample(0, sampleIndex) = output;
+        const Output output{voice_.render(noise)};
+
         if (audioBuffer.channelCount() > 1)
         {
-            audioBuffer.sample(1, sampleIndex) = output;
+            audioBuffer.sample(0, sampleIndex) = output.left;
+            audioBuffer.sample(1, sampleIndex) = output.right;
+        }
+        else
+        {
+            audioBuffer.sample(0, sampleIndex) = (output.left + output.right) * 0.5f;
         }
     }
 

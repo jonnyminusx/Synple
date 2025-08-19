@@ -7,6 +7,8 @@
 namespace synth
 {
 
+struct Output;
+
 class Voice
 {
   public:
@@ -14,7 +16,8 @@ class Voice
     void noteOn(const int note, const int velocity);
     void noteOff(const int note);
     void release();
-    float render(const float input);
+    void updatePanning();
+    Output render(const float input);
 
     const Envelope& envelope() const;
     Envelope& envelope();
@@ -35,6 +38,8 @@ class Voice
     float period_{0.0f};
     float tune_{0.0f};
     float pitchBend_{0.0f};
+    float panLeft_{0.0f};
+    float panRight_{0.0f};
 
     Oscillator oscillator1_;
     Oscillator oscillator2_;
