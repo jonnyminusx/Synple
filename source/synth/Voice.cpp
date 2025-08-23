@@ -33,19 +33,19 @@ void Voice::reset()
     oscillator1_.reset();
     oscillator2_.reset();
     envelope_.reset();
-    pitchBend_ = 1.0f;
     panLeft_ = 0.707f;
     panRight_ = 0.707f;
 }
 
-void Voice::noteOn(const int note, const int velocity)
+void Voice::noteOn(const int note, const int velocity, const float oscillatorMix, const float tune, const float detune)
 {
     const float osciillator1Amplitude{0.5f * (static_cast<float>(velocity) / 127.0f)};
 
     note_ = note;
-    period_ = calculatePeriod(note, tune_, oscillatorDetune_);
+    oscillator1Period_ = calculatePeriod(note, tune, detune);
+    oscillator2Period_ = oscillator1Period_ * detune;
     oscillator1_.setAmplitude(osciillator1Amplitude);
-    oscillator2_.setAmplitude(osciillator1Amplitude * oscillatorMix_);
+    oscillator2_.setAmplitude(osciillator1Amplitude * oscillatorMix);
 }
 
 void Voice::noteOff(const int note)
@@ -68,13 +68,12 @@ void Voice::updatePanning()
     panRight_ = std::sin(piOver4 * (1.0f + panning));
 }
 
-Output Voice::render(const float input)
+Output Voice::render(const float input, const float pitchBend)
 {
     Output output;
 
-    const float period{period_ * pitchBend_};
-    oscillator1_.setPeriod(period);
-    oscillator2_.setPeriod(period * oscillatorDetune_);
+    oscillator1_.setPeriod(oscillator1Period_ * pitchBend);
+    oscillator2_.setPeriod(oscillator2Period_ * pitchBend);
 
     if (!envelope_.isActive())
     {
@@ -94,31 +93,6 @@ Output Voice::render(const float input)
     output.right *= panRight_;
 
     return output;
-}
-
-void Voice::setSampleRate(const float sampleRate)
-{
-    sampleRate_ = sampleRate;
-}
-
-void Voice::setOscillatorMix(const float oscillatorMix)
-{
-    oscillatorMix_ = oscillatorMix;
-}
-
-void Voice::setOscillatorDetune(const float semi, const float cent)
-{
-    oscillatorDetune_ = std::pow(1.059463094359f, -semi - 0.01f * cent);
-}
-
-void Voice::setTune(const float tune)
-{
-    tune_ = tune;
-}
-
-void Voice::setPitchBend(const float pitchBend)
-{
-    pitchBend_ = pitchBend;
 }
 
 const Envelope& Voice::envelope() const

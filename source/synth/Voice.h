@@ -13,31 +13,23 @@ class Voice
 {
   public:
     void reset();
-    void noteOn(const int note, const int velocity);
+    void noteOn(const int note, const int velocity, const float oscillatorMix, const float tune, const float detune);
     void noteOff(const int note);
     void release();
     void updatePanning();
-    Output render(const float input);
+    Output render(const float input, const float pitchBend);
 
     const Envelope& envelope() const;
     Envelope& envelope();
 
-    void setSampleRate(const float sampleRate);
-    void setOscillatorMix(const float oscillatorMix);
-    void setOscillatorDetune(const float semi, const float cent);
     void setTune(const float tune);
-    void setPitchBend(const float pitchBend);
 
   private:
     int note_{0};
 
-    float sampleRate_{0.0f};
     float saw_{0.0f};
-    float oscillatorMix_{0.0f};
-    float oscillatorDetune_{0.0f};
-    float period_{0.0f};
-    float tune_{0.0f};
-    float pitchBend_{0.0f};
+    float oscillator1Period_{0.0f};
+    float oscillator2Period_{0.0f};
     float panLeft_{0.0f};
     float panRight_{0.0f};
 

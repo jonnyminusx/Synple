@@ -259,7 +259,7 @@ void JLX11AudioProcessor::update()
     const float inverseSampleRate{1.0f / sampleRate};
 
     synth_.setOscillatorMix(oscMixParam_->get() / 100.0f);
-    synth_.setOscillatorDetune(oscTuneParam_->get(), oscFineParam_->get());
+    synth_.setDetune(oscTuneParam_->get(), oscFineParam_->get());
 
     const float octave{octaveParam_->get()};
     const float tuning{tuningParam_->get()};
@@ -281,6 +281,8 @@ void JLX11AudioProcessor::update()
 
     const float noiseMix{noiseParam_->get() / 100.0f};
     synth_.setNoiseMix(noiseMix * noiseMix * 0.06f);
+
+    synth_.setPolyphonic(polyModeParam_->getIndex() == 1);
 }
 
 void JLX11AudioProcessor::createPrograms()

@@ -5,9 +5,8 @@
 namespace synth
 {
 
-void Synth::allocateResources(const float sampleRate, [[maybe_unused]] const int samplesPerBlock)
+void Synth::allocateResources([[maybe_unused]] const float sampleRate, [[maybe_unused]] const int samplesPerBlock)
 {
-    voice_.setSampleRate(sampleRate);
 }
 
 void Synth::deallocateResources() const
@@ -16,8 +15,12 @@ void Synth::deallocateResources() const
 
 void Synth::reset()
 {
-    voice_.reset();
+    for (Voice& voice : voices_)
+    {
+        voice.reset();
+    }
     noiseGenerator_.reset();
+    pitchBend_ = 1.0f;
 }
 
 void Synth::render(AudioBuffer& audioBuffer)
@@ -26,7 +29,12 @@ void Synth::render(AudioBuffer& audioBuffer)
     {
         const float noise{noiseGenerator_.nextValue() * noiseMix_};
 
-        const Output output{voice_.render(noise)};
+        Output output;
+
+        for (Voice& voice : voices_)
+        {
+            output += voice.render(noise, pitchBend_);
+        }
 
         if (audioBuffer.channelCount() > 1)
         {
@@ -73,7 +81,7 @@ void Synth::midiMessage(const uint8_t data0, const uint8_t data1, const uint8_t 
     case 0xD0: // Channel Aftertouch
         break;
     case 0xE0: // Pitch Bend
-        voice_.setPitchBend(std::exp(-0.000014102f * data1 + (128 * data2) - 8192));
+        pitchBend_ = std::exp(-0.000014102f * data1 + (128 * data2) - 8192);
         break;
     default:
         break;
@@ -82,19 +90,34 @@ void Synth::midiMessage(const uint8_t data0, const uint8_t data1, const uint8_t 
 
 void Synth::noteOn(const int note, const int velocity)
 {
-    Envelope& envelope = voice_.envelope();
+    startVoice(0, note, velocity);
+}
+
+void Synth::startVoice(const size_t voiceIdx, const int note, const int velocity)
+{
+    if (voiceIdx >= voices_.size())
+    {
+        return;
+    }
+
+    Voice& voice = voices_[voiceIdx];
+
+    Envelope& envelope = voice.envelope();
     envelope.setAttackMultiplier(envelopeAttack_);
     envelope.setDecayMultiplier(envelopeDecay_);
     envelope.setSustainLevel(envelopeSustain_);
     envelope.setReleaseMultiplier(envelopeRelease_);
     envelope.attack();
 
-    voice_.noteOn(note, velocity);
+    voice.noteOn(note, velocity, oscillatorMix_, tune_, detune_);
 }
 
 void Synth::noteOff(const int note)
 {
-    voice_.noteOff(note);
+    for (Voice& voice : voices_)
+    {
+        voice.noteOff(note);
+    }
 }
 
 void Synth::setNoiseMix(const float noiseMix)
@@ -104,17 +127,22 @@ void Synth::setNoiseMix(const float noiseMix)
 
 void Synth::setOscillatorMix(const float oscillatorMix)
 {
-    voice_.setOscillatorMix(oscillatorMix);
+    oscillatorMix_ = oscillatorMix;
 }
 
-void Synth::setOscillatorDetune(const float semi, const float cent)
+void Synth::setDetune(const float semi, const float cent)
 {
-    voice_.setOscillatorDetune(semi, cent);
+    detune_ = std::pow(1.059463094359f, -semi - 0.01f * cent);
 }
 
 void Synth::setTune(const float tune)
 {
-    voice_.setTune(tune);
+    tune_ = tune;
+}
+
+void Synth::setPolyphonic(const bool polyphonic)
+{
+    numVoices_ = polyphonic ? maxNumVoices_ : 1;
 }
 
 void Synth::setEnvelopeDecay(const float decayTime)
