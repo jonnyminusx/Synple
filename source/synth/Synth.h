@@ -32,6 +32,9 @@ class Synth
 
   private:
     void startVoice(const size_t voiceIdx, const int note, const int velocity);
+    size_t selectVoiceIndexToUse() const;
+    bool isPolyphonic() const;
+
     void noteOn(const int note, const int velocity);
     void noteOff(const int note);
 

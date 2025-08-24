@@ -7,6 +7,8 @@ class Envelope
 {
   public:
     float nextValue();
+    float currentValue() const;
+
     void reset();
     void attack();
     void release();

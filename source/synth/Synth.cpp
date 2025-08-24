@@ -90,7 +90,7 @@ void Synth::midiMessage(const uint8_t data0, const uint8_t data1, const uint8_t 
 
 void Synth::noteOn(const int note, const int velocity)
 {
-    startVoice(0, note, velocity);
+    startVoice(selectVoiceIndexToUse(), note, velocity);
 }
 
 void Synth::startVoice(const size_t voiceIdx, const int note, const int velocity)
@@ -109,7 +109,40 @@ void Synth::startVoice(const size_t voiceIdx, const int note, const int velocity
     envelope.setReleaseMultiplier(envelopeRelease_);
     envelope.attack();
 
-    voice.noteOn(note, velocity, oscillatorMix_, tune_, detune_);
+    voice.noteOn(note, velocity, oscillatorMix_, tune_, detune_, voiceIdx);
+}
+
+size_t Synth::selectVoiceIndexToUse() const
+{
+    if (!isPolyphonic())
+    {
+        return 0;
+    }
+
+    size_t idx{0};
+    float minLevel{std::numeric_limits<float>::max()};
+
+    for (size_t i = 1, n = voices_.size(); i < n; ++i)
+    {
+        const Voice& voice{voices_[i]};
+
+        if (!voice.envelope().isInAttack())
+        {
+            const float currentLevel{voice.envelope().currentValue()};
+            if (currentLevel < minLevel)
+            {
+                minLevel = currentLevel;
+                idx = i;
+            }
+        }
+    }
+
+    return idx;
+}
+
+bool Synth::isPolyphonic() const
+{
+    return numVoices_ > 1;
 }
 
 void Synth::noteOff(const int note)

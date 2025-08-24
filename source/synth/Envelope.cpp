@@ -87,4 +87,9 @@ float Envelope::nextValue()
     return level_;
 }
 
+float Envelope::currentValue() const
+{
+    return level_;
+}
+
 } // namespace synth

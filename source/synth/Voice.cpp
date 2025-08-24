@@ -11,10 +11,11 @@ namespace
 {
 
 constexpr float piOver4{std::numbers::pi_v<float> / 4.0f};
+constexpr float analog{0.002f};
 
-float calculatePeriod(const int note, const float tune, const float detune)
+float calculatePeriod(const int note, const float tune, const float detune, const size_t voiceIdx)
 {
-    float period{tune * std::exp(-0.05776226505f * float(note))};
+    float period{tune * std::exp(-0.05776226505f * (static_cast<float>(note) + analog * static_cast<float>(voiceIdx)))};
 
     while (period < 6.0f || (period * detune) < 6.0f)
     {
@@ -37,12 +38,17 @@ void Voice::reset()
     panRight_ = 0.707f;
 }
 
-void Voice::noteOn(const int note, const int velocity, const float oscillatorMix, const float tune, const float detune)
+void Voice::noteOn(const int note,
+                   const int velocity,
+                   const float oscillatorMix,
+                   const float tune,
+                   const float detune,
+                   const size_t voiceIdx)
 {
     const float osciillator1Amplitude{0.5f * (static_cast<float>(velocity) / 127.0f)};
 
     note_ = note;
-    oscillator1Period_ = calculatePeriod(note, tune, detune);
+    oscillator1Period_ = calculatePeriod(note, tune, detune, voiceIdx);
     oscillator2Period_ = oscillator1Period_ * detune;
     oscillator1_.setAmplitude(osciillator1Amplitude);
     oscillator2_.setAmplitude(osciillator1Amplitude * oscillatorMix);
@@ -53,6 +59,7 @@ void Voice::noteOff(const int note)
     if (note_ == note)
     {
         envelope_.release();
+        note_ = 0;
     }
 }
 

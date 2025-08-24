@@ -13,7 +13,12 @@ class Voice
 {
   public:
     void reset();
-    void noteOn(const int note, const int velocity, const float oscillatorMix, const float tune, const float detune);
+    void noteOn(const int note,
+                const int velocity,
+                const float oscillatorMix,
+                const float tune,
+                const float detune,
+                const size_t voiceIdx);
     void noteOff(const int note);
     void release();
     void updatePanning();

@@ -1,0 +1,8 @@
+TODO
+
+* Control polyphony (is there any point?)
+* Unison mode
+* Reverb
+* Delay
+* After touch
+* Better stereo widening
