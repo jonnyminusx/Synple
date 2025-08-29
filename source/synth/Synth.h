@@ -18,6 +18,7 @@ class Synth
     void reset();
     void render(AudioBuffer& audioBuffer);
     void midiMessage(const uint8_t data0, const uint8_t data1, const uint8_t data2);
+    void controlChange(const uint8_t controller, const uint8_t value);
 
     void setNoiseMix(const float noiseMix);
     void setOscillatorMix(const float oscillatorMix);
@@ -54,6 +55,8 @@ class Synth
     float envelopeDecay_{0.0f};
     float envelopeSustain_{0.0f};
     float envelopeRelease_{0.0f};
+
+    bool sustainPedalPressed_{false};
 };
 
 } // namespace synth

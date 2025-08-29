@@ -12,6 +12,8 @@ struct Output;
 class Voice
 {
   public:
+    const static int sustain{-1};
+
     void reset();
     void noteOn(const int note,
                 const int velocity,
@@ -19,7 +21,7 @@ class Voice
                 const float tune,
                 const float detune,
                 const size_t voiceIdx);
-    void noteOff(const int note);
+    void noteOff(const int note, const bool sustainPedalPressed);
     void release();
     void updatePanning();
     Output render(const float input, const float pitchBend);

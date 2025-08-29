@@ -21,6 +21,7 @@ void Synth::reset()
     }
     noiseGenerator_.reset();
     pitchBend_ = 1.0f;
+    sustainPedalPressed_ = false;
 }
 
 void Synth::render(AudioBuffer& audioBuffer)
@@ -75,6 +76,7 @@ void Synth::midiMessage(const uint8_t data0, const uint8_t data1, const uint8_t 
         break;
     }
     case 0xB0: // Control Change
+        controlChange(data1 & 0x7F, data2 & 0x7F);
         break;
     case 0xC0: // Program Change
         break;
@@ -84,6 +86,34 @@ void Synth::midiMessage(const uint8_t data0, const uint8_t data1, const uint8_t 
         pitchBend_ = std::exp(-0.000014102f * data1 + (128 * data2) - 8192);
         break;
     default:
+        break;
+    }
+}
+
+void Synth::controlChange(const uint8_t controller, const uint8_t value)
+{
+    switch (controller)
+    {
+    case 0x40: // Sustain pedal
+        sustainPedalPressed_ = value >= 64;
+
+        if (!sustainPedalPressed_)
+        {
+            noteOff(Voice::sustain);
+        }
+
+        break;
+
+    default: // All notes off
+        if (controller >= 0x78)
+        {
+            for (Voice& voice : voices_)
+            {
+                voice.reset();
+            }
+            sustainPedalPressed_ = false;
+        }
+
         break;
     }
 }
@@ -149,7 +179,7 @@ void Synth::noteOff(const int note)
 {
     for (Voice& voice : voices_)
     {
-        voice.noteOff(note);
+        voice.noteOff(note, sustainPedalPressed_);
     }
 }
 

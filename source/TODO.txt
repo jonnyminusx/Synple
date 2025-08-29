@@ -1,8 +1,14 @@
 TODO
 
-* Control polyphony (is there any point?)
+* Test pitch bend
+* Test sustain pedal
 * Unison mode
 * Reverb
 * Delay
+* Chorus
 * After touch
 * Better stereo widening
+* Different wave types [square/saw/sine]
+* Different wave types per oscillator
+* PWM
+* Better oscillator implementation

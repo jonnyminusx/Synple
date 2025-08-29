@@ -54,12 +54,19 @@ void Voice::noteOn(const int note,
     oscillator2_.setAmplitude(osciillator1Amplitude * oscillatorMix);
 }
 
-void Voice::noteOff(const int note)
+void Voice::noteOff(const int note, const bool sustainPedalPressed)
 {
     if (note_ == note)
     {
-        envelope_.release();
-        note_ = 0;
+        if (sustainPedalPressed)
+        {
+            note_ = sustain;
+        }
+        else
+        {
+            envelope_.release();
+            note_ = 0;
+        }
     }
 }
 
