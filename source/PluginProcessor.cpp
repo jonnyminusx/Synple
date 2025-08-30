@@ -217,6 +217,7 @@ void JLX11AudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
 void JLX11AudioProcessor::reset()
 {
     synth_.reset();
+    synth_.setOutputLevelInstantly(juce::Decibels::decibelsToGain(outputLevelParam_->get()));
 }
 
 //==============================================================================
@@ -281,6 +282,9 @@ void JLX11AudioProcessor::update()
 
     const float noiseMix{noiseParam_->get() / 100.0f};
     synth_.setNoiseMix(noiseMix * noiseMix * 0.06f);
+
+    synth_.setOutputLevel(juce::Decibels::decibelsToGain(outputLevelParam_->get()));
+    synth_.updateVolumeTrim();
 
     synth_.setPolyphonic(polyModeParam_->getIndex() == 1);
 }

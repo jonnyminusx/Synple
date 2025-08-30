@@ -4,6 +4,7 @@
 #include "Voice.h"
 
 #include <cstdint>
+#include <juce_audio_basics/juce_audio_basics.h>
 
 namespace synth
 {
@@ -19,12 +20,15 @@ class Synth
     void render(AudioBuffer& audioBuffer);
     void midiMessage(const uint8_t data0, const uint8_t data1, const uint8_t data2);
     void controlChange(const uint8_t controller, const uint8_t value);
+    void updateVolumeTrim();
 
     void setNoiseMix(const float noiseMix);
     void setOscillatorMix(const float oscillatorMix);
     void setDetune(const float semi, const float cent);
     void setTune(const float tune);
     void setPolyphonic(const bool polyphonic);
+    void setOutputLevel(const float outputLevel);
+    void setOutputLevelInstantly(const float outputLevel);
 
     void setEnvelopeDecay(const float decayTime);
     void setEnvelopeAttack(const float attackTime);
@@ -51,11 +55,15 @@ class Synth
     NoiseGenerator noiseGenerator_;
     float noiseMix_{0.0f};
 
+    float volumeTrim_{0.0f};
+    juce::LinearSmoothedValue<float> outputLevelSmoother_{0.0f};
+
     float envelopeAttack_{0.0f};
     float envelopeDecay_{0.0f};
     float envelopeSustain_{0.0f};
     float envelopeRelease_{0.0f};
 
+    float sampleRate_{0.0f};
     bool sustainPedalPressed_{false};
 };
 

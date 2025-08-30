@@ -12,6 +12,13 @@ struct Output
         return *this;
     }
 
+    Output& operator*=(const float scalar)
+    {
+        left *= scalar;
+        right *= scalar;
+        return *this;
+    }
+
     float left{0.0f};
     float right{0.0f};
 };

@@ -40,12 +40,13 @@ void Voice::reset()
 
 void Voice::noteOn(const int note,
                    const int velocity,
+                   const float volumeTrim,
                    const float oscillatorMix,
                    const float tune,
                    const float detune,
                    const size_t voiceIdx)
 {
-    const float osciillator1Amplitude{0.5f * (static_cast<float>(velocity) / 127.0f)};
+    const float osciillator1Amplitude{volumeTrim * static_cast<float>(velocity)};
 
     note_ = note;
     oscillator1Period_ = calculatePeriod(note, tune, detune, voiceIdx);

@@ -17,6 +17,7 @@ class Voice
     void reset();
     void noteOn(const int note,
                 const int velocity,
+                const float volumeTrim,
                 const float oscillatorMix,
                 const float tune,
                 const float detune,

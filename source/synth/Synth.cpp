@@ -5,8 +5,9 @@
 namespace synth
 {
 
-void Synth::allocateResources([[maybe_unused]] const float sampleRate, [[maybe_unused]] const int samplesPerBlock)
+void Synth::allocateResources(const float sampleRate, [[maybe_unused]] const int samplesPerBlock)
 {
+    sampleRate_ = sampleRate;
 }
 
 void Synth::deallocateResources() const
@@ -22,6 +23,7 @@ void Synth::reset()
     noiseGenerator_.reset();
     pitchBend_ = 1.0f;
     sustainPedalPressed_ = false;
+    outputLevelSmoother_.reset(sampleRate_, 0.05);
 }
 
 void Synth::render(AudioBuffer& audioBuffer)
@@ -36,6 +38,8 @@ void Synth::render(AudioBuffer& audioBuffer)
         {
             output += voice.render(noise, pitchBend_);
         }
+
+        output *= outputLevelSmoother_.getNextValue();
 
         if (audioBuffer.channelCount() > 1)
         {
@@ -118,6 +122,11 @@ void Synth::controlChange(const uint8_t controller, const uint8_t value)
     }
 }
 
+void Synth::updateVolumeTrim()
+{
+    volumeTrim_ = 0.0008f * (3.2f - oscillatorMix_ - 25.0f * noiseMix_) * 1.5f;
+}
+
 void Synth::noteOn(const int note, const int velocity)
 {
     startVoice(selectVoiceIndexToUse(), note, velocity);
@@ -139,7 +148,7 @@ void Synth::startVoice(const size_t voiceIdx, const int note, const int velocity
     envelope.setReleaseMultiplier(envelopeRelease_);
     envelope.attack();
 
-    voice.noteOn(note, velocity, oscillatorMix_, tune_, detune_, voiceIdx);
+    voice.noteOn(note, velocity, volumeTrim_, oscillatorMix_, tune_, detune_, voiceIdx);
 }
 
 size_t Synth::selectVoiceIndexToUse() const
@@ -206,6 +215,16 @@ void Synth::setTune(const float tune)
 void Synth::setPolyphonic(const bool polyphonic)
 {
     numVoices_ = polyphonic ? maxNumVoices_ : 1;
+}
+
+void Synth::setOutputLevel(const float outputLevel)
+{
+    outputLevelSmoother_.setTargetValue(outputLevel);
+}
+
+void Synth::setOutputLevelInstantly(const float outputLevel)
+{
+    outputLevelSmoother_.setCurrentAndTargetValue(outputLevel);
 }
 
 void Synth::setEnvelopeDecay(const float decayTime)
