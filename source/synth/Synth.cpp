@@ -129,7 +129,22 @@ void Synth::updateVolumeTrim()
 
 void Synth::noteOn(const int note, const int velocity)
 {
-    startVoice(selectVoiceIndexToUse(), note, velocity);
+    const size_t voiceIdx{selectVoiceIndexToUse()};
+    if (isPolyphonic())
+    {
+        startVoice(voiceIdx, note, velocity);
+    }
+    else
+    {
+        if (voices_[voiceIdx].note() > 0)
+        {
+            restartMonoVoice(note);
+        }
+        else
+        {
+            startVoice(voiceIdx, note, velocity);
+        }
+    }
 }
 
 void Synth::startVoice(const size_t voiceIdx, const int note, const int velocity)
@@ -149,6 +164,11 @@ void Synth::startVoice(const size_t voiceIdx, const int note, const int velocity
     envelope.attack();
 
     voice.noteOn(note, velocity, volumeTrim_, oscillatorMix_, tune_, detune_, voiceIdx);
+}
+
+void Synth::restartMonoVoice(const int note)
+{
+    voices_[0].noteOnRestart(note, tune_, detune_, 0);
 }
 
 size_t Synth::selectVoiceIndexToUse() const

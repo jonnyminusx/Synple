@@ -15,6 +15,8 @@ class Envelope
     bool isActive() const;
     bool isInAttack() const;
 
+    void nudgeLevelUp();
+
     void setLevel(const float level);
     void setTarget(const float target);
     void setMultiplier(const float multiplier);

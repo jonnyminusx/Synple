@@ -22,11 +22,13 @@ class Voice
                 const float tune,
                 const float detune,
                 const size_t voiceIdx);
+    void noteOnRestart(const int note, const float tune, const float detune, const size_t voiceIdx);
     void noteOff(const int note, const bool sustainPedalPressed);
     void release();
     void updatePanning();
     Output render(const float input, const float pitchBend);
 
+    int note() const;
     const Envelope& envelope() const;
     Envelope& envelope();
 

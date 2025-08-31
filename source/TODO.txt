@@ -2,6 +2,7 @@ TODO
 
 * Test pitch bend
 * Test sustain pedal
+* Avoid pop when playing legato style (interpolate/crossfade?)
 * Unison mode
 * Reverb
 * Delay

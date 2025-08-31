@@ -53,6 +53,17 @@ void Voice::noteOn(const int note,
     oscillator2Period_ = oscillator1Period_ * detune;
     oscillator1_.setAmplitude(osciillator1Amplitude);
     oscillator2_.setAmplitude(osciillator1Amplitude * oscillatorMix);
+
+    updatePanning();
+}
+
+void Voice::noteOnRestart(const int note, const float tune, const float detune, const size_t voiceIdx)
+{
+    note_ = note;
+    oscillator1Period_ = calculatePeriod(note, tune, detune, voiceIdx);
+    oscillator2Period_ = oscillator1Period_ * detune;
+    envelope_.nudgeLevelUp();
+    updatePanning();
 }
 
 void Voice::noteOff(const int note, const bool sustainPedalPressed)
@@ -108,6 +119,11 @@ Output Voice::render(const float input, const float pitchBend)
     output.right *= panRight_;
 
     return output;
+}
+
+int Voice::note() const
+{
+    return note_;
 }
 
 const Envelope& Voice::envelope() const

@@ -39,6 +39,11 @@ bool Envelope::isInAttack() const
     return target_ >= 2.0f;
 }
 
+void Envelope::nudgeLevelUp()
+{
+    level_ += silence + silence;
+}
+
 void Envelope::setLevel(const float level)
 {
     level_ = level;
