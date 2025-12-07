@@ -126,6 +126,11 @@ int Voice::note() const
     return note_;
 }
 
+int& Voice::note()
+{
+    return note_;
+}
+
 const Envelope& Voice::envelope() const
 {
     return envelope_;

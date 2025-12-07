@@ -127,6 +127,32 @@ void Synth::updateVolumeTrim()
     volumeTrim_ = 0.0008f * (3.2f - oscillatorMix_ - 25.0f * noiseMix_) * 1.5f;
 }
 
+void Synth::shiftQueuedNotes()
+{
+    for (size_t voiceIdx = maxNumVoices_ - 1; voiceIdx > 0; --voiceIdx)
+    {
+        voices_[voiceIdx].note() = voices_[voiceIdx - 1].note();
+        voices_[voiceIdx].release();
+    }
+}
+
+int Synth::nextQueuedNote()
+{
+    int note{0};
+    for (size_t voiceIdx = 1; voiceIdx < maxNumVoices_; ++voiceIdx)
+    {
+        const int voiceNote{voices_[voiceIdx].note()};
+        if (voiceNote > 0)
+        {
+            voices_[voiceIdx].note() = 0;
+            note = voiceNote;
+            break;
+        }
+    }
+
+    return note;
+}
+
 void Synth::noteOn(const int note, const int velocity)
 {
     const size_t voiceIdx{selectVoiceIndexToUse()};
@@ -138,7 +164,8 @@ void Synth::noteOn(const int note, const int velocity)
     {
         if (voices_[voiceIdx].note() > 0)
         {
-            restartMonoVoice(note);
+            shiftQueuedNotes();
+            restartMonoVoice(note, velocity);
         }
         else
         {
@@ -166,7 +193,7 @@ void Synth::startVoice(const size_t voiceIdx, const int note, const int velocity
     voice.noteOn(note, velocity, volumeTrim_, oscillatorMix_, tune_, detune_, voiceIdx);
 }
 
-void Synth::restartMonoVoice(const int note)
+void Synth::restartMonoVoice(const int note, [[maybe_unused]] const int velocity)
 {
     voices_[0].noteOnRestart(note, tune_, detune_, 0);
 }
@@ -204,8 +231,30 @@ bool Synth::isPolyphonic() const
     return numVoices_ > 1;
 }
 
+void Synth::processLastNotePriority(const int note)
+{
+    if (isPolyphonic())
+    {
+        return;
+    }
+
+    if (voices_[0].note() != note)
+    {
+        return;
+    }
+
+    int queuedNote{nextQueuedNote()};
+
+    if (queuedNote > 0)
+    {
+        restartMonoVoice(queuedNote, -1);
+    }
+}
+
 void Synth::noteOff(const int note)
 {
+    processLastNotePriority(note);
+
     for (Voice& voice : voices_)
     {
         voice.noteOff(note, sustainPedalPressed_);

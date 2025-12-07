@@ -29,6 +29,7 @@ class Voice
     Output render(const float input, const float pitchBend);
 
     int note() const;
+    int& note();
     const Envelope& envelope() const;
     Envelope& envelope();
 

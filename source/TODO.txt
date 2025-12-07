@@ -13,3 +13,4 @@ TODO
 * Different wave types per oscillator
 * PWM
 * Better oscillator implementation
+* Voice management (and other) unit tests
