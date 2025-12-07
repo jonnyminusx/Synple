@@ -29,6 +29,7 @@ class Synth
     void setPolyphonic(const bool polyphonic);
     void setOutputLevel(const float outputLevel);
     void setOutputLevelInstantly(const float outputLevel);
+    void setFilterVelocity(const float filterVelocity);
 
     void setEnvelopeDecay(const float decayTime);
     void setEnvelopeAttack(const float attackTime);
@@ -44,7 +45,7 @@ class Synth
     int nextQueuedNote();
     void processLastNotePriority(const int note);
 
-    void noteOn(const int note, const int velocity);
+    void noteOn(const int note, int velocity);
     void noteOff(const int note);
 
     static constexpr int maxNumVoices_{8};
@@ -61,6 +62,8 @@ class Synth
 
     float volumeTrim_{0.0f};
     juce::LinearSmoothedValue<float> outputLevelSmoother_{0.0f};
+    float velocitySensitivity_{0.0f};
+    bool ignoreVelocity_{false};
 
     float envelopeAttack_{0.0f};
     float envelopeDecay_{0.0f};

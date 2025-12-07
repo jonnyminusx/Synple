@@ -129,11 +129,31 @@ void JLX11AudioProcessor::setCurrentProgram(int index)
     currentProgram_ = index;
 
     juce::RangedAudioParameter* params[NUM_PARAMS] = {
-        oscMixParam_,         oscTuneParam_,      oscFineParam_,     glideModeParam_,     glideRateParam_,
-        glideBendParam_,      filterFreqParam_,   filterResoParam_,  filterEnvParam_,     filterLFOParam_,
-        filterVelocityParam_, filterAttackParam_, filterDecayParam_, filterSustainParam_, filterReleaseParam_,
-        envAttackParam_,      envDecayParam_,     envSustainParam_,  envReleaseParam_,    lfoRateParam_,
-        vibratoParam_,        noiseParam_,        octaveParam_,      tuningParam_,        outputLevelParam_,
+        oscMixParam_,
+        oscTuneParam_,
+        oscFineParam_,
+        glideModeParam_,
+        glideRateParam_,
+        glideBendParam_,
+        filterFreqParam_,
+        filterResoParam_,
+        filterEnvParam_,
+        filterLFOParam_,
+        filterVelocityParam_,
+        filterAttackParam_,
+        filterDecayParam_,
+        filterSustainParam_,
+        filterReleaseParam_,
+        envAttackParam_,
+        envDecayParam_,
+        envSustainParam_,
+        envReleaseParam_,
+        lfoRateParam_,
+        vibratoParam_,
+        noiseParam_,
+        octaveParam_,
+        tuningParam_,
+        outputLevelParam_,
         polyModeParam_,
     };
 
@@ -285,6 +305,7 @@ void JLX11AudioProcessor::update()
 
     synth_.setOutputLevel(juce::Decibels::decibelsToGain(outputLevelParam_->get()));
     synth_.updateVolumeTrim();
+    synth_.setFilterVelocity(filterVelocityParam_->get());
 
     synth_.setPolyphonic(polyModeParam_->getIndex() == 1);
 }

@@ -153,8 +153,13 @@ int Synth::nextQueuedNote()
     return note;
 }
 
-void Synth::noteOn(const int note, const int velocity)
+void Synth::noteOn(const int note, int velocity)
 {
+    if (ignoreVelocity_)
+    {
+        velocity = 80;
+    }
+
     const size_t voiceIdx{selectVoiceIndexToUse()};
     if (isPolyphonic())
     {
@@ -289,6 +294,20 @@ void Synth::setPolyphonic(const bool polyphonic)
 void Synth::setOutputLevel(const float outputLevel)
 {
     outputLevelSmoother_.setTargetValue(outputLevel);
+}
+
+void Synth::setFilterVelocity(const float filterVelocity)
+{
+    if (filterVelocity < -90.0f)
+    {
+        ignoreVelocity_ = true;
+        velocitySensitivity_ = 0.0f;
+    }
+    else
+    {
+        ignoreVelocity_ = false;
+        velocitySensitivity_ = filterVelocity * 0.0005f;
+    }
 }
 
 void Synth::setOutputLevelInstantly(const float outputLevel)

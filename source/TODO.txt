@@ -14,3 +14,4 @@ TODO
 * PWM
 * Better oscillator implementation
 * Voice management (and other) unit tests
+* Velocity sensitivity

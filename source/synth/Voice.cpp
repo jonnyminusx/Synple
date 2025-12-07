@@ -46,7 +46,8 @@ void Voice::noteOn(const int note,
                    const float detune,
                    const size_t voiceIdx)
 {
-    const float osciillator1Amplitude{volumeTrim * static_cast<float>(velocity)};
+    const float adjustedVelocity{(0.004f * static_cast<float>((velocity + 64) * (velocity + 64))) - 8.0f};
+    const float osciillator1Amplitude{volumeTrim * adjustedVelocity};
 
     note_ = note;
     oscillator1Period_ = calculatePeriod(note, tune, detune, voiceIdx);
