@@ -47,6 +47,7 @@ set(SourceFiles
         source/synth/Synth.h
         source/synth/Voice.cpp
         source/synth/Voice.h
+        source/utils/constants.h
         source/utils/protectYourEars.cpp
         source/utils/protectYourEars.h
 )

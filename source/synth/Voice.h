@@ -26,14 +26,13 @@ class Voice
     void noteOff(const int note, const bool sustainPedalPressed);
     void release();
     void updatePanning();
+    void setModulation(const float modulation);
     Output render(const float input, const float pitchBend);
 
     int note() const;
     int& note();
     const Envelope& envelope() const;
     Envelope& envelope();
-
-    void setTune(const float tune);
 
   private:
     int note_{0};

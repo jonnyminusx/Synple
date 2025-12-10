@@ -95,6 +95,15 @@ void Voice::updatePanning()
     panRight_ = std::sin(piOver4 * (1.0f + panning));
 }
 
+void Voice::setModulation(const float modulation)
+{
+    if (envelope_.isActive())
+    {
+        oscillator1_.setModulation(modulation);
+        oscillator2_.setModulation(modulation);
+    }
+}
+
 Output Voice::render(const float input, const float pitchBend)
 {
     Output output;

@@ -1,18 +1,10 @@
 #include "Oscillator.h"
 
+#include "../utils/constants.h"
 #include <cmath>
-#include <numbers>
 
 namespace synth
 {
-
-namespace
-{
-
-constexpr float pi{std::numbers::pi_v<float>};
-constexpr float quarterPi{pi / 4.0f};
-
-} // namespace
 
 void Oscillator::reset()
 {
@@ -31,18 +23,23 @@ void Oscillator::setPeriod(const float period)
     period_ = period;
 }
 
+void Oscillator::setModulation(const float modulation)
+{
+    modulation_ = modulation;
+}
+
 float Oscillator::nextSample()
 {
     float output{0.0f};
 
     phase_ += increment_;
 
-    if (phase_ <= quarterPi)
+    if (phase_ <= constants::quarterPi)
     {
-        const float halfPeriod{period_ / 2.0f};
+        const float halfPeriod{(period_ / 2.0f) * modulation_};
         phaseMax_ = std::floor(0.5f + halfPeriod) - 0.5f;
         dc_ = 0.5f * amplitude_ / phaseMax_;
-        phaseMax_ *= pi;
+        phaseMax_ *= constants::pi;
 
         increment_ = phaseMax_ / halfPeriod;
         phase_ = -phase_;

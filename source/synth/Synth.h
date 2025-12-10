@@ -30,6 +30,8 @@ class Synth
     void setOutputLevel(const float outputLevel);
     void setOutputLevelInstantly(const float outputLevel);
     void setFilterVelocity(const float filterVelocity);
+    void setLfoIncrement(const float lfoRateParam, const float inverseSampleRate);
+    void setVibratoAmount(const float vibratoParam);
 
     void setEnvelopeDecay(const float decayTime);
     void setEnvelopeAttack(const float attackTime);
@@ -44,6 +46,7 @@ class Synth
     void shiftQueuedNotes();
     int nextQueuedNote();
     void processLastNotePriority(const int note);
+    void updateLfo();
 
     void noteOn(const int note, int velocity);
     void noteOff(const int note);
@@ -72,6 +75,12 @@ class Synth
 
     float sampleRate_{0.0f};
     bool sustainPedalPressed_{false};
+
+    static constexpr int lfoMaxSamplesPerUpdate_{32};
+    float lfoIncrement_{0.0f};
+    float lfo_{0.0f};
+    int lfoStep_{0};
+    float vibratoAmount_{0.0f};
 };
 
 } // namespace synth

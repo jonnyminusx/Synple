@@ -15,3 +15,4 @@ TODO
 * Better oscillator implementation
 * Voice management (and other) unit tests
 * Velocity sensitivity
+* Alternative LFO wave shapes

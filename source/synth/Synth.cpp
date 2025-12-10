@@ -1,4 +1,5 @@
 #include "Synth.h"
+#include "../utils/constants.h"
 #include "../utils/protectYourEars.h"
 #include "Output.h"
 
@@ -24,12 +25,16 @@ void Synth::reset()
     pitchBend_ = 1.0f;
     sustainPedalPressed_ = false;
     outputLevelSmoother_.reset(sampleRate_, 0.05);
+    lfo_ = 0.0f;
+    lfoStep_ = 0;
 }
 
 void Synth::render(AudioBuffer& audioBuffer)
 {
     for (int sampleIndex = 0; sampleIndex < audioBuffer.sampleCount(); ++sampleIndex)
     {
+        updateLfo();
+
         const float noise{noiseGenerator_.nextValue() * noiseMix_};
 
         Output output;
@@ -125,6 +130,28 @@ void Synth::controlChange(const uint8_t controller, const uint8_t value)
 void Synth::updateVolumeTrim()
 {
     volumeTrim_ = 0.0008f * (3.2f - oscillatorMix_ - 25.0f * noiseMix_) * 1.5f;
+}
+
+void Synth::updateLfo()
+{
+    if (--lfoStep_ < 0)
+    {
+        lfoStep_ = lfoMaxSamplesPerUpdate_;
+
+        lfo_ += lfoIncrement_;
+        if (lfo_ > constants::pi)
+        {
+            lfo_ -= constants::tau;
+        }
+
+        const float sineValue = std::sinf(lfo_);
+        const float vibratoModulation = 1.0f + vibratoAmount_ * sineValue;
+
+        for (Voice& voice : voices_)
+        {
+            voice.setModulation(vibratoModulation);
+        }
+    }
 }
 
 void Synth::shiftQueuedNotes()
@@ -308,6 +335,19 @@ void Synth::setFilterVelocity(const float filterVelocity)
         ignoreVelocity_ = false;
         velocitySensitivity_ = filterVelocity * 0.0005f;
     }
+}
+
+void Synth::setLfoIncrement(const float lfoRateParam, const float inverseSampleRate)
+{
+    const float inverseUpdateRate = inverseSampleRate * lfoMaxSamplesPerUpdate_;
+    const float lfoRate = std::exp(7.0f * lfoRateParam - 4.0f);
+    lfoIncrement_ = lfoRate * inverseUpdateRate * constants::tau;
+}
+
+void Synth::setVibratoAmount(const float vibratoParam)
+{
+    const float vibrato = vibratoParam / 200.0f;
+    vibratoAmount_ = 0.2f * vibrato * vibrato;
 }
 
 void Synth::setOutputLevelInstantly(const float outputLevel)
