@@ -28,6 +28,30 @@ void Oscillator::setModulation(const float modulation)
     modulation_ = modulation;
 }
 
+void Oscillator::squareWave(const Oscillator& other, const float newPeriod)
+{
+    reset();
+
+    if (other.increment_ > 0.0f)
+    {
+        phase_ = other.phaseMax_ + other.phaseMax_ - other.phase_;
+        increment_ = -other.increment_;
+    }
+    else if (other.increment_ < 0.0f)
+    {
+        phase_ = other.phase_;
+        increment_ = other.increment_;
+    }
+    else
+    {
+        phase_ = -constants::pi;
+        increment_ = constants::pi;
+    }
+
+    phase_ += constants::pi * newPeriod / 2.0f;
+    phaseMax_ = phase_;
+}
+
 float Oscillator::nextSample()
 {
     float output{0.0f};

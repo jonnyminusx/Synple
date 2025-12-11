@@ -44,7 +44,8 @@ void Voice::noteOn(const int note,
                    const float oscillatorMix,
                    const float tune,
                    const float detune,
-                   const size_t voiceIdx)
+                   const size_t voiceIdx,
+                   const bool pwm)
 {
     const float adjustedVelocity{(0.004f * static_cast<float>((velocity + 64) * (velocity + 64))) - 8.0f};
     const float osciillator1Amplitude{volumeTrim * adjustedVelocity};
@@ -54,6 +55,11 @@ void Voice::noteOn(const int note,
     oscillator2Period_ = oscillator1Period_ * detune;
     oscillator1_.setAmplitude(osciillator1Amplitude);
     oscillator2_.setAmplitude(osciillator1Amplitude * oscillatorMix);
+
+    if (pwm)
+    {
+        oscillator2_.squareWave(oscillator1_, oscillator1Period_);
+    }
 
     updatePanning();
 }
@@ -95,12 +101,12 @@ void Voice::updatePanning()
     panRight_ = std::sin(piOver4 * (1.0f + panning));
 }
 
-void Voice::setModulation(const float modulation)
+void Voice::setModulation(const float modulationOsc1, const float modulationOsc2)
 {
     if (envelope_.isActive())
     {
-        oscillator1_.setModulation(modulation);
-        oscillator2_.setModulation(modulation);
+        oscillator1_.setModulation(modulationOsc1);
+        oscillator2_.setModulation(modulationOsc2);
     }
 }
 

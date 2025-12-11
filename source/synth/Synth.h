@@ -43,6 +43,7 @@ class Synth
     void restartMonoVoice(const int note, const int velocity);
     size_t selectVoiceIndexToUse() const;
     bool isPolyphonic() const;
+    bool isInPwmMode() const;
     void shiftQueuedNotes();
     int nextQueuedNote();
     void processLastNotePriority(const int note);
@@ -81,6 +82,7 @@ class Synth
     float lfo_{0.0f};
     int lfoStep_{0};
     float vibratoAmount_{0.0f};
+    float pwmDepth_{0.0f};
 };
 
 } // namespace synth

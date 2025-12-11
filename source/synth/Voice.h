@@ -21,12 +21,13 @@ class Voice
                 const float oscillatorMix,
                 const float tune,
                 const float detune,
-                const size_t voiceIdx);
+                const size_t voiceIdx,
+                const bool pwm);
     void noteOnRestart(const int note, const float tune, const float detune, const size_t voiceIdx);
     void noteOff(const int note, const bool sustainPedalPressed);
     void release();
     void updatePanning();
-    void setModulation(const float modulation);
+    void setModulation(const float modulationOsc1, const float modulationOsc2);
     Output render(const float input, const float pitchBend);
 
     int note() const;

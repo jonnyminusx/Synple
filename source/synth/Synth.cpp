@@ -146,10 +146,11 @@ void Synth::updateLfo()
 
         const float sineValue = std::sinf(lfo_);
         const float vibratoModulation = 1.0f + vibratoAmount_ * sineValue;
+        const float pwm = 1.0f + sineValue * pwmDepth_;
 
         for (Voice& voice : voices_)
         {
-            voice.setModulation(vibratoModulation);
+            voice.setModulation(vibratoModulation, pwm);
         }
     }
 }
@@ -222,7 +223,7 @@ void Synth::startVoice(const size_t voiceIdx, const int note, const int velocity
     envelope.setReleaseMultiplier(envelopeRelease_);
     envelope.attack();
 
-    voice.noteOn(note, velocity, volumeTrim_, oscillatorMix_, tune_, detune_, voiceIdx);
+    voice.noteOn(note, velocity, volumeTrim_, oscillatorMix_, tune_, detune_, voiceIdx, isInPwmMode());
 }
 
 void Synth::restartMonoVoice(const int note, [[maybe_unused]] const int velocity)
@@ -261,6 +262,11 @@ size_t Synth::selectVoiceIndexToUse() const
 bool Synth::isPolyphonic() const
 {
     return numVoices_ > 1;
+}
+
+bool Synth::isInPwmMode() const
+{
+    return vibratoAmount_ == 0.0f && pwmDepth_ > 0.0f;
 }
 
 void Synth::processLastNotePriority(const int note)
@@ -348,6 +354,11 @@ void Synth::setVibratoAmount(const float vibratoParam)
 {
     const float vibrato = vibratoParam / 200.0f;
     vibratoAmount_ = 0.2f * vibrato * vibrato;
+    pwmDepth_ = vibratoAmount_;
+    if (vibrato < 0.0f)
+    {
+        vibratoAmount_ = 0.0f;
+    }
 }
 
 void Synth::setOutputLevelInstantly(const float outputLevel)

@@ -11,6 +11,7 @@ class Oscillator
     void setPeriod(const float period);
     void setModulation(const float modulation);
 
+    void squareWave(const Oscillator& other, const float newPeriod);
     float nextSample();
 
   private:
