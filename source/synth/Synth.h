@@ -60,6 +60,7 @@ class Synth
     float tune_{0.0f};
     float detune_{0.0f};
     float pitchBend_{0.0f};
+    float modWheel_{0.0f};
 
     NoiseGenerator noiseGenerator_;
     float noiseMix_{0.0f};

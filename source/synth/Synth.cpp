@@ -21,8 +21,10 @@ void Synth::reset()
     {
         voice.reset();
     }
+
     noiseGenerator_.reset();
     pitchBend_ = 1.0f;
+    modWheel_ = 0.0f;
     sustainPedalPressed_ = false;
     outputLevelSmoother_.reset(sampleRate_, 0.05);
     lfo_ = 0.0f;
@@ -94,6 +96,9 @@ void Synth::midiMessage(const uint8_t data0, const uint8_t data1, const uint8_t 
     case 0xE0: // Pitch Bend
         pitchBend_ = std::exp(-0.000014102f * data1 + (128 * data2) - 8192);
         break;
+    case 0x01: // Modulation Wheel
+        modWheel_ = 0.000005f * float(data2 * data2);
+        break;
     default:
         break;
     }
@@ -145,8 +150,8 @@ void Synth::updateLfo()
         }
 
         const float sineValue = std::sinf(lfo_);
-        const float vibratoModulation = 1.0f + vibratoAmount_ * sineValue;
-        const float pwm = 1.0f + sineValue * pwmDepth_;
+        const float vibratoModulation = 1.0f + sineValue * (modWheel_ + vibratoAmount_);
+        const float pwm = 1.0f + sineValue * (modWheel_ + pwmDepth_);
 
         for (Voice& voice : voices_)
         {
