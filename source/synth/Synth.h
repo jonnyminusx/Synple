@@ -1,5 +1,6 @@
 #pragma once
 
+#include "GlideMode.h"
 #include "NoiseGenerator.h"
 #include "Voice.h"
 
@@ -32,6 +33,7 @@ class Synth
     void setFilterVelocity(const float filterVelocity);
     void setLfoIncrement(const float lfoRateParam, const float inverseSampleRate);
     void setVibratoAmount(const float vibratoParam);
+    void setGlide(const int glideMode, const float glideRate, const float glideBend, const float inverseSampleRate);
 
     void setEnvelopeDecay(const float decayTime);
     void setEnvelopeAttack(const float attackTime);
@@ -44,6 +46,7 @@ class Synth
     size_t selectVoiceIndexToUse() const;
     bool isPolyphonic() const;
     bool isInPwmMode() const;
+    bool isPlayingLegatoStyle() const;
     void shiftQueuedNotes();
     int nextQueuedNote();
     void processLastNotePriority(const int note);
@@ -55,6 +58,7 @@ class Synth
     static constexpr int maxNumVoices_{8};
     int numVoices_{1};
     std::array<Voice, maxNumVoices_> voices_;
+    int lastNote_{0};
 
     float oscillatorMix_{0.0f};
     float tune_{0.0f};
@@ -84,6 +88,10 @@ class Synth
     int lfoStep_{0};
     float vibratoAmount_{0.0f};
     float pwmDepth_{0.0f};
+
+    GlideMode glideMode_{GlideMode::Off};
+    float glideRate_{0.0f};
+    float glideBend_{0.0f};
 };
 
 } // namespace synth

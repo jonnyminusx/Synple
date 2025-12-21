@@ -1,6 +1,8 @@
 #include "Voice.h"
 
+#include "GlideMode.h"
 #include "Output.h"
+
 #include <algorithm>
 #include <numbers>
 
@@ -25,6 +27,21 @@ float calculatePeriod(const int note, const float tune, const float detune, cons
     return period;
 }
 
+int calculateNoteDistance(const int note, const int lastNote, const GlideMode glideMode, const bool isLegato)
+{
+    int noteDistance{0};
+
+    if (lastNote)
+    {
+        if (glideMode == GlideMode::Always || (glideMode == GlideMode::Legato && isLegato))
+        {
+            noteDistance = note - lastNote;
+        }
+    }
+
+    return noteDistance;
+}
+
 } // namespace
 
 void Voice::reset()
@@ -39,36 +56,56 @@ void Voice::reset()
 }
 
 void Voice::noteOn(const int note,
+                   const int lastNote,
                    const int velocity,
                    const float volumeTrim,
                    const float oscillatorMix,
                    const float tune,
                    const float detune,
+                   const float glideBend,
                    const size_t voiceIdx,
-                   const bool pwm)
+                   const bool pwm,
+                   const bool isPlayingLegatoStyle,
+                   const GlideMode glideMode)
 {
     const float adjustedVelocity{(0.004f * static_cast<float>((velocity + 64) * (velocity + 64))) - 8.0f};
     const float osciillator1Amplitude{volumeTrim * adjustedVelocity};
+    const float period{calculatePeriod(note, tune, detune, voiceIdx)};
+    const int noteDistance{calculateNoteDistance(note, lastNote, glideMode, isPlayingLegatoStyle)};
 
     note_ = note;
-    oscillator1Period_ = calculatePeriod(note, tune, detune, voiceIdx);
-    oscillator2Period_ = oscillator1Period_ * detune;
+    targetPeriod_ = period;
+    period_ = period * std::pow(1.059463094359f, static_cast<float>(noteDistance) - glideBend);
+
+    if (period_ < 6.0f)
+    {
+        period_ = 6.0f;
+    }
+
     oscillator1_.setAmplitude(osciillator1Amplitude);
     oscillator2_.setAmplitude(osciillator1Amplitude * oscillatorMix);
 
     if (pwm)
     {
-        oscillator2_.squareWave(oscillator1_, oscillator1Period_);
+        oscillator2_.squareWave(oscillator1_, period_);
     }
 
     updatePanning();
 }
 
-void Voice::noteOnRestart(const int note, const float tune, const float detune, const size_t voiceIdx)
+void Voice::noteOnRestart(
+    const int note, const float tune, const float detune, const size_t voiceIdx, const GlideMode glideMode)
 {
+    const float period{calculatePeriod(note, tune, detune, voiceIdx)};
+
     note_ = note;
-    oscillator1Period_ = calculatePeriod(note, tune, detune, voiceIdx);
-    oscillator2Period_ = oscillator1Period_ * detune;
+    targetPeriod_ = period;
+
+    if (GlideMode::Off == glideMode)
+    {
+        period_ = period;
+    }
+
     envelope_.nudgeLevelUp();
     updatePanning();
 }
@@ -101,6 +138,17 @@ void Voice::updatePanning()
     panRight_ = std::sin(piOver4 * (1.0f + panning));
 }
 
+void Voice::updateLfo(const float glideRate)
+{
+    period_ += glideRate * (targetPeriod_ - period_);
+}
+
+void Voice::updatePeriod(const float pitchBend, const float detune)
+{
+    oscillator1_.setPeriod(period_ * pitchBend);
+    oscillator2_.setPeriod(period_ * detune * pitchBend);
+}
+
 void Voice::setModulation(const float modulationOsc1, const float modulationOsc2)
 {
     if (envelope_.isActive())
@@ -110,12 +158,11 @@ void Voice::setModulation(const float modulationOsc1, const float modulationOsc2
     }
 }
 
-Output Voice::render(const float input, const float pitchBend)
+Output Voice::render(const float input, const float pitchBend, const float detune)
 {
     Output output;
 
-    oscillator1_.setPeriod(oscillator1Period_ * pitchBend);
-    oscillator2_.setPeriod(oscillator2Period_ * pitchBend);
+    updatePeriod(pitchBend, detune);
 
     if (!envelope_.isActive())
     {

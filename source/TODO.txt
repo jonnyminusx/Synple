@@ -16,3 +16,4 @@ TODO
 * Voice management (and other) unit tests
 * Velocity sensitivity
 * Alternative LFO wave shapes
+* Make panning glide

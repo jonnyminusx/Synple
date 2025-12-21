@@ -310,6 +310,7 @@ void JLX11AudioProcessor::update()
     synth_.setPolyphonic(polyModeParam_->getIndex() == 1);
     synth_.setLfoIncrement(lfoRateParam_->get(), inverseSampleRate);
     synth_.setVibratoAmount(vibratoParam_->get());
+    synth_.setGlide(glideModeParam_->getIndex(), glideRateParam_->get(), glideBendParam_->get(), inverseSampleRate);
 }
 
 void JLX11AudioProcessor::createPrograms()

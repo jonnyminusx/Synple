@@ -43,7 +43,7 @@ void Synth::render(AudioBuffer& audioBuffer)
 
         for (Voice& voice : voices_)
         {
-            output += voice.render(noise, pitchBend_);
+            output += voice.render(noise, pitchBend_, detune_);
         }
 
         output *= outputLevelSmoother_.getNextValue();
@@ -156,6 +156,8 @@ void Synth::updateLfo()
         for (Voice& voice : voices_)
         {
             voice.setModulation(vibratoModulation, pwm);
+            voice.updateLfo(glideRate_);
+            voice.updatePeriod(pitchBend_, detune_);
         }
     }
 }
@@ -228,12 +230,24 @@ void Synth::startVoice(const size_t voiceIdx, const int note, const int velocity
     envelope.setReleaseMultiplier(envelopeRelease_);
     envelope.attack();
 
-    voice.noteOn(note, velocity, volumeTrim_, oscillatorMix_, tune_, detune_, voiceIdx, isInPwmMode());
+    voice.noteOn(note,
+                 lastNote_,
+                 velocity,
+                 volumeTrim_,
+                 oscillatorMix_,
+                 tune_,
+                 detune_,
+                 glideBend_,
+                 voiceIdx,
+                 isInPwmMode(),
+                 isPlayingLegatoStyle(),
+                 glideMode_);
+    lastNote_ = note;
 }
 
 void Synth::restartMonoVoice(const int note, [[maybe_unused]] const int velocity)
 {
-    voices_[0].noteOnRestart(note, tune_, detune_, 0);
+    voices_[0].noteOnRestart(note, tune_, detune_, 0, glideMode_);
 }
 
 size_t Synth::selectVoiceIndexToUse() const
@@ -272,6 +286,11 @@ bool Synth::isPolyphonic() const
 bool Synth::isInPwmMode() const
 {
     return vibratoAmount_ == 0.0f && pwmDepth_ > 0.0f;
+}
+
+bool Synth::isPlayingLegatoStyle() const
+{
+    return std::any_of(voices_.begin(), voices_.end(), [](const Voice& voice) { return voice.note() > 0; });
 }
 
 void Synth::processLastNotePriority(const int note)
@@ -364,6 +383,24 @@ void Synth::setVibratoAmount(const float vibratoParam)
     {
         vibratoAmount_ = 0.0f;
     }
+}
+
+void Synth::setGlide(const int glideMode, const float glideRate, const float glideBend, const float inverseSampleRate)
+{
+    const float inverseUpdateRate = inverseSampleRate * lfoMaxSamplesPerUpdate_;
+
+    glideMode_ = static_cast<GlideMode>(glideMode);
+
+    if (glideRate < 2.0f)
+    {
+        glideRate_ = 1.0f; // No glide.
+    }
+    else
+    {
+        glideRate_ = 1.0f - std::exp(-inverseUpdateRate * std::exp(6.0f - 0.07f * glideRate));
+    }
+
+    glideBend_ = glideBend;
 }
 
 void Synth::setOutputLevelInstantly(const float outputLevel)
