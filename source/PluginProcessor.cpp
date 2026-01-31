@@ -410,6 +410,18 @@ void JLX11AudioProcessor::splitBufferByEvents(juce::AudioBuffer<float>& buffer, 
 
 void JLX11AudioProcessor::handleMidi(const uint8_t data0, const uint8_t data1, const uint8_t data2)
 {
+    // Control Change
+    if ((data0 & 0xF0) == 0xB0)
+    {
+        if (data1 == 0x07) // volume
+        {
+            const float volumeCtl = static_cast<float>(data2) / 127.0f;
+            outputLevelParam_->beginChangeGesture();
+            outputLevelParam_->setValueNotifyingHost(volumeCtl);
+            outputLevelParam_->endChangeGesture();
+        }
+    }
+
     // Program Change
     if ((data0 & 0xF0) == 0xC0)
     {
