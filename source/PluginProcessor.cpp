@@ -287,6 +287,11 @@ void JLX11AudioProcessor::update()
     const float tuneInSemi{-36.3763f - 12.0f * octave - tuning / 100.0f};
     synth_.setTune(sampleRate * std::exp(0.05776226505f * tuneInSemi));
 
+    const float filterReso{filterResoParam_->get() / 100.0f};
+    synth_.setFilterQ(filterReso);
+    synth_.setFilterKeyTracking(filterFreqParam_->get());
+    synth_.setFilterVelocity(filterVelocityParam_->get());
+
     synth_.setEnvelopeAttack(std::exp(-inverseSampleRate * std::exp(5.5f - 0.075f * envAttackParam_->get())));
     synth_.setEnvelopeDecay(std::exp(-inverseSampleRate * std::exp(5.5f - 0.075f * envDecayParam_->get())));
     synth_.setEnvelopeSustain(envSustainParam_->get() / 100.0f);
@@ -304,14 +309,12 @@ void JLX11AudioProcessor::update()
     synth_.setNoiseMix(noiseMix * noiseMix * 0.06f);
 
     synth_.setOutputLevel(juce::Decibels::decibelsToGain(outputLevelParam_->get()));
-    synth_.updateVolumeTrim();
-    synth_.setFilterVelocity(filterVelocityParam_->get());
+    synth_.setVolumeTrim(filterReso);
 
     synth_.setPolyphonic(polyModeParam_->getIndex() == 1);
     synth_.setLfoIncrement(lfoRateParam_->get(), inverseSampleRate);
     synth_.setVibratoAmount(vibratoParam_->get());
     synth_.setGlide(glideModeParam_->getIndex(), glideRateParam_->get(), glideBendParam_->get(), inverseSampleRate);
-    synth_.setFilterKeyTracking(filterFreqParam_->get());
 }
 
 void JLX11AudioProcessor::createPrograms()

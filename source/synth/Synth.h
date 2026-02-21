@@ -21,7 +21,6 @@ class Synth
     void render(AudioBuffer& audioBuffer);
     void midiMessage(const uint8_t data0, const uint8_t data1, const uint8_t data2);
     void controlChange(const uint8_t controller, const uint8_t value);
-    void updateVolumeTrim();
 
     void setNoiseMix(const float noiseMix);
     void setOscillatorMix(const float oscillatorMix);
@@ -29,12 +28,14 @@ class Synth
     void setTune(const float tune);
     void setPolyphonic(const bool polyphonic);
     void setOutputLevel(const float outputLevel);
+    void setVolumeTrim(const float filterReso);
     void setOutputLevelInstantly(const float outputLevel);
     void setFilterVelocity(const float filterVelocity);
     void setLfoIncrement(const float lfoRateParam, const float inverseSampleRate);
     void setVibratoAmount(const float vibratoParam);
     void setGlide(const int glideMode, const float glideRate, const float glideBend, const float inverseSampleRate);
     void setFilterKeyTracking(const float filterKeyTrackingParam);
+    void setFilterQ(const float filterReso);
 
     void setEnvelopeDecay(const float decayTime);
     void setEnvelopeAttack(const float attackTime);
@@ -95,6 +96,8 @@ class Synth
     float glideBend_{0.0f};
 
     float filterKeyTracking_{0.0f};
+    float filterQ_{0.0f};
+    float resonanceCtl_{0.0f};
 };
 
 } // namespace synth

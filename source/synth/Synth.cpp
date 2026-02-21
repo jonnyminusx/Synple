@@ -34,6 +34,7 @@ void Synth::reset()
     outputLevelSmoother_.reset(sampleRate_, 0.05);
     lfo_ = 0.0f;
     lfoStep_ = 0;
+    resonanceCtl_ = 1.0f;
 }
 
 void Synth::render(AudioBuffer& audioBuffer)
@@ -123,6 +124,10 @@ void Synth::controlChange(const uint8_t controller, const uint8_t value)
 
         break;
 
+    case 0x47: // Resonance
+        resonanceCtl_ = 154.0f / static_cast<float>(154 - value);
+        break;
+
     default: // All notes off
         if (controller >= 0x78)
         {
@@ -137,9 +142,9 @@ void Synth::controlChange(const uint8_t controller, const uint8_t value)
     }
 }
 
-void Synth::updateVolumeTrim()
+void Synth::setVolumeTrim(const float filterReso)
 {
-    volumeTrim_ = 0.0008f * (3.2f - oscillatorMix_ - 25.0f * noiseMix_) * 1.5f;
+    volumeTrim_ = 0.0008f * (3.2f - oscillatorMix_ - 25.0f * noiseMix_) * (1.5f - 0.5f * filterReso);
 }
 
 void Synth::updateLfo()
@@ -162,7 +167,7 @@ void Synth::updateLfo()
         for (Voice& voice : voices_)
         {
             voice.setModulation(vibratoModulation, pwm);
-            voice.updateLfo(glideRate_, filterMod);
+            voice.updateLfo(glideRate_, filterMod, filterQ_ * resonanceCtl_);
             voice.updatePeriod(pitchBend_, detune_);
         }
     }
@@ -414,6 +419,11 @@ void Synth::setGlide(const int glideMode, const float glideRate, const float gli
 void Synth::setFilterKeyTracking(const float filterKeyTrackingParam)
 {
     filterKeyTracking_ = (0.08f * filterKeyTrackingParam) - 1.5f;
+}
+
+void Synth::setFilterQ(const float filterReso)
+{
+    filterQ_ = std::exp(3.0f * filterReso);
 }
 
 void Synth::setOutputLevelInstantly(const float outputLevel)

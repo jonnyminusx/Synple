@@ -42,7 +42,7 @@ class Voice
     void noteOff(const int note, const bool sustainPedalPressed);
     void release();
     void updatePanning();
-    void updateLfo(const float glideRate, const float filterMod);
+    void updateLfo(const float glideRate, const float filterMod, const float filterQ);
     void updatePeriod(const float pitchBend, const float detune);
     void setModulation(const float modulationOsc1, const float modulationOsc2);
     Output render(const float input, const float pitchBend, const float detune);

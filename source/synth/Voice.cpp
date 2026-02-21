@@ -153,13 +153,13 @@ void Voice::updatePanning()
     panRight_ = std::sin(piOver4 * (1.0f + panning));
 }
 
-void Voice::updateLfo(const float glideRate, const float filterMod)
+void Voice::updateLfo(const float glideRate, const float filterMod, const float filterQ)
 {
     period_ += glideRate * (targetPeriod_ - period_);
 
     float modulatedCutoff{cutoff_ * std::exp(filterMod)};
     modulatedCutoff = std::clamp(modulatedCutoff, 30.0f, 20000.0f);
-    filter_.updateCoefficients(modulatedCutoff, 0.707f);
+    filter_.updateCoefficients(modulatedCutoff, filterQ);
 }
 
 void Voice::updatePeriod(const float pitchBend, const float detune)

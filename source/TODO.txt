@@ -17,3 +17,4 @@ TODO
 * Velocity sensitivity
 * Alternative LFO wave shapes
 * Make panning glide
+* Make the filter self oscillate
