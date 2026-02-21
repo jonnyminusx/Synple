@@ -20,6 +20,7 @@ class Voice
     void noteOn(const int note,
                 const int lastNote,
                 const int velocity,
+                const float velocitySensitivity,
                 const float volumeTrim,
                 const float oscillatorMix,
                 const float tune,
@@ -31,6 +32,8 @@ class Voice
                 const bool isPlayingLegatoStyle,
                 const GlideMode glideMode);
     void noteOnRestart(const int note,
+                       const int velocity,
+                       const float velocitySensitivity,
                        const float tune,
                        const float detune,
                        const float sampleRate,

@@ -239,6 +239,7 @@ void Synth::startVoice(const size_t voiceIdx, const int note, const int velocity
     voice.noteOn(note,
                  lastNote_,
                  velocity,
+                 velocitySensitivity_,
                  volumeTrim_,
                  oscillatorMix_,
                  tune_,
@@ -254,7 +255,7 @@ void Synth::startVoice(const size_t voiceIdx, const int note, const int velocity
 
 void Synth::restartMonoVoice(const int note, [[maybe_unused]] const int velocity)
 {
-    voices_[0].noteOnRestart(note, tune_, detune_, sampleRate_, 0, glideMode_);
+    voices_[0].noteOnRestart(note, velocity, velocitySensitivity_, tune_, detune_, sampleRate_, 0, glideMode_);
 }
 
 size_t Synth::selectVoiceIndexToUse() const

@@ -60,6 +60,7 @@ void Voice::reset()
 void Voice::noteOn(const int note,
                    const int lastNote,
                    const int velocity,
+                   const float velocitySensitivity,
                    const float volumeTrim,
                    const float oscillatorMix,
                    const float tune,
@@ -78,6 +79,7 @@ void Voice::noteOn(const int note,
 
     note_ = note;
     cutoff_ = sampleRate / (period * constants::pi);
+    cutoff_ *= std::exp(velocitySensitivity * static_cast<float>(velocity - 64));
     targetPeriod_ = period;
     period_ = period * std::pow(1.059463094359f, static_cast<float>(noteDistance) - glideBend);
 
@@ -98,6 +100,8 @@ void Voice::noteOn(const int note,
 }
 
 void Voice::noteOnRestart(const int note,
+                          const int velocity,
+                          const float velocitySensitivity,
                           const float tune,
                           const float detune,
                           const float sampleRate,
@@ -108,6 +112,8 @@ void Voice::noteOnRestart(const int note,
 
     note_ = note;
     cutoff_ = sampleRate / (period * constants::pi);
+    cutoff_ *= std::exp(velocitySensitivity * static_cast<float>(velocity - 64));
+
     targetPeriod_ = period;
 
     if (GlideMode::Off == glideMode)
