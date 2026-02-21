@@ -1,5 +1,6 @@
 #include "Voice.h"
 
+#include "../utils/constants.h"
 #include "GlideMode.h"
 #include "Output.h"
 
@@ -51,6 +52,7 @@ void Voice::reset()
     oscillator1_.reset();
     oscillator2_.reset();
     envelope_.reset();
+    filter_.reset();
     panLeft_ = 0.707f;
     panRight_ = 0.707f;
 }
@@ -63,6 +65,7 @@ void Voice::noteOn(const int note,
                    const float tune,
                    const float detune,
                    const float glideBend,
+                   const float sampleRate,
                    const size_t voiceIdx,
                    const bool pwm,
                    const bool isPlayingLegatoStyle,
@@ -74,6 +77,7 @@ void Voice::noteOn(const int note,
     const int noteDistance{calculateNoteDistance(note, lastNote, glideMode, isPlayingLegatoStyle)};
 
     note_ = note;
+    cutoff_ = sampleRate / (period * constants::pi);
     targetPeriod_ = period;
     period_ = period * std::pow(1.059463094359f, static_cast<float>(noteDistance) - glideBend);
 
@@ -93,12 +97,17 @@ void Voice::noteOn(const int note,
     updatePanning();
 }
 
-void Voice::noteOnRestart(
-    const int note, const float tune, const float detune, const size_t voiceIdx, const GlideMode glideMode)
+void Voice::noteOnRestart(const int note,
+                          const float tune,
+                          const float detune,
+                          const float sampleRate,
+                          const size_t voiceIdx,
+                          const GlideMode glideMode)
 {
     const float period{calculatePeriod(note, tune, detune, voiceIdx)};
 
     note_ = note;
+    cutoff_ = sampleRate / (period * constants::pi);
     targetPeriod_ = period;
 
     if (GlideMode::Off == glideMode)
@@ -138,9 +147,13 @@ void Voice::updatePanning()
     panRight_ = std::sin(piOver4 * (1.0f + panning));
 }
 
-void Voice::updateLfo(const float glideRate)
+void Voice::updateLfo(const float glideRate, const float filterMod)
 {
     period_ += glideRate * (targetPeriod_ - period_);
+
+    float modulatedCutoff{cutoff_ * std::exp(filterMod)};
+    modulatedCutoff = std::clamp(modulatedCutoff, 30.0f, 20000.0f);
+    filter_.updateCoefficients(modulatedCutoff, 0.707f);
 }
 
 void Voice::updatePeriod(const float pitchBend, const float detune)
@@ -167,6 +180,7 @@ Output Voice::render(const float input, const float pitchBend, const float detun
     if (!envelope_.isActive())
     {
         envelope_.reset();
+        filter_.reset();
         return output;
     }
 
@@ -175,8 +189,10 @@ Output Voice::render(const float input, const float pitchBend, const float detun
 
     saw_ = saw_ * 0.997f + sample1 - sample2;
 
-    output.left = (saw_ + input) * envelope_.nextValue();
+    output.left = (saw_ + input);
     output.right = output.left;
+    output.filter(filter_);
+    output *= envelope_.nextValue();
 
     output.left *= panLeft_;
     output.right *= panRight_;
@@ -202,6 +218,16 @@ const Envelope& Voice::envelope() const
 Envelope& Voice::envelope()
 {
     return envelope_;
+}
+
+const Filter& Voice::filter() const
+{
+    return filter_;
+}
+
+Filter& Voice::filter()
+{
+    return filter_;
 }
 
 } // namespace synth

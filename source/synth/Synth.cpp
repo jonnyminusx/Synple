@@ -9,6 +9,11 @@ namespace synth
 void Synth::allocateResources(const float sampleRate, [[maybe_unused]] const int samplesPerBlock)
 {
     sampleRate_ = sampleRate;
+
+    for (Voice& voice : voices_)
+    {
+        voice.filter().setSampleRate(sampleRate_);
+    }
 }
 
 void Synth::deallocateResources() const
@@ -149,14 +154,15 @@ void Synth::updateLfo()
             lfo_ -= constants::tau;
         }
 
-        const float sineValue = std::sinf(lfo_);
-        const float vibratoModulation = 1.0f + sineValue * (modWheel_ + vibratoAmount_);
-        const float pwm = 1.0f + sineValue * (modWheel_ + pwmDepth_);
+        const float sineValue{std::sinf(lfo_)};
+        const float vibratoModulation{1.0f + sineValue * (modWheel_ + vibratoAmount_)};
+        const float pwm{1.0f + sineValue * (modWheel_ + pwmDepth_)};
+        const float filterMod{filterKeyTracking_};
 
         for (Voice& voice : voices_)
         {
             voice.setModulation(vibratoModulation, pwm);
-            voice.updateLfo(glideRate_);
+            voice.updateLfo(glideRate_, filterMod);
             voice.updatePeriod(pitchBend_, detune_);
         }
     }
@@ -238,6 +244,7 @@ void Synth::startVoice(const size_t voiceIdx, const int note, const int velocity
                  tune_,
                  detune_,
                  glideBend_,
+                 sampleRate_,
                  voiceIdx,
                  isInPwmMode(),
                  isPlayingLegatoStyle(),
@@ -247,7 +254,7 @@ void Synth::startVoice(const size_t voiceIdx, const int note, const int velocity
 
 void Synth::restartMonoVoice(const int note, [[maybe_unused]] const int velocity)
 {
-    voices_[0].noteOnRestart(note, tune_, detune_, 0, glideMode_);
+    voices_[0].noteOnRestart(note, tune_, detune_, sampleRate_, 0, glideMode_);
 }
 
 size_t Synth::selectVoiceIndexToUse() const
@@ -401,6 +408,11 @@ void Synth::setGlide(const int glideMode, const float glideRate, const float gli
     }
 
     glideBend_ = glideBend;
+}
+
+void Synth::setFilterKeyTracking(const float filterKeyTrackingParam)
+{
+    filterKeyTracking_ = (0.08f * filterKeyTrackingParam) - 1.5f;
 }
 
 void Synth::setOutputLevelInstantly(const float outputLevel)

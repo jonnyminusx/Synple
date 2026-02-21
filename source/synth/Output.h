@@ -3,21 +3,14 @@
 namespace synth
 {
 
+class Filter;
+
 struct Output
 {
-    Output& operator+=(const Output& rhs)
-    {
-        left += rhs.left;
-        right += rhs.right;
-        return *this;
-    }
+    void filter(Filter& filter);
 
-    Output& operator*=(const float scalar)
-    {
-        left *= scalar;
-        right *= scalar;
-        return *this;
-    }
+    Output& operator+=(const Output& rhs);
+    Output& operator*=(const float scalar);
 
     float left{0.0f};
     float right{0.0f};

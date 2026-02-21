@@ -36,12 +36,15 @@ set(SourceFiles
         source/synth/AudioBuffer.h
         source/synth/Envelope.cpp
         source/synth/Envelope.h
+        source/synth/Filter.h
+        source/synth/Filter.cpp
         source/synth/GlideMode.h
         source/synth/NoiseGenerator.cpp
         source/synth/NoiseGenerator.h
         source/synth/Oscillator.cpp
         source/synth/Oscillator.h
         source/synth/Output.h
+        source/synth/Output.cpp
         source/synth/SineOscillator.cpp
         source/synth/SineOscillator.h
         source/synth/Synth.cpp

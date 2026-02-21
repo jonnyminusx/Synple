@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Envelope.h"
+#include "Filter.h"
 #include "Oscillator.h"
 #include <optional>
 
@@ -24,16 +25,21 @@ class Voice
                 const float tune,
                 const float detune,
                 const float glideBend,
+                const float sampleRate,
                 const size_t voiceIdx,
                 const bool pwm,
                 const bool isPlayingLegatoStyle,
                 const GlideMode glideMode);
-    void noteOnRestart(
-        const int note, const float tune, const float detune, const size_t voiceIdx, const GlideMode glideMode);
+    void noteOnRestart(const int note,
+                       const float tune,
+                       const float detune,
+                       const float sampleRate,
+                       const size_t voiceIdx,
+                       const GlideMode glideMode);
     void noteOff(const int note, const bool sustainPedalPressed);
     void release();
     void updatePanning();
-    void updateLfo(const float glideRate);
+    void updateLfo(const float glideRate, const float filterMod);
     void updatePeriod(const float pitchBend, const float detune);
     void setModulation(const float modulationOsc1, const float modulationOsc2);
     Output render(const float input, const float pitchBend, const float detune);
@@ -43,6 +49,9 @@ class Voice
     const Envelope& envelope() const;
     Envelope& envelope();
 
+    const Filter& filter() const;
+    Filter& filter();
+
   private:
     int note_{0};
 
@@ -51,10 +60,12 @@ class Voice
     float targetPeriod_{0.0f};
     float panLeft_{0.0f};
     float panRight_{0.0f};
+    float cutoff_{0.0f};
 
     Oscillator oscillator1_;
     Oscillator oscillator2_;
     Envelope envelope_;
+    Filter filter_;
 };
 
 } // namespace synth
