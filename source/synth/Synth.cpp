@@ -35,6 +35,8 @@ void Synth::reset()
     lfo_ = 0.0f;
     lfoStep_ = 0;
     resonanceCtl_ = 1.0f;
+    pressure_ = 0.0f;
+    filterControl_ = 0.0f;
 }
 
 void Synth::render(AudioBuffer& audioBuffer)
@@ -129,6 +131,14 @@ void Synth::controlChange(const uint8_t controller, const uint8_t value)
         resonanceCtl_ = 154.0f / static_cast<float>(154 - value);
         break;
 
+    case 0x4A: // Filter +
+        filterControl_ = 0.02f * float(value);
+        break;
+
+    case 0x4B: // Filter -
+        filterControl_ = -0.03f * float(value);
+        break;
+
     default: // All notes off
         if (controller >= 0x78)
         {
@@ -163,7 +173,7 @@ void Synth::updateLfo()
         const float sineValue{std::sinf(lfo_)};
         const float vibratoModulation{1.0f + sineValue * (modWheel_ + vibratoAmount_)};
         const float pwm{1.0f + sineValue * (modWheel_ + pwmDepth_)};
-        const float filterMod{filterKeyTracking_ + (filterLfoDepth_ + pressure_) * sineValue};
+        const float filterMod{filterKeyTracking_ + filterControl_ + (filterLfoDepth_ + pressure_) * sineValue};
 
         for (Voice& voice : voices_)
         {

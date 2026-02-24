@@ -100,6 +100,7 @@ class Synth
     float filterQ_{0.0f};
     float resonanceCtl_{0.0f};
     float filterLfoDepth_{0.0f};
+    float filterControl_{0.0f};
     float pressure_{0.0f};
 };
 
