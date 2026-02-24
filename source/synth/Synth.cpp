@@ -98,6 +98,7 @@ void Synth::midiMessage(const uint8_t data0, const uint8_t data1, const uint8_t 
     case 0xC0: // Program Change
         break;
     case 0xD0: // Channel Aftertouch
+        pressure_ = 0.0001f * float(data1 * data1);
         break;
     case 0xE0: // Pitch Bend
         pitchBend_ = std::exp(-0.000014102f * data1 + (128 * data2) - 8192);
@@ -162,7 +163,7 @@ void Synth::updateLfo()
         const float sineValue{std::sinf(lfo_)};
         const float vibratoModulation{1.0f + sineValue * (modWheel_ + vibratoAmount_)};
         const float pwm{1.0f + sineValue * (modWheel_ + pwmDepth_)};
-        const float filterMod{filterKeyTracking_};
+        const float filterMod{filterKeyTracking_ + (filterLfoDepth_ + pressure_) * sineValue};
 
         for (Voice& voice : voices_)
         {
@@ -424,6 +425,11 @@ void Synth::setFilterKeyTracking(const float filterKeyTrackingParam)
 void Synth::setFilterQ(const float filterReso)
 {
     filterQ_ = std::exp(3.0f * filterReso);
+}
+
+void Synth::setFilterLfoDepth(const float filterLfoDepth)
+{
+    filterLfoDepth_ = 2.5f * filterLfoDepth * filterLfoDepth;
 }
 
 void Synth::setOutputLevelInstantly(const float outputLevel)

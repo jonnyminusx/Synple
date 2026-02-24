@@ -36,6 +36,7 @@ class Synth
     void setGlide(const int glideMode, const float glideRate, const float glideBend, const float inverseSampleRate);
     void setFilterKeyTracking(const float filterKeyTrackingParam);
     void setFilterQ(const float filterReso);
+    void setFilterLfoDepth(const float filterLfoDepth);
 
     void setEnvelopeDecay(const float decayTime);
     void setEnvelopeAttack(const float attackTime);
@@ -98,6 +99,8 @@ class Synth
     float filterKeyTracking_{0.0f};
     float filterQ_{0.0f};
     float resonanceCtl_{0.0f};
+    float filterLfoDepth_{0.0f};
+    float pressure_{0.0f};
 };
 
 } // namespace synth

@@ -291,6 +291,7 @@ void JLX11AudioProcessor::update()
     synth_.setFilterQ(filterReso);
     synth_.setFilterKeyTracking(filterFreqParam_->get());
     synth_.setFilterVelocity(filterVelocityParam_->get());
+    synth_.setFilterLfoDepth(filterLFOParam_->get() / 100.0f);
 
     synth_.setEnvelopeAttack(std::exp(-inverseSampleRate * std::exp(5.5f - 0.075f * envAttackParam_->get())));
     synth_.setEnvelopeDecay(std::exp(-inverseSampleRate * std::exp(5.5f - 0.075f * envDecayParam_->get())));
