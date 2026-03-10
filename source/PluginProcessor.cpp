@@ -316,6 +316,13 @@ void JLX11AudioProcessor::update()
     synth_.setLfoIncrement(lfoRateParam_->get(), inverseSampleRate);
     synth_.setVibratoAmount(vibratoParam_->get());
     synth_.setGlide(glideModeParam_->getIndex(), glideRateParam_->get(), glideBendParam_->get(), inverseSampleRate);
+
+    synth_.setFilterEnvelope(filterAttackParam_->get(),
+                             filterDecayParam_->get(),
+                             filterSustainParam_->get(),
+                             filterReleaseParam_->get(),
+                             filterEnvParam_->get(),
+                             inverseSampleRate);
 }
 
 void JLX11AudioProcessor::createPrograms()

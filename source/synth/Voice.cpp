@@ -52,6 +52,7 @@ void Voice::reset()
     oscillator1_.reset();
     oscillator2_.reset();
     envelope_.reset();
+    filterEnvelope_.reset();
     filter_.reset();
     panLeft_ = 0.707f;
     panRight_ = 0.707f;
@@ -144,6 +145,7 @@ void Voice::noteOff(const int note, const bool sustainPedalPressed)
 void Voice::release()
 {
     envelope_.release();
+    filterEnvelope_.release();
 }
 
 void Voice::updatePanning()
@@ -153,11 +155,17 @@ void Voice::updatePanning()
     panRight_ = std::sin(piOver4 * (1.0f + panning));
 }
 
-void Voice::updateLfo(const float glideRate, const float filterMod, const float filterQ, const float pitchBend)
+void Voice::updateLfo(const float glideRate,
+                      const float filterMod,
+                      const float filterQ,
+                      const float pitchBend,
+                      const float filterEnvDepth)
 {
     period_ += glideRate * (targetPeriod_ - period_);
 
-    float modulatedCutoff{cutoff_ * std::exp(filterMod) / pitchBend};
+    const float filterEnvelopeValue{filterEnvelope_.nextValue() * filterEnvDepth};
+
+    float modulatedCutoff{cutoff_ * std::exp(filterMod + filterEnvelopeValue) / pitchBend};
     modulatedCutoff = std::clamp(modulatedCutoff, 30.0f, 20000.0f);
     filter_.updateCoefficients(modulatedCutoff, filterQ);
 }
@@ -224,6 +232,16 @@ const Envelope& Voice::envelope() const
 Envelope& Voice::envelope()
 {
     return envelope_;
+}
+
+const Envelope& Voice::filterEnvelope() const
+{
+    return filterEnvelope_;
+}
+
+Envelope& Voice::filterEnvelope()
+{
+    return filterEnvelope_;
 }
 
 const Filter& Voice::filter() const

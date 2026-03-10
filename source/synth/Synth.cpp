@@ -180,7 +180,7 @@ void Synth::updateLfo()
         for (Voice& voice : voices_)
         {
             voice.setModulation(vibratoModulation, pwm);
-            voice.updateLfo(glideRate_, filterZip_, filterQ_ * resonanceCtl_, pitchBend_);
+            voice.updateLfo(glideRate_, filterZip_, filterQ_ * resonanceCtl_, pitchBend_, filterEnvDepth_);
             voice.updatePeriod(pitchBend_, detune_);
         }
     }
@@ -253,6 +253,13 @@ void Synth::startVoice(const size_t voiceIdx, const int note, const int velocity
     envelope.setSustainLevel(envelopeSustain_);
     envelope.setReleaseMultiplier(envelopeRelease_);
     envelope.attack();
+
+    Envelope& filterEnvelope = voice.filterEnvelope();
+    filterEnvelope.setAttackMultiplier(filterAttack_);
+    filterEnvelope.setDecayMultiplier(filterDecay_);
+    filterEnvelope.setSustainLevel(filterSustain_);
+    filterEnvelope.setReleaseMultiplier(filterRelease_);
+    filterEnvelope.attack();
 
     voice.noteOn(note,
                  lastNote_,
@@ -442,6 +449,23 @@ void Synth::setFilterQ(const float filterReso)
 void Synth::setFilterLfoDepth(const float filterLfoDepth)
 {
     filterLfoDepth_ = 2.5f * filterLfoDepth * filterLfoDepth;
+}
+
+void Synth::setFilterEnvelope(const float attack,
+                              const float decay,
+                              const float sustain,
+                              const float release,
+                              const float envDepth,
+                              const float inverseSampleRate)
+{
+    const float inverseUpdateRate = inverseSampleRate * lfoMaxSamplesPerUpdate_;
+
+    filterAttack_ = std::exp(-inverseUpdateRate * std::exp(5.5f - 0.075f * attack));
+    filterDecay_ = std::exp(-inverseUpdateRate * std::exp(5.5f - 0.075f * decay));
+    const float filterSustain{sustain / 100.0f};
+    filterSustain_ = filterSustain * filterSustain;
+    filterRelease_ = std::exp(-inverseUpdateRate * std::exp(5.5f - 0.075f * release));
+    filterEnvDepth_ = 0.06f * envDepth;
 }
 
 void Synth::setOutputLevelInstantly(const float outputLevel)

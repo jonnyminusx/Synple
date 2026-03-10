@@ -37,6 +37,12 @@ class Synth
     void setFilterKeyTracking(const float filterKeyTrackingParam);
     void setFilterQ(const float filterReso);
     void setFilterLfoDepth(const float filterLfoDepth);
+    void setFilterEnvelope(const float attack,
+                           const float decay,
+                           const float sustain,
+                           const float release,
+                           const float envDepth,
+                           const float inverseSampleRate);
 
     void setEnvelopeDecay(const float decayTime);
     void setEnvelopeAttack(const float attackTime);
@@ -103,6 +109,12 @@ class Synth
     float filterControl_{0.0f};
     float filterZip_{0.0f};
     float pressure_{0.0f};
+
+    float filterAttack_{0.0f};
+    float filterDecay_{0.0f};
+    float filterSustain_{0.0f};
+    float filterRelease_{0.0f};
+    float filterEnvDepth_{0.0f};
 };
 
 } // namespace synth
