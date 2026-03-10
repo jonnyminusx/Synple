@@ -178,7 +178,7 @@ void Synth::updateLfo()
         for (Voice& voice : voices_)
         {
             voice.setModulation(vibratoModulation, pwm);
-            voice.updateLfo(glideRate_, filterMod, filterQ_ * resonanceCtl_);
+            voice.updateLfo(glideRate_, filterMod, filterQ_ * resonanceCtl_, pitchBend_);
             voice.updatePeriod(pitchBend_, detune_);
         }
     }
