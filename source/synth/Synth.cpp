@@ -37,6 +37,7 @@ void Synth::reset()
     resonanceCtl_ = 1.0f;
     pressure_ = 0.0f;
     filterControl_ = 0.0f;
+    filterZip_ = 0.0f;
 }
 
 void Synth::render(AudioBuffer& audioBuffer)
@@ -174,11 +175,12 @@ void Synth::updateLfo()
         const float vibratoModulation{1.0f + sineValue * (modWheel_ + vibratoAmount_)};
         const float pwm{1.0f + sineValue * (modWheel_ + pwmDepth_)};
         const float filterMod{filterKeyTracking_ + filterControl_ + (filterLfoDepth_ + pressure_) * sineValue};
+        filterZip_ += 0.005f * (filterMod - filterZip_);
 
         for (Voice& voice : voices_)
         {
             voice.setModulation(vibratoModulation, pwm);
-            voice.updateLfo(glideRate_, filterMod, filterQ_ * resonanceCtl_, pitchBend_);
+            voice.updateLfo(glideRate_, filterZip_, filterQ_ * resonanceCtl_, pitchBend_);
             voice.updatePeriod(pitchBend_, detune_);
         }
     }

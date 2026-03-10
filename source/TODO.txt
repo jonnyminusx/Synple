@@ -18,3 +18,5 @@ TODO
 * Alternative LFO wave shapes
 * Make panning glide
 * Make the filter self oscillate
+* Make the filter zip coefficient based on sample rate
+* Check all sliders for zipper noise and smooth if necessary

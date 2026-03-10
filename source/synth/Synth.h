@@ -101,6 +101,7 @@ class Synth
     float resonanceCtl_{0.0f};
     float filterLfoDepth_{0.0f};
     float filterControl_{0.0f};
+    float filterZip_{0.0f};
     float pressure_{0.0f};
 };
 
