@@ -26,5 +26,9 @@ class JLX11AudioProcessorEditor final : public juce::AudioProcessorEditor
     juce::AudioProcessorValueTreeState::SliderAttachment filterResoAttachment{
         processorRef.getApvts(), parameter_id::filterReso.getParamID(), filterResoKnob_};
 
+    juce::TextButton polyModeButton_;
+    juce::AudioProcessorValueTreeState::ButtonAttachment polyModeAttachment{
+        processorRef.getApvts(), parameter_id::polyMode.getParamID(), polyModeButton_};
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(JLX11AudioProcessorEditor)
 };

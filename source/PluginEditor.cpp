@@ -12,6 +12,10 @@ JLX11AudioProcessorEditor::JLX11AudioProcessorEditor(JLX11AudioProcessor& p) : A
     filterResoKnob_.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
     addAndMakeVisible(filterResoKnob_);
 
+    polyModeButton_.setButtonText("Poly");
+    polyModeButton_.setClickingTogglesState(true);
+    addAndMakeVisible(polyModeButton_);
+
     setSize(600, 400);
 }
 
@@ -27,6 +31,12 @@ void JLX11AudioProcessorEditor::paint(juce::Graphics& g)
 
 void JLX11AudioProcessorEditor::resized()
 {
-    outputLevelKnob_.setBounds(20, 20, 100, 120);
-    filterResoKnob_.setBounds(120, 20, 100, 120);
+    juce::Rectangle r(20, 20, 100, 120);
+    outputLevelKnob_.setBounds(r);
+
+    r = r.withX(r.getRight() + 20);
+    filterResoKnob_.setBounds(r);
+
+    polyModeButton_.setSize(80, 30);
+    polyModeButton_.setCentrePosition(r.withX(r.getRight()).getCentre());
 }
