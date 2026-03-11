@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PluginProcessor.h"
+#include "ui/RotaryKnob.h"
 
 //==============================================================================
 class JLX11AudioProcessorEditor final : public juce::AudioProcessorEditor
@@ -18,13 +19,13 @@ class JLX11AudioProcessorEditor final : public juce::AudioProcessorEditor
     // access the processor object that created it.
     JLX11AudioProcessor& processorRef;
 
-    juce::Slider outputLevelKnob_;
+    ui::RotaryKnob outputLevelKnob_;
     juce::AudioProcessorValueTreeState::SliderAttachment outputLevelAttachment_{
-        processorRef.getApvts(), parameter_id::outputLevel.getParamID(), outputLevelKnob_};
+        processorRef.getApvts(), parameter_id::outputLevel.getParamID(), outputLevelKnob_.slider};
 
-    juce::Slider filterResoKnob_;
+    ui::RotaryKnob filterResoKnob_;
     juce::AudioProcessorValueTreeState::SliderAttachment filterResoAttachment{
-        processorRef.getApvts(), parameter_id::filterReso.getParamID(), filterResoKnob_};
+        processorRef.getApvts(), parameter_id::filterReso.getParamID(), filterResoKnob_.slider};
 
     juce::TextButton polyModeButton_;
     juce::AudioProcessorValueTreeState::ButtonAttachment polyModeAttachment{

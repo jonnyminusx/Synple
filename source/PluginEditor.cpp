@@ -4,12 +4,10 @@
 //==============================================================================
 JLX11AudioProcessorEditor::JLX11AudioProcessorEditor(JLX11AudioProcessor& p) : AudioProcessorEditor(&p), processorRef(p)
 {
-    outputLevelKnob_.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    outputLevelKnob_.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
+    outputLevelKnob_.setLabel("Output");
     addAndMakeVisible(outputLevelKnob_);
 
-    filterResoKnob_.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    filterResoKnob_.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
+    filterResoKnob_.setLabel("Filter Reso");
     addAndMakeVisible(filterResoKnob_);
 
     polyModeButton_.setButtonText("Poly");
