@@ -3,11 +3,11 @@
 #include "PluginProcessor.h"
 
 //==============================================================================
-class AudioPluginAudioProcessorEditor final : public juce::AudioProcessorEditor
+class JLX11AudioProcessorEditor final : public juce::AudioProcessorEditor
 {
   public:
-    explicit AudioPluginAudioProcessorEditor(JLX11AudioProcessor&);
-    ~AudioPluginAudioProcessorEditor() override;
+    explicit JLX11AudioProcessorEditor(JLX11AudioProcessor&);
+    ~JLX11AudioProcessorEditor() override;
 
     //==============================================================================
     void paint(juce::Graphics&) override;
@@ -18,5 +18,5 @@ class AudioPluginAudioProcessorEditor final : public juce::AudioProcessorEditor
     // access the processor object that created it.
     JLX11AudioProcessor& processorRef;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(JLX11AudioProcessorEditor)
 };
