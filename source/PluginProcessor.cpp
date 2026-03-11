@@ -267,6 +267,11 @@ void JLX11AudioProcessor::setStateInformation(const void* data, int sizeInBytes)
     }
 }
 
+juce::AudioProcessorValueTreeState& JLX11AudioProcessor::getApvts()
+{
+    return apvts_;
+}
+
 void JLX11AudioProcessor::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier&)
 {
     parametersChanged_.store(true);

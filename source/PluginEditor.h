@@ -18,5 +18,13 @@ class JLX11AudioProcessorEditor final : public juce::AudioProcessorEditor
     // access the processor object that created it.
     JLX11AudioProcessor& processorRef;
 
+    juce::Slider outputLevelKnob_;
+    juce::AudioProcessorValueTreeState::SliderAttachment outputLevelAttachment_{
+        processorRef.getApvts(), parameter_id::outputLevel.getParamID(), outputLevelKnob_};
+
+    juce::Slider filterResoKnob_;
+    juce::AudioProcessorValueTreeState::SliderAttachment filterResoAttachment{
+        processorRef.getApvts(), parameter_id::filterReso.getParamID(), filterResoKnob_};
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(JLX11AudioProcessorEditor)
 };

@@ -83,6 +83,8 @@ class JLX11AudioProcessor final : public juce::AudioProcessor, private juce::Val
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
 
+    juce::AudioProcessorValueTreeState& getApvts();
+
   private:
     void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier&) override;
     void update();
