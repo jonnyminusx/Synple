@@ -128,10 +128,6 @@ void Synth::controlChange(const uint8_t controller, const uint8_t value)
 
         break;
 
-    case 0x47: // Resonance
-        resonanceCtl_ = 154.0f / static_cast<float>(154 - value);
-        break;
-
     case 0x4A: // Filter +
         filterControl_ = 0.02f * float(value);
         break;
@@ -151,6 +147,12 @@ void Synth::controlChange(const uint8_t controller, const uint8_t value)
         }
 
         break;
+    }
+
+    // Resonance
+    if (controller == resoCC)
+    {
+        resonanceCtl_ = 154.0f / float(154 - value);
     }
 }
 

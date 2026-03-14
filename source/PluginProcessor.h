@@ -85,6 +85,8 @@ class JLX11AudioProcessor final : public juce::AudioProcessor, private juce::Val
 
     juce::AudioProcessorValueTreeState& getApvts();
 
+    std::atomic<bool> midiLearn;
+
   private:
     void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier&) override;
     void update();

@@ -5,7 +5,7 @@
 #include "ui/RotaryKnob.h"
 
 //==============================================================================
-class JLX11AudioProcessorEditor final : public juce::AudioProcessorEditor
+class JLX11AudioProcessorEditor final : public juce::AudioProcessorEditor, private juce::Button::Listener, juce::Timer
 {
   public:
     explicit JLX11AudioProcessorEditor(JLX11AudioProcessor&);
@@ -14,6 +14,10 @@ class JLX11AudioProcessorEditor final : public juce::AudioProcessorEditor
     //==============================================================================
     void paint(juce::Graphics&) override;
     void resized() override;
+
+    void buttonClicked(juce::Button* button) override;
+
+    void timerCallback() override;
 
   private:
     // This reference is provided as a quick way for your editor to
@@ -32,6 +36,8 @@ class JLX11AudioProcessorEditor final : public juce::AudioProcessorEditor
     juce::TextButton polyModeButton_;
     juce::AudioProcessorValueTreeState::ButtonAttachment polyModeAttachment{
         processorRef.getApvts(), parameter_id::polyMode.getParamID(), polyModeButton_};
+
+    juce::TextButton midiLearnButton_;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(JLX11AudioProcessorEditor)
 };

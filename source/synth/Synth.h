@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../midi/CC.h"
 #include "GlideMode.h"
 #include "NoiseGenerator.h"
 #include "Voice.h"
@@ -48,6 +49,8 @@ class Synth
     void setEnvelopeAttack(const float attackTime);
     void setEnvelopeSustain(const float sustainLevel);
     void setEnvelopeRelease(const float releaseTime);
+
+    midi::CC resoCC = 0x47;
 
   private:
     void startVoice(const size_t voiceIdx, const int note, const int velocity);

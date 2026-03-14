@@ -32,6 +32,7 @@ set(SourceFiles
         source/PluginEditor.h
         source/PluginProcessor.cpp
         source/PluginProcessor.h
+        source/midi/CC.h
         source/synth/AudioBuffer.cpp
         source/synth/AudioBuffer.h
         source/synth/Envelope.cpp

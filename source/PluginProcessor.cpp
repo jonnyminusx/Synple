@@ -238,6 +238,8 @@ void JLX11AudioProcessor::reset()
 {
     synth_.reset();
     synth_.setOutputLevelInstantly(juce::Decibels::decibelsToGain(outputLevelParam_->get()));
+
+    midiLearn.store(false);
 }
 
 //==============================================================================
@@ -428,6 +430,14 @@ void JLX11AudioProcessor::handleMidi(const uint8_t data0, const uint8_t data1, c
     // Control Change
     if ((data0 & 0xF0) == 0xB0)
     {
+        if (midiLearn)
+        {
+            DBG("learned a MIDI CC");
+            synth_.resoCC = data1;
+            midiLearn = false;
+            return;
+        }
+
         if (data1 == 0x07) // volume
         {
             const float volumeCtl = static_cast<float>(data2) / 127.0f;
