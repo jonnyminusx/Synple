@@ -51,6 +51,8 @@ set(SourceFiles
         source/synth/Synth.h
         source/synth/Voice.cpp
         source/synth/Voice.h
+        source/ui/LookAndFeel.h
+        source/ui/LookAndFeel.cpp
         source/ui/RotaryKnob.h
         source/ui/RotaryKnob.cpp
         source/utils/constants.h
@@ -70,6 +72,11 @@ juce_add_plugin(${PROJECT_NAME}
         PLUGIN_CODE Jx11
         FORMATS VST3 AU Standalone
         PRODUCT_NAME "JLX11"        
+)
+
+juce_add_binary_data(BinaryData
+    SOURCES
+        resources/Lato-Medium.ttf
 )
 
 # How we want our SourceFiles to appear in our IDE
@@ -102,5 +109,7 @@ target_link_libraries(${PROJECT_NAME}
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags
+        PRIVATE
+        BinaryData
 )
 

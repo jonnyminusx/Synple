@@ -4,6 +4,8 @@
 //==============================================================================
 JLX11AudioProcessorEditor::JLX11AudioProcessorEditor(JLX11AudioProcessor& p) : AudioProcessorEditor(&p), processorRef(p)
 {
+    juce::LookAndFeel::setDefaultLookAndFeel(&lookAndFeel_);
+
     outputLevelKnob_.setLabel("Output");
     addAndMakeVisible(outputLevelKnob_);
 

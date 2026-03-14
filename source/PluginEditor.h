@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PluginProcessor.h"
+#include "ui/LookAndFeel.h"
 #include "ui/RotaryKnob.h"
 
 //==============================================================================
@@ -18,6 +19,7 @@ class JLX11AudioProcessorEditor final : public juce::AudioProcessorEditor
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     JLX11AudioProcessor& processorRef;
+    ui::LookAndFeel lookAndFeel_;
 
     ui::RotaryKnob outputLevelKnob_;
     juce::AudioProcessorValueTreeState::SliderAttachment outputLevelAttachment_{
