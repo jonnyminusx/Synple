@@ -7,6 +7,10 @@
 namespace
 {
 
+const juce::Identifier pluginTag{"PLUGIN"};
+const juce::Identifier extraTag{"EXTRA"};
+const juce::Identifier midiCCAttribute{"midiCC"};
+
 constexpr uint8_t operator""_midi(unsigned long long value) noexcept
 {
     return static_cast<uint8_t>(value);
@@ -225,6 +229,8 @@ void JLX11AudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear(i, 0, buffer.getNumSamples());
 
+    synth_.resoCC = midiLearnCC_.load();
+
     bool expected = true;
     if (isNonRealtime() || parametersChanged_.compare_exchange_strong(expected, false))
     {
@@ -240,6 +246,7 @@ void JLX11AudioProcessor::reset()
     synth_.setOutputLevelInstantly(juce::Decibels::decibelsToGain(outputLevelParam_->get()));
 
     midiLearn.store(false);
+    midiLearnCC_.store(synth_.resoCC);
 }
 
 //==============================================================================
@@ -257,15 +264,38 @@ juce::AudioProcessorEditor* JLX11AudioProcessor::createEditor()
 void JLX11AudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
     copyXmlToBinary(*apvts_.copyState().createXml(), destData);
+
+    auto xml = std::make_unique<juce::XmlElement>(pluginTag);
+    std::unique_ptr<juce::XmlElement> parametersXML(apvts_.copyState().createXml());
+    xml->addChildElement(parametersXML.release());
+
+    auto extraXML = std::make_unique<juce::XmlElement>(extraTag);
+    extraXML->setAttribute(midiCCAttribute, midiLearnCC_.load());
+    xml->addChildElement(extraXML.release());
+
+    copyXmlToBinary(*xml, destData);
+    DBG(xml->toString());
 }
 
 void JLX11AudioProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
     std::unique_ptr<juce::XmlElement> xml{getXmlFromBinary(data, sizeInBytes)};
-    if (xml && xml->hasTagName(apvts_.state.getType()))
+    if (xml && xml->hasTagName(pluginTag))
     {
-        apvts_.replaceState(juce::ValueTree::fromXml(*xml));
-        parametersChanged_.store(true);
+        if (auto* parametersXML = xml->getChildByName(apvts_.state.getType()))
+        {
+            apvts_.replaceState(juce::ValueTree::fromXml(*parametersXML));
+            parametersChanged_.store(true);
+        }
+
+        if (auto* extraXML = xml->getChildByName(extraTag))
+        {
+            int midiCC = extraXML->getIntAttribute(midiCCAttribute);
+            if (midiCC != 0)
+            {
+                midiLearnCC_.store(static_cast<uint8_t>(midiCC));
+            }
+        }
     }
 }
 
@@ -433,8 +463,8 @@ void JLX11AudioProcessor::handleMidi(const uint8_t data0, const uint8_t data1, c
         if (midiLearn)
         {
             DBG("learned a MIDI CC");
-            synth_.resoCC = data1;
-            midiLearn = false;
+            midiLearnCC_.store(data1);
+            midiLearn.store(false);
             return;
         }
 

@@ -130,6 +130,7 @@ class JLX11AudioProcessor final : public juce::AudioProcessor, private juce::Val
     std::atomic<bool> parametersChanged_{false};
     std::vector<Preset> presets_;
     int currentProgram_;
+    std::atomic<uint8_t> midiLearnCC_{0};
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(JLX11AudioProcessor)
