@@ -16,6 +16,13 @@ document.getElementById("pluginName").innerHTML = data.pluginName;
 document.getElementById("pluginVersion").innerHTML = data.pluginVersion;
 
 const nativeFunction = Juce.getNativeFunction("nativeFunction");
+
+fetch(Juce.getBackendResourceAddress("data.json"))
+    .then(response => response.text())
+    .then(data => {
+        console.log("Fetched data: ", data);
+    });
+
 document.addEventListener("DOMContentLoaded", () => {
     const button = document.getElementById("nativeFunctionButton");
     button.addEventListener("click", () => {

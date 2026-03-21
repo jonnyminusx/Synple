@@ -36,6 +36,8 @@ const char* getMimeForExtension(const juce::String& extension)
     return "";
 }
 
+constexpr auto localDevServerAddress{"http://127.0.0.1:8080"};
+
 } // namespace
 
 //==============================================================================
@@ -43,7 +45,8 @@ JLX11AudioProcessorEditor::JLX11AudioProcessorEditor(JLX11AudioProcessor& p)
     : AudioProcessorEditor(&p),
       processorRef(p),
       webView_(juce::WebBrowserComponent::Options()
-                   .withResourceProvider([this](const auto& url) { return getResource(url); })
+                   .withResourceProvider([this](const auto& url) { return getResource(url); },
+                                         juce::URL(localDevServerAddress).getOrigin())
                    .withNativeIntegrationEnabled()
                    .withUserScript(R"(console.log("Hello from injected user script!");)")
                    .withInitialisationData("vendor", JUCE_COMPANY_NAME)
@@ -62,7 +65,8 @@ JLX11AudioProcessorEditor::JLX11AudioProcessorEditor(JLX11AudioProcessor& p)
                    }))
 
 {
-    webView_.goToURL(webView_.getResourceProviderRoot());
+    // webView_.goToURL(webView_.getResourceProviderRoot());
+    webView_.goToURL(localDevServerAddress);
 
     runJavaScriptButton_.onClick = [this] {
         constexpr auto javaScriptToRun = "console.log(\"Hello from C++!\");";
@@ -132,6 +136,16 @@ std::optional<JLX11AudioProcessorEditor::Resource> JLX11AudioProcessorEditor::ge
 {
     static const juce::File resourceFileRoot{R"(/Users/jonny/Code/GitHub/JLX11/source/ui/public/)"};
     const auto resourceToRetrieve{url == "/" ? "index.html" : url.fromFirstOccurrenceOf("/", false, false)};
+
+    if (resourceToRetrieve == "data.json")
+    {
+        juce::DynamicObject::Ptr data(new juce::DynamicObject());
+        data->setProperty("sampleProperty", 30.0);
+        const juce::String string{juce::JSON::toString(data.get())};
+        juce::MemoryInputStream stream{string.getCharPointer(), string.getNumBytesAsUTF8(), false};
+        return Resource(streamToVector(stream), juce::String("application/json"));
+    }
+
     const auto resource{resourceFileRoot.getChildFile(resourceToRetrieve).createInputStream()};
 
     if (resource)
