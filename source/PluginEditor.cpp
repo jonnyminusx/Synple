@@ -48,12 +48,20 @@ JLX11AudioProcessorEditor::JLX11AudioProcessorEditor(JLX11AudioProcessor& p)
                    .withUserScript(R"(console.log("Hello from injected user script!");)")
                    .withInitialisationData("vendor", JUCE_COMPANY_NAME)
                    .withInitialisationData("pluginName", JUCE_PRODUCT_NAME)
-                   .withInitialisationData("pluginVersion", JUCE_PRODUCT_VERSION))
-{
-    addAndMakeVisible(webView_);
-    addAndMakeVisible(runJavaScriptButton_);
-    addAndMakeVisible(emitJavaScriptEventButton_);
+                   .withInitialisationData("pluginVersion", JUCE_PRODUCT_VERSION)
+                   .withNativeFunction(juce::Identifier("nativeFunction"),
+                                       [this](const juce::Array<juce::var>& args,
+                                              juce::WebBrowserComponent::NativeFunctionCompletion completion) {
+                                           nativeFunction(args, std::move(completion));
+                                       })
+                   .withEventListener("exampleJavaScriptEvent", [this](juce::var objectFromFrontEnd) {
+                       labelUpdatedFromJavaScript_.setText(
+                           "Received event from JavaScript with data: " +
+                               objectFromFrontEnd.getProperty("emittedCount", 0).toString(),
+                           juce::dontSendNotification);
+                   }))
 
+{
     webView_.goToURL(webView_.getResourceProviderRoot());
 
     runJavaScriptButton_.onClick = [this] {
@@ -75,6 +83,13 @@ JLX11AudioProcessorEditor::JLX11AudioProcessorEditor(JLX11AudioProcessor& p)
         webView_.emitEventIfBrowserIsVisible(eventId, 42.0);
     };
 
+    labelUpdatedFromJavaScript_.setColour(juce::Label::textColourId, juce::Colours::black);
+
+    addAndMakeVisible(webView_);
+    addAndMakeVisible(runJavaScriptButton_);
+    addAndMakeVisible(emitJavaScriptEventButton_);
+    addAndMakeVisible(labelUpdatedFromJavaScript_);
+
     setResizable(true, true);
     setSize(800, 600);
 }
@@ -91,6 +106,7 @@ void JLX11AudioProcessorEditor::resized()
     webView_.setBounds(bounds.removeFromRight(bounds.getWidth() / 2));
     runJavaScriptButton_.setBounds(bounds.removeFromTop(50).reduced(5));
     emitJavaScriptEventButton_.setBounds(bounds.removeFromTop(50).reduced(5));
+    labelUpdatedFromJavaScript_.setBounds(bounds.removeFromTop(50).reduced(5));
 }
 
 void JLX11AudioProcessorEditor::buttonClicked(juce::Button* button)
@@ -125,4 +141,19 @@ std::optional<JLX11AudioProcessorEditor::Resource> JLX11AudioProcessorEditor::ge
     }
 
     return std::nullopt;
+}
+
+void JLX11AudioProcessorEditor::nativeFunction(const juce::Array<juce::var>& args,
+                                               juce::WebBrowserComponent::NativeFunctionCompletion completion)
+{
+    juce::String concatanatedArgs;
+    for (const auto& arg : args)
+    {
+        concatanatedArgs += arg.toString() + " ";
+    }
+
+    labelUpdatedFromJavaScript_.setText("Native function called with args: " + concatanatedArgs,
+                                        juce::dontSendNotification);
+
+    completion(juce::var("Response from native function"));
 }

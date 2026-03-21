@@ -17,12 +17,17 @@ class JLX11AudioProcessorEditor final : public juce::AudioProcessorEditor, priva
     using Resource = juce::WebBrowserComponent::Resource;
     std::optional<Resource> getResource(const juce::String& url);
 
+    void nativeFunction(const juce::Array<juce::var>& args,
+                        juce::WebBrowserComponent::NativeFunctionCompletion completion);
+
     JLX11AudioProcessor& processorRef;
     juce::WebBrowserComponent webView_;
 
     juce::TextButton runJavaScriptButton_{"Run JavaScript"};
     juce::TextButton emitJavaScriptEventButton_{"Emit JavaScript Event"};
     juce::TextButton midiLearnButton_{"MIDI Learn"};
+
+    juce::Label labelUpdatedFromJavaScript_{"label", "Not updated from JavaScript yet"};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(JLX11AudioProcessorEditor)
 };
