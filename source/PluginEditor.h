@@ -1,8 +1,6 @@
 #pragma once
 
 #include "PluginProcessor.h"
-#include "ui/LookAndFeel.h"
-#include "ui/RotaryKnob.h"
 
 //==============================================================================
 class JLX11AudioProcessorEditor final : public juce::AudioProcessorEditor, private juce::Button::Listener, juce::Timer
@@ -11,33 +9,20 @@ class JLX11AudioProcessorEditor final : public juce::AudioProcessorEditor, priva
     explicit JLX11AudioProcessorEditor(JLX11AudioProcessor&);
     ~JLX11AudioProcessorEditor() override;
 
-    //==============================================================================
-    void paint(juce::Graphics&) override;
     void resized() override;
-
     void buttonClicked(juce::Button* button) override;
-
     void timerCallback() override;
 
   private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
+    using Resource = juce::WebBrowserComponent::Resource;
+    std::optional<Resource> getResource(const juce::String& url);
+
     JLX11AudioProcessor& processorRef;
-    ui::LookAndFeel lookAndFeel_;
+    juce::WebBrowserComponent webView_;
 
-    ui::RotaryKnob outputLevelKnob_;
-    juce::AudioProcessorValueTreeState::SliderAttachment outputLevelAttachment_{
-        processorRef.getApvts(), parameter_id::outputLevel.getParamID(), outputLevelKnob_.slider};
-
-    ui::RotaryKnob filterResoKnob_;
-    juce::AudioProcessorValueTreeState::SliderAttachment filterResoAttachment{
-        processorRef.getApvts(), parameter_id::filterReso.getParamID(), filterResoKnob_.slider};
-
-    juce::TextButton polyModeButton_;
-    juce::AudioProcessorValueTreeState::ButtonAttachment polyModeAttachment{
-        processorRef.getApvts(), parameter_id::polyMode.getParamID(), polyModeButton_};
-
-    juce::TextButton midiLearnButton_;
+    juce::TextButton runJavaScriptButton_{"Run JavaScript"};
+    juce::TextButton emitJavaScriptEventButton_{"Emit JavaScript Event"};
+    juce::TextButton midiLearnButton_{"MIDI Learn"};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(JLX11AudioProcessorEditor)
 };

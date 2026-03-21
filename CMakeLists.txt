@@ -52,10 +52,6 @@ set(SourceFiles
         source/synth/Synth.h
         source/synth/Voice.cpp
         source/synth/Voice.h
-        source/ui/LookAndFeel.h
-        source/ui/LookAndFeel.cpp
-        source/ui/RotaryKnob.h
-        source/ui/RotaryKnob.cpp
         source/utils/constants.h
         source/utils/protectYourEars.cpp
         source/utils/protectYourEars.h
@@ -75,6 +71,14 @@ juce_add_plugin(${PROJECT_NAME}
         PRODUCT_NAME "JLX11"        
 )
 
+get_target_property(PRODUCT_NAME ${PROJECT_NAME} JUCE_PRODUCT_NAME)
+get_target_property(COMPANY_NAME ${PROJECT_NAME} JUCE_COMPANY_NAME)
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    JUCE_PRODUCT_NAME="${PRODUCT_NAME}"
+    JUCE_COMPANY_NAME="${COMPANY_NAME}"
+    JUCE_PRODUCT_VERSION="${PROJECT_VERSION}"
+)
+
 juce_add_binary_data(BinaryData
     SOURCES
         resources/Lato-Medium.ttf
@@ -89,7 +93,7 @@ target_sources(${PROJECT_NAME} PRIVATE ${SourceFiles})
 # These are some toggleable options from the JUCE CMake API
 target_compile_definitions(${PROJECT_NAME}
     PUBLIC
-        JUCE_WEB_BROWSER=0
+        JUCE_WEB_BROWSER=1
         JUCE_USE_CURL=0
         JUCE_VST3_CAN_REPLACE_VST2=0
 )
@@ -114,3 +118,4 @@ target_link_libraries(${PROJECT_NAME}
         BinaryData
 )
 
+file( COPY "${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/juce-src/modules/juce_gui_extra/native/javascript/" DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/source/ui/js/juce/")

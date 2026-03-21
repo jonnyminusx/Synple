@@ -274,7 +274,6 @@ void JLX11AudioProcessor::getStateInformation(juce::MemoryBlock& destData)
     xml->addChildElement(extraXML.release());
 
     copyXmlToBinary(*xml, destData);
-    DBG(xml->toString());
 }
 
 void JLX11AudioProcessor::setStateInformation(const void* data, int sizeInBytes)
