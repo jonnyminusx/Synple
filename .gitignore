@@ -32,4 +32,4 @@
 *.app
 
 build/
-source/ui/js/juce/
+source/ui/public/js/juce/

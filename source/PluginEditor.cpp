@@ -130,7 +130,7 @@ void JLX11AudioProcessorEditor::timerCallback()
 
 std::optional<JLX11AudioProcessorEditor::Resource> JLX11AudioProcessorEditor::getResource(const juce::String& url)
 {
-    static const juce::File resourceFileRoot{R"(/Users/jonny/Code/GitHub/JLX11/source/ui)"};
+    static const juce::File resourceFileRoot{R"(/Users/jonny/Code/GitHub/JLX11/source/ui/public/)"};
     const auto resourceToRetrieve{url == "/" ? "index.html" : url.fromFirstOccurrenceOf("/", false, false)};
     const auto resource{resourceFileRoot.getChildFile(resourceToRetrieve).createInputStream()};
 

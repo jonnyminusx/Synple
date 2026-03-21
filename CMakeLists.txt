@@ -118,4 +118,4 @@ target_link_libraries(${PROJECT_NAME}
         BinaryData
 )
 
-file( COPY "${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/juce-src/modules/juce_gui_extra/native/javascript/" DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/source/ui/js/juce/")
+file( COPY "${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/juce-src/modules/juce_gui_extra/native/javascript/" DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/source/ui/public/js/juce/")
