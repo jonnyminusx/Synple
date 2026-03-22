@@ -37,6 +37,51 @@ document.addEventListener("DOMContentLoaded", () => {
         emittedCount++;
         window.__JUCE__.backend.emitEvent("exampleJavaScriptEvent", { emittedCount: emittedCount });
     });
+
+    const base = -60;
+    Plotly.newPlot("outputLevelPlot", {
+        data: [
+            {
+                x: ["left"],
+                y: [base],
+                base: [base],
+                type: "bar"
+            }
+        ],
+        layout: { width: 200, height: 400, yaxis: { range: [base, 0] } }
+    });
+
+    window.__JUCE__.backend.addEventListener("outputLevel", () => {
+        fetch(Juce.getBackendResourceAddress("outputLevel.json"))
+            .then(response => response.text())
+            .then(outputLevel => {
+                const levelData = JSON.parse(outputLevel);
+                Plotly.animate("outputLevelPlot",
+                    {
+                        data:
+                            [
+                                {
+                                    y: [levelData.left - base],
+                                }
+                            ],
+                        traces: [0],
+                        layout: {}
+                    },
+                    {
+                        transition:
+                        {
+                            duration: 20,
+                            easing: "cubic-in-out"
+                        },
+                        frame:
+                        {
+                            duration: 20
+                        }
+
+                    }
+                )
+            });
+    });
 });
 
 

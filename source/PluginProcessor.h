@@ -2,6 +2,7 @@
 
 #include "synth/Synth.h"
 #include <juce_audio_processors/juce_audio_processors.h>
+#include <juce_dsp/juce_dsp.h>
 
 class Preset;
 
@@ -86,6 +87,7 @@ class JLX11AudioProcessor final : public juce::AudioProcessor, private juce::Val
     juce::AudioProcessorValueTreeState& getApvts();
 
     std::atomic<bool> midiLearn;
+    std::atomic<float> outputLevelLeft;
 
   private:
     void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier&) override;
@@ -131,6 +133,9 @@ class JLX11AudioProcessor final : public juce::AudioProcessor, private juce::Val
     std::vector<Preset> presets_;
     int currentProgram_;
     std::atomic<uint8_t> midiLearnCC_{0};
+
+    juce::dsp::BallisticsFilter<float> envelopeFollower_;
+    juce::AudioBuffer<float> envelopeFollowerOutputBuffer_;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(JLX11AudioProcessor)

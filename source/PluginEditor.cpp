@@ -96,6 +96,8 @@ JLX11AudioProcessorEditor::JLX11AudioProcessorEditor(JLX11AudioProcessor& p)
 
     setResizable(true, true);
     setSize(800, 600);
+
+    startTimer(60);
 }
 
 JLX11AudioProcessorEditor::~JLX11AudioProcessorEditor()
@@ -124,18 +126,32 @@ void JLX11AudioProcessorEditor::buttonClicked(juce::Button* button)
 
 void JLX11AudioProcessorEditor::timerCallback()
 {
-    if (!processorRef.midiLearn.load())
-    {
-        stopTimer();
-        midiLearnButton_.setButtonText("MIDI Learn");
-        midiLearnButton_.setEnabled(true);
-    }
+    // if (!processorRef.midiLearn.load())
+    // {
+    //     stopTimer();
+    //     midiLearnButton_.setButtonText("MIDI Learn");
+    //     midiLearnButton_.setEnabled(true);
+    // }
+
+    // NOTE: this call causes an assertion failure in the webview due to passing an empty var.
+    webView_.emitEventIfBrowserIsVisible("outputLevel", juce::var());
 }
 
 std::optional<JLX11AudioProcessorEditor::Resource> JLX11AudioProcessorEditor::getResource(const juce::String& url)
 {
     static const juce::File resourceFileRoot{R"(/Users/jonny/Code/GitHub/JLX11/source/ui/public/)"};
     const auto resourceToRetrieve{url == "/" ? "index.html" : url.fromFirstOccurrenceOf("/", false, false)};
+
+    if (resourceToRetrieve == "outputLevel.json")
+    {
+        std::cout << "Resource requested: " << resourceToRetrieve << std::endl;
+
+        juce::DynamicObject::Ptr data(new juce::DynamicObject());
+        data->setProperty("left", processorRef.outputLevelLeft.load());
+        const juce::String string{juce::JSON::toString(data.get())};
+        juce::MemoryInputStream stream{string.getCharPointer(), string.getNumBytesAsUTF8(), false};
+        return Resource(streamToVector(stream), juce::String("application/json"));
+    }
 
     if (resourceToRetrieve == "data.json")
     {

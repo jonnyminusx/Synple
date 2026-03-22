@@ -91,7 +91,7 @@ class Synth
     float envelopeSustain_{0.0f};
     float envelopeRelease_{0.0f};
 
-    float sampleRate_{0.0f};
+    float sampleRate_{44100.0f};
     bool sustainPedalPressed_{false};
 
     static constexpr int lfoMaxSamplesPerUpdate_{32};

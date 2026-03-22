@@ -186,6 +186,15 @@ void JLX11AudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     synth_.allocateResources(static_cast<float>(sampleRate), samplesPerBlock);
     parametersChanged_.store(true);
     reset();
+
+    envelopeFollower_.prepare(
+        juce::dsp::ProcessSpec{.sampleRate = sampleRate,
+                               .maximumBlockSize = static_cast<juce::uint32>(samplesPerBlock),
+                               .numChannels = static_cast<juce::uint32>(getTotalNumOutputChannels())});
+    envelopeFollower_.setAttackTime(200.0f);
+    envelopeFollower_.setReleaseTime(200.0f);
+    envelopeFollower_.setLevelCalculationType(juce::dsp::BallisticsFilter<float>::LevelCalculationType::peak);
+    envelopeFollowerOutputBuffer_.setSize(getTotalNumOutputChannels(), samplesPerBlock);
 }
 
 void JLX11AudioProcessor::releaseResources()
@@ -238,6 +247,14 @@ void JLX11AudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
     }
 
     splitBufferByEvents(buffer, midiMessages);
+
+    const auto inBlock =
+        juce::dsp::AudioBlock<float>(buffer).getSubsetChannelBlock(0u, static_cast<size_t>(totalNumOutputChannels));
+    auto outputBlock = juce::dsp::AudioBlock<float>(envelopeFollowerOutputBuffer_);
+
+    envelopeFollower_.process(juce::dsp::ProcessContextNonReplacing<float>(inBlock, outputBlock));
+    outputLevelLeft.store(
+        juce::Decibels::gainToDecibels(outputBlock.getSample(0u, static_cast<int>(outputBlock.getNumSamples() - 1))));
 }
 
 void JLX11AudioProcessor::reset()
