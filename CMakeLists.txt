@@ -28,10 +28,10 @@ CPMAddPackage(
 
 # Make sure you include any new source files here
 set(SourceFiles
-        source/PluginEditor.cpp
-        source/PluginEditor.h
-        source/PluginProcessor.cpp
-        source/PluginProcessor.h
+        source/juce/PluginEditor.cpp
+        source/juce/PluginEditor.h
+        source/juce/PluginProcessor.cpp
+        source/juce/PluginProcessor.h
         source/midi/CC.h
         source/synth/AudioBuffer.cpp
         source/synth/AudioBuffer.h
