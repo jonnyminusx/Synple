@@ -1,52 +1,57 @@
 #include "AudioBuffer.h"
 
+#include <algorithm>
+#include <cassert>
+
 namespace synth
 {
 
-AudioBuffer::AudioBuffer(juce::AudioBuffer<float>& buffer, const int startSampleIndex, const int endSampleIndex)
-    : buffer_(buffer),
-      startSampleIndex_(startSampleIndex),
-      endSampleIndex_(endSampleIndex)
+AudioBuffer::AudioBuffer(std::vector<std::span<float>> channels) : channels_(std::move(channels))
 {
-    jassert(startSampleIndex >= 0);
-    jassert(endSampleIndex >= startSampleIndex);
-    jassert(endSampleIndex <= buffer_.getNumSamples());
+    // Assume all channels have the same size
+    if (!channels_.empty())
+    {
+        const auto expectedSize = channels_[0].size();
+        assert(std::all_of(channels_.begin(), channels_.end(), [expectedSize](const auto& span) {
+            return span.size() == expectedSize;
+        }));
+    }
 }
 
 float& AudioBuffer::sample(const int channel, const int sample)
 {
-    jassert(channel >= 0);
-    jassert(channel < channelCount());
-    jassert(sample >= 0);
-    jassert(sample < sampleCount());
-    return buffer_.getWritePointer(channel)[sample + startSampleIndex_];
+    assert(channel >= 0);
+    assert(channel < channelCount());
+    assert(sample >= 0);
+    assert(sample < sampleCount());
+    return channels_[static_cast<size_t>(channel)][static_cast<size_t>(sample)];
 }
 
 float AudioBuffer::sample(const int channel, const int sample) const
 {
-    jassert(channel >= 0);
-    jassert(channel < channelCount());
-    jassert(sample >= 0);
-    jassert(sample < sampleCount());
-    return buffer_.getReadPointer(channel)[sample + startSampleIndex_];
+    assert(channel >= 0);
+    assert(channel < channelCount());
+    assert(sample >= 0);
+    assert(sample < sampleCount());
+    return channels_[static_cast<size_t>(channel)][static_cast<size_t>(sample)];
 }
 
 int AudioBuffer::sampleCount() const
 {
-    return endSampleIndex_ - startSampleIndex_;
+    return channels_.empty() ? 0 : static_cast<int>(channels_[0].size());
 }
 
 int AudioBuffer::channelCount() const
 {
-    return buffer_.getNumChannels();
+    return static_cast<int>(channels_.size());
 }
 
 void AudioBuffer::clear(const int channel)
 {
-    jassert(channel >= 0);
-    jassert(channel < channelCount());
+    assert(channel >= 0);
+    assert(channel < channelCount());
 
-    buffer_.clear(channel, startSampleIndex_, sampleCount());
+    std::fill(channels_[static_cast<size_t>(channel)].begin(), channels_[static_cast<size_t>(channel)].end(), 0.0f);
 }
 
 } // namespace synth

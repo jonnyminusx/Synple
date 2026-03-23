@@ -1,6 +1,7 @@
 #pragma once
 
-#include <juce_audio_basics/juce_audio_basics.h>
+#include <span>
+#include <vector>
 
 namespace synth
 {
@@ -8,7 +9,7 @@ namespace synth
 class AudioBuffer
 {
   public:
-    AudioBuffer(juce::AudioBuffer<float>& buffer, const int startSampleIndex, const int endSampleIndex);
+    AudioBuffer(std::vector<std::span<float>> channels);
 
     float& sample(const int channel, const int sample);
     float sample(const int channel, const int sample) const;
@@ -17,9 +18,7 @@ class AudioBuffer
     void clear(const int channel);
 
   private:
-    juce::AudioBuffer<float>& buffer_;
-    int startSampleIndex_{0};
-    int endSampleIndex_{0};
+    std::vector<std::span<float>> channels_;
 };
 
 } // namespace synth

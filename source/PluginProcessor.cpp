@@ -4,6 +4,9 @@
 #include "synth/AudioBuffer.h"
 #include "synth/NoiseGenerator.h"
 
+#include <span>
+#include <vector>
+
 namespace
 {
 
@@ -505,11 +508,16 @@ void JLX11AudioProcessor::handleMidi(const uint8_t data0, const uint8_t data1, c
     synth_.midiMessage(data0, data1, data2);
 }
 
-void JLX11AudioProcessor::render(juce::AudioBuffer<float>& buffer,
-                                 const int sampleCount,
-                                 [[maybe_unused]] const int bufferOffset)
+void JLX11AudioProcessor::render(juce::AudioBuffer<float>& buffer, const int sampleCount, const int bufferOffset)
 {
-    synth::AudioBuffer audioBuffer{buffer, bufferOffset, bufferOffset + sampleCount};
+    std::vector<std::span<float>> channels;
+    channels.reserve(static_cast<size_t>(buffer.getNumChannels()));
+    for (int ch = 0; ch < buffer.getNumChannels(); ++ch)
+    {
+        auto ptr = buffer.getWritePointer(ch, bufferOffset);
+        channels.emplace_back(ptr, sampleCount);
+    }
+    synth::AudioBuffer audioBuffer{channels};
     synth_.render(audioBuffer);
 }
 
