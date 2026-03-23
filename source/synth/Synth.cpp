@@ -42,7 +42,10 @@ void Synth::reset()
 
 void Synth::render(AudioBuffer& audioBuffer)
 {
-    for (int sampleIndex = 0; sampleIndex < audioBuffer.sampleCount(); ++sampleIndex)
+    const auto audioBufferLeft{audioBuffer.channelBuffer(0)};
+    const auto audioBufferRight{audioBuffer.channelCount() > 1 ? audioBuffer.channelBuffer(1) : std::span<float>{}};
+
+    for (size_t sampleIndex = 0; sampleIndex < audioBuffer.sampleCount(); ++sampleIndex)
     {
         updateLfo();
 
@@ -59,12 +62,12 @@ void Synth::render(AudioBuffer& audioBuffer)
 
         if (audioBuffer.channelCount() > 1)
         {
-            audioBuffer.sample(0, sampleIndex) = output.left;
-            audioBuffer.sample(1, sampleIndex) = output.right;
+            audioBufferLeft[sampleIndex] = output.left;
+            audioBufferRight[sampleIndex] = output.right;
         }
         else
         {
-            audioBuffer.sample(0, sampleIndex) = (output.left + output.right) * 0.5f;
+            audioBufferLeft[sampleIndex] = (output.left + output.right) * 0.5f;
         }
     }
 

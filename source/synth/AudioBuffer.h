@@ -11,11 +11,11 @@ class AudioBuffer
   public:
     AudioBuffer(std::vector<std::span<float>> channels);
 
-    float& sample(const int channel, const int sample);
-    float sample(const int channel, const int sample) const;
-    int sampleCount() const;
-    int channelCount() const;
-    void clear(const int channel);
+    std::span<float> channelBuffer(const size_t channel);
+    std::span<const float> channelBuffer(const size_t channel) const;
+    size_t sampleCount() const;
+    size_t channelCount() const;
+    void clear(const size_t channel);
 
   private:
     std::vector<std::span<float>> channels_;

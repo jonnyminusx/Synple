@@ -9,10 +9,7 @@ namespace utils
 
 namespace
 {
-void printWarning([[maybe_unused]] const std::string& problem,
-                  [[maybe_unused]] const std::string& solution,
-                  [[maybe_unused]] const int channel,
-                  [[maybe_unused]] const int sample)
+void printWarning(const std::string& problem, const std::string& solution, const size_t channel, const size_t sample)
 {
     DBG("Warning: Sample value is " << problem << " at channel: " << channel << ", sample: " << sample << " - "
                                     << solution);
@@ -22,42 +19,42 @@ void printWarning([[maybe_unused]] const std::string& problem,
 
 void protectYourEars(synth::AudioBuffer& buffer)
 {
-    for (int channel = 0; channel < buffer.channelCount(); ++channel)
+    for (size_t channel = 0; channel < buffer.channelCount(); ++channel)
     {
         bool shouldSilence{false};
 
-        for (int sample = 0; sample < buffer.sampleCount(); ++sample)
+        size_t sampleIndex = 0;
+        for (float& sampleValue : buffer.channelBuffer(channel))
         {
-            float& sampleValue = buffer.sample(channel, sample);
-
             if (std::isnan(sampleValue))
             {
-                printWarning("nan", "silencing channel", channel, sample);
+                printWarning("nan", "silencing channel", channel, sampleIndex);
                 shouldSilence = true;
                 break;
             }
             else if (std::isinf(sampleValue))
             {
-                printWarning("inf", "silencing channel", channel, sample);
+                printWarning("inf", "silencing channel", channel, sampleIndex);
                 shouldSilence = true;
                 break;
             }
             else if (sampleValue < -2.0f || sampleValue > 2.0f)
             {
-                printWarning("out of range", "silencing channel", channel, sample);
+                printWarning("out of range", "silencing channel", channel, sampleIndex);
                 shouldSilence = true;
                 break;
             }
             else if (sampleValue < -1.0f)
             {
-                printWarning("out of range", "clamping to -1.0f", channel, sample);
+                printWarning("out of range", "clamping to -1.0f", channel, sampleIndex);
                 sampleValue = -1.0f;
             }
             else if (sampleValue > 1.0f)
             {
-                printWarning("out of range", "clamping to 1.0f", channel, sample);
+                printWarning("out of range", "clamping to 1.0f", channel, sampleIndex);
                 sampleValue = 1.0f;
             }
+            ++sampleIndex;
         }
 
         if (shouldSilence)

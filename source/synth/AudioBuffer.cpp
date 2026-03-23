@@ -18,40 +18,36 @@ AudioBuffer::AudioBuffer(std::vector<std::span<float>> channels) : channels_(std
     }
 }
 
-float& AudioBuffer::sample(const int channel, const int sample)
+std::span<float> AudioBuffer::channelBuffer(const size_t channel)
 {
     assert(channel >= 0);
     assert(channel < channelCount());
-    assert(sample >= 0);
-    assert(sample < sampleCount());
-    return channels_[static_cast<size_t>(channel)][static_cast<size_t>(sample)];
+    return channels_[channel];
 }
 
-float AudioBuffer::sample(const int channel, const int sample) const
+std::span<const float> AudioBuffer::channelBuffer(const size_t channel) const
 {
     assert(channel >= 0);
     assert(channel < channelCount());
-    assert(sample >= 0);
-    assert(sample < sampleCount());
-    return channels_[static_cast<size_t>(channel)][static_cast<size_t>(sample)];
+    return channels_[channel];
 }
 
-int AudioBuffer::sampleCount() const
+size_t AudioBuffer::sampleCount() const
 {
-    return channels_.empty() ? 0 : static_cast<int>(channels_[0].size());
+    return channels_.empty() ? 0 : channels_[0].size();
 }
 
-int AudioBuffer::channelCount() const
+size_t AudioBuffer::channelCount() const
 {
-    return static_cast<int>(channels_.size());
+    return channels_.size();
 }
 
-void AudioBuffer::clear(const int channel)
+void AudioBuffer::clear(const size_t channel)
 {
     assert(channel >= 0);
     assert(channel < channelCount());
 
-    std::fill(channels_[static_cast<size_t>(channel)].begin(), channels_[static_cast<size_t>(channel)].end(), 0.0f);
+    std::fill(channels_[channel].begin(), channels_[channel].end(), 0.0f);
 }
 
 } // namespace synth
