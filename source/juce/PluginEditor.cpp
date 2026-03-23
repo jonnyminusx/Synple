@@ -41,7 +41,7 @@ constexpr auto localDevServerAddress{"http://127.0.0.1:8080"};
 } // namespace
 
 //==============================================================================
-JLX11AudioProcessorEditor::JLX11AudioProcessorEditor(JLX11AudioProcessor& p)
+SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
     : AudioProcessorEditor(&p),
       processorRef(p),
       webView_(juce::WebBrowserComponent::Options()
@@ -100,13 +100,13 @@ JLX11AudioProcessorEditor::JLX11AudioProcessorEditor(JLX11AudioProcessor& p)
     startTimer(60);
 }
 
-JLX11AudioProcessorEditor::~JLX11AudioProcessorEditor()
+SynpleAudioProcessorEditor::~SynpleAudioProcessorEditor()
 {
     midiLearnButton_.removeListener(this);
     processorRef.midiLearn.store(false);
 }
 
-void JLX11AudioProcessorEditor::resized()
+void SynpleAudioProcessorEditor::resized()
 {
     auto bounds{getLocalBounds()};
     webView_.setBounds(bounds.removeFromRight(bounds.getWidth() / 2));
@@ -115,7 +115,7 @@ void JLX11AudioProcessorEditor::resized()
     labelUpdatedFromJavaScript_.setBounds(bounds.removeFromTop(50).reduced(5));
 }
 
-void JLX11AudioProcessorEditor::buttonClicked(juce::Button* button)
+void SynpleAudioProcessorEditor::buttonClicked(juce::Button* button)
 {
     button->setButtonText("Waiting...");
     button->setEnabled(false);
@@ -124,7 +124,7 @@ void JLX11AudioProcessorEditor::buttonClicked(juce::Button* button)
     startTimerHz(10);
 }
 
-void JLX11AudioProcessorEditor::timerCallback()
+void SynpleAudioProcessorEditor::timerCallback()
 {
     // if (!processorRef.midiLearn.load())
     // {
@@ -137,7 +137,7 @@ void JLX11AudioProcessorEditor::timerCallback()
     webView_.emitEventIfBrowserIsVisible("outputLevel", juce::var());
 }
 
-std::optional<JLX11AudioProcessorEditor::Resource> JLX11AudioProcessorEditor::getResource(const juce::String& url)
+std::optional<SynpleAudioProcessorEditor::Resource> SynpleAudioProcessorEditor::getResource(const juce::String& url)
 {
     static const juce::File resourceFileRoot{R"(../ui/public/)"};
     const auto resourceToRetrieve{url == "/" ? "index.html" : url.fromFirstOccurrenceOf("/", false, false)};
@@ -173,8 +173,8 @@ std::optional<JLX11AudioProcessorEditor::Resource> JLX11AudioProcessorEditor::ge
     return std::nullopt;
 }
 
-void JLX11AudioProcessorEditor::nativeFunction(const juce::Array<juce::var>& args,
-                                               juce::WebBrowserComponent::NativeFunctionCompletion completion)
+void SynpleAudioProcessorEditor::nativeFunction(const juce::Array<juce::var>& args,
+                                                juce::WebBrowserComponent::NativeFunctionCompletion completion)
 {
     juce::String concatanatedArgs;
     for (const auto& arg : args)

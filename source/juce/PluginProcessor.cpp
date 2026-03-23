@@ -29,7 +29,7 @@ inline static void castParameter(juce::AudioProcessorValueTreeState& apvts, cons
 } // namespace
 
 //==============================================================================
-JLX11AudioProcessor::JLX11AudioProcessor()
+SynpleAudioProcessor::SynpleAudioProcessor()
     : AudioProcessor(BusesProperties()
 #if !JucePlugin_IsMidiEffect
 #if !JucePlugin_IsSynth
@@ -72,18 +72,18 @@ JLX11AudioProcessor::JLX11AudioProcessor()
     setCurrentProgram(0);
 }
 
-JLX11AudioProcessor::~JLX11AudioProcessor()
+SynpleAudioProcessor::~SynpleAudioProcessor()
 {
     apvts_.state.removeListener(this);
 }
 
 //==============================================================================
-const juce::String JLX11AudioProcessor::getName() const
+const juce::String SynpleAudioProcessor::getName() const
 {
     return JucePlugin_Name;
 }
 
-bool JLX11AudioProcessor::acceptsMidi() const
+bool SynpleAudioProcessor::acceptsMidi() const
 {
 #if JucePlugin_WantsMidiInput
     return true;
@@ -92,7 +92,7 @@ bool JLX11AudioProcessor::acceptsMidi() const
 #endif
 }
 
-bool JLX11AudioProcessor::producesMidi() const
+bool SynpleAudioProcessor::producesMidi() const
 {
 #if JucePlugin_ProducesMidiOutput
     return true;
@@ -101,7 +101,7 @@ bool JLX11AudioProcessor::producesMidi() const
 #endif
 }
 
-bool JLX11AudioProcessor::isMidiEffect() const
+bool SynpleAudioProcessor::isMidiEffect() const
 {
 #if JucePlugin_IsMidiEffect
     return true;
@@ -110,22 +110,22 @@ bool JLX11AudioProcessor::isMidiEffect() const
 #endif
 }
 
-double JLX11AudioProcessor::getTailLengthSeconds() const
+double SynpleAudioProcessor::getTailLengthSeconds() const
 {
     return 0.0;
 }
 
-int JLX11AudioProcessor::getNumPrograms()
+int SynpleAudioProcessor::getNumPrograms()
 {
     return static_cast<int>(presets_.size());
 }
 
-int JLX11AudioProcessor::getCurrentProgram()
+int SynpleAudioProcessor::getCurrentProgram()
 {
     return currentProgram_;
 }
 
-void JLX11AudioProcessor::setCurrentProgram(int index)
+void SynpleAudioProcessor::setCurrentProgram(int index)
 {
     if (index < 0 || index >= getNumPrograms())
     {
@@ -173,18 +173,18 @@ void JLX11AudioProcessor::setCurrentProgram(int index)
     reset();
 }
 
-const juce::String JLX11AudioProcessor::getProgramName(int index)
+const juce::String SynpleAudioProcessor::getProgramName(int index)
 {
     return {presets_[static_cast<size_t>(index)].name()};
 }
 
-void JLX11AudioProcessor::changeProgramName(int index, const juce::String& newName)
+void SynpleAudioProcessor::changeProgramName(int index, const juce::String& newName)
 {
     juce::ignoreUnused(index, newName);
 }
 
 //==============================================================================
-void JLX11AudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
+void SynpleAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
     synth_.allocateResources(static_cast<float>(sampleRate), samplesPerBlock);
     parametersChanged_.store(true);
@@ -200,12 +200,12 @@ void JLX11AudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     envelopeFollowerOutputBuffer_.setSize(getTotalNumOutputChannels(), samplesPerBlock);
 }
 
-void JLX11AudioProcessor::releaseResources()
+void SynpleAudioProcessor::releaseResources()
 {
     synth_.deallocateResources();
 }
 
-bool JLX11AudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
+bool SynpleAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
 {
 #if JucePlugin_IsMidiEffect
     juce::ignoreUnused(layouts);
@@ -229,7 +229,7 @@ bool JLX11AudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) con
 #endif
 }
 
-void JLX11AudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+void SynpleAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ignoreUnused(midiMessages);
 
@@ -260,7 +260,7 @@ void JLX11AudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
         juce::Decibels::gainToDecibels(outputBlock.getSample(0u, static_cast<int>(outputBlock.getNumSamples() - 1))));
 }
 
-void JLX11AudioProcessor::reset()
+void SynpleAudioProcessor::reset()
 {
     synth_.reset();
     synth_.setOutputLevelInstantly(juce::Decibels::decibelsToGain(outputLevelParam_->get()));
@@ -270,18 +270,18 @@ void JLX11AudioProcessor::reset()
 }
 
 //==============================================================================
-bool JLX11AudioProcessor::hasEditor() const
+bool SynpleAudioProcessor::hasEditor() const
 {
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-juce::AudioProcessorEditor* JLX11AudioProcessor::createEditor()
+juce::AudioProcessorEditor* SynpleAudioProcessor::createEditor()
 {
-    return new JLX11AudioProcessorEditor(*this);
+    return new SynpleAudioProcessorEditor(*this);
 }
 
 //==============================================================================
-void JLX11AudioProcessor::getStateInformation(juce::MemoryBlock& destData)
+void SynpleAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
     copyXmlToBinary(*apvts_.copyState().createXml(), destData);
 
@@ -296,7 +296,7 @@ void JLX11AudioProcessor::getStateInformation(juce::MemoryBlock& destData)
     copyXmlToBinary(*xml, destData);
 }
 
-void JLX11AudioProcessor::setStateInformation(const void* data, int sizeInBytes)
+void SynpleAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
     std::unique_ptr<juce::XmlElement> xml{getXmlFromBinary(data, sizeInBytes)};
     if (xml && xml->hasTagName(pluginTag))
@@ -318,17 +318,17 @@ void JLX11AudioProcessor::setStateInformation(const void* data, int sizeInBytes)
     }
 }
 
-juce::AudioProcessorValueTreeState& JLX11AudioProcessor::getApvts()
+juce::AudioProcessorValueTreeState& SynpleAudioProcessor::getApvts()
 {
     return apvts_;
 }
 
-void JLX11AudioProcessor::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier&)
+void SynpleAudioProcessor::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier&)
 {
     parametersChanged_.store(true);
 }
 
-void JLX11AudioProcessor::update()
+void SynpleAudioProcessor::update()
 {
     const float sampleRate{static_cast<float>(getSampleRate())};
     const float inverseSampleRate{1.0f / sampleRate};
@@ -379,7 +379,7 @@ void JLX11AudioProcessor::update()
                              inverseSampleRate);
 }
 
-void JLX11AudioProcessor::createPrograms()
+void SynpleAudioProcessor::createPrograms()
 {
     // clang-format off
     presets_.clear();
@@ -440,7 +440,7 @@ void JLX11AudioProcessor::createPrograms()
     // clang-format on
 }
 
-void JLX11AudioProcessor::splitBufferByEvents(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+void SynpleAudioProcessor::splitBufferByEvents(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     int bufferOffset{0};
 
@@ -474,7 +474,7 @@ void JLX11AudioProcessor::splitBufferByEvents(juce::AudioBuffer<float>& buffer, 
     midiMessages.clear();
 }
 
-void JLX11AudioProcessor::handleMidi(const uint8_t data0, const uint8_t data1, const uint8_t data2)
+void SynpleAudioProcessor::handleMidi(const uint8_t data0, const uint8_t data1, const uint8_t data2)
 {
     // Control Change
     if ((data0 & 0xF0) == 0xB0)
@@ -508,7 +508,7 @@ void JLX11AudioProcessor::handleMidi(const uint8_t data0, const uint8_t data1, c
     synth_.midiMessage(data0, data1, data2);
 }
 
-void JLX11AudioProcessor::render(juce::AudioBuffer<float>& buffer, const int sampleCount, const int bufferOffset)
+void SynpleAudioProcessor::render(juce::AudioBuffer<float>& buffer, const int sampleCount, const int bufferOffset)
 {
     std::vector<std::span<float>> channels;
     channels.reserve(static_cast<size_t>(buffer.getNumChannels()));
@@ -521,7 +521,7 @@ void JLX11AudioProcessor::render(juce::AudioBuffer<float>& buffer, const int sam
     synth_.render(audioBuffer);
 }
 
-juce::AudioProcessorValueTreeState::ParameterLayout JLX11AudioProcessor::createParameterLayout()
+juce::AudioProcessorValueTreeState::ParameterLayout SynpleAudioProcessor::createParameterLayout()
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
@@ -705,5 +705,5 @@ juce::AudioProcessorValueTreeState::ParameterLayout JLX11AudioProcessor::createP
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new JLX11AudioProcessor();
+    return new SynpleAudioProcessor();
 }

@@ -43,12 +43,12 @@ PARAMETER_ID(polyMode)
 } // namespace parameter_id
 
 //==============================================================================
-class JLX11AudioProcessor final : public juce::AudioProcessor, private juce::ValueTree::Listener
+class SynpleAudioProcessor final : public juce::AudioProcessor, private juce::ValueTree::Listener
 {
   public:
     //==============================================================================
-    JLX11AudioProcessor();
-    ~JLX11AudioProcessor() override;
+    SynpleAudioProcessor();
+    ~SynpleAudioProcessor() override;
 
     //==============================================================================
     void prepareToPlay(double sampleRate, int samplesPerBlock) override;
@@ -138,5 +138,5 @@ class JLX11AudioProcessor final : public juce::AudioProcessor, private juce::Val
     juce::AudioBuffer<float> envelopeFollowerOutputBuffer_;
 
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(JLX11AudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynpleAudioProcessor)
 };

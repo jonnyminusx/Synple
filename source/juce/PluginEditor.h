@@ -3,11 +3,11 @@
 #include "PluginProcessor.h"
 
 //==============================================================================
-class JLX11AudioProcessorEditor final : public juce::AudioProcessorEditor, private juce::Button::Listener, juce::Timer
+class SynpleAudioProcessorEditor final : public juce::AudioProcessorEditor, private juce::Button::Listener, juce::Timer
 {
   public:
-    explicit JLX11AudioProcessorEditor(JLX11AudioProcessor&);
-    ~JLX11AudioProcessorEditor() override;
+    explicit SynpleAudioProcessorEditor(SynpleAudioProcessor&);
+    ~SynpleAudioProcessorEditor() override;
 
     void resized() override;
     void buttonClicked(juce::Button* button) override;
@@ -20,7 +20,7 @@ class JLX11AudioProcessorEditor final : public juce::AudioProcessorEditor, priva
     void nativeFunction(const juce::Array<juce::var>& args,
                         juce::WebBrowserComponent::NativeFunctionCompletion completion);
 
-    JLX11AudioProcessor& processorRef;
+    SynpleAudioProcessor& processorRef;
     juce::WebBrowserComponent webView_;
 
     juce::TextButton runJavaScriptButton_{"Run JavaScript"};
@@ -29,5 +29,5 @@ class JLX11AudioProcessorEditor final : public juce::AudioProcessorEditor, priva
 
     juce::Label labelUpdatedFromJavaScript_{"label", "Not updated from JavaScript yet"};
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(JLX11AudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynpleAudioProcessorEditor)
 };
