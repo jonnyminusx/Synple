@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../synth/AudioBuffer.h"
+#include "synth/AudioBuffer.h"
 
 namespace utils
 {

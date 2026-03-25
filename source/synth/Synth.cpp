@@ -1,7 +1,7 @@
 #include "Synth.h"
-#include "../utils/constants.h"
-#include "../utils/protectYourEars.h"
 #include "Output.h"
+#include "utils/constants.h"
+#include "utils/protectYourEars.h"
 
 namespace synth
 {

@@ -1,9 +1,8 @@
 #include "PluginProcessor.h"
-#include "../Preset.h"
-#include "../synth/AudioBuffer.h"
-#include "../synth/NoiseGenerator.h"
 #include "PluginEditor.h"
-
+#include "Preset.h"
+#include "synth/AudioBuffer.h"
+#include "synth/NoiseGenerator.h"
 #include <span>
 #include <vector>
 

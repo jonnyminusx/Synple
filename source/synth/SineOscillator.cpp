@@ -1,6 +1,6 @@
 #include "SineOscillator.h"
 
-#include "../utils/constants.h"
+#include "utils/constants.h"
 #include <cmath>
 
 namespace synth

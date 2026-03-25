@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../midi/CC.h"
 #include "GlideMode.h"
 #include "NoiseGenerator.h"
 #include "Voice.h"
+#include "midi/CC.h"
 
 #include <cstdint>
 #include <juce_audio_basics/juce_audio_basics.h>

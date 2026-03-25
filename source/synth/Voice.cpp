@@ -1,8 +1,8 @@
 #include "Voice.h"
 
-#include "../utils/constants.h"
 #include "GlideMode.h"
 #include "Output.h"
+#include "utils/constants.h"
 
 #include <algorithm>
 #include <numbers>

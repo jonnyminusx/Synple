@@ -90,6 +90,9 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SourceFiles})
 # Make the SourceFiles buildable
 target_sources(${PROJECT_NAME} PRIVATE ${SourceFiles})
 
+# Add source directory to include paths to avoid relative includes
+target_include_directories(${PROJECT_NAME} PRIVATE source)
+
 # These are some toggleable options from the JUCE CMake API
 target_compile_definitions(${PROJECT_NAME}
     PUBLIC
