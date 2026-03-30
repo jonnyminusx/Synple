@@ -98,11 +98,11 @@ void SynpleAudioProcessor::setCurrentProgram(int index)
 
     currentProgram_ = index;
 
-    juce::RangedAudioParameter* params[NUM_PARAMS]{};
+    juce::RangedAudioParameter* params[synth::NUM_PARAMS]{};
     parameters_.fillParameterArray(params);
 
-    const Preset& preset = presets_[static_cast<size_t>(index)];
-    for (size_t i = 0; i < NUM_PARAMS; ++i)
+    const synth::Preset& preset = presets_[static_cast<size_t>(index)];
+    for (size_t i = 0; i < synth::NUM_PARAMS; ++i)
     {
         params[i]->setValueNotifyingHost(params[i]->convertTo0to1(preset.parameters()[i]));
     }

@@ -30,8 +30,6 @@ CPMAddPackage(
 set(SourceFiles
         source/juce/Parameters.cpp
         source/juce/Parameters.h
-        source/juce/Presets.cpp
-        source/juce/Presets.h
         source/juce/PluginEditor.cpp
         source/juce/PluginEditor.h
         source/juce/PluginProcessor.cpp
@@ -50,6 +48,9 @@ set(SourceFiles
         source/synth/Oscillator.h
         source/synth/Output.h
         source/synth/Output.cpp
+    source/synth/Preset.h
+    source/synth/Presets.cpp
+    source/synth/Presets.h
         source/synth/SineOscillator.cpp
         source/synth/SineOscillator.h
         source/synth/Synth.cpp

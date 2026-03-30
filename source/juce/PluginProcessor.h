@@ -2,7 +2,7 @@
 
 #include "ParameterIDs.h"
 #include "Parameters.h"
-#include "Presets.h"
+#include "synth/Presets.h"
 #include "synth/Synth.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
@@ -65,7 +65,7 @@ class SynpleAudioProcessor final : public juce::AudioProcessor, private juce::Va
     synth::Synth synth_;
     Parameters parameters_;
     std::atomic<bool> parametersChanged_{false};
-    Presets presets_;
+    synth::Presets presets_;
     int currentProgram_;
     std::atomic<uint8_t> midiLearnCC_{0};
 

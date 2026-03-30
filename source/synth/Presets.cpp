@@ -1,5 +1,8 @@
 #include "Presets.h"
 
+namespace synth
+{
+
 Presets::Presets()
 {
     createPrograms();
@@ -65,3 +68,5 @@ void Presets::createPrograms()
     presets_.emplace_back("Squelchy Frog", 50.00f, -5.00f, -7.90f, 2.00f, 77.00f, -36.00f, 40.00f, 65.00f, 90.00f, 0.00f, 0.00f, 33.00f, 50.00f, 0.00f, 25.00f, 0.00f, 70.00f, 65.00f, 18.00f, 0.32f, 100.00f, 0.00f, -2.00f, 0.00f, 0.00f, 1.00f);
     // clang-format on
 }
+
+} // namespace synth

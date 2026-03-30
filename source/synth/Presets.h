@@ -3,6 +3,9 @@
 #include "Preset.h"
 #include <vector>
 
+namespace synth
+{
+
 class Presets
 {
   public:
@@ -22,3 +25,5 @@ class Presets
 
     std::vector<Preset> presets_;
 };
+
+} // namespace synth

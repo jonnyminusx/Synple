@@ -1,8 +1,12 @@
 #pragma once
 
+#include <cstddef>
 #include <cstring>
 
-const int NUM_PARAMS = 26;
+namespace synth
+{
+
+inline constexpr std::size_t NUM_PARAMS = 26;
 
 class Preset
 {
@@ -79,3 +83,5 @@ class Preset
     char name_[40];
     float parameters_[NUM_PARAMS];
 };
+
+} // namespace synth
