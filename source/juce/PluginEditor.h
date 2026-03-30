@@ -21,13 +21,19 @@ class SynpleAudioProcessorEditor final : public juce::AudioProcessorEditor, priv
                         juce::WebBrowserComponent::NativeFunctionCompletion completion);
 
     SynpleAudioProcessor& processorRef;
-    juce::WebBrowserComponent webView_;
+
+    juce::Slider outputLevelSlider_;
+    juce::SliderParameterAttachment outputLevelAttachment_;
 
     juce::TextButton runJavaScriptButton_{"Run JavaScript"};
     juce::TextButton emitJavaScriptEventButton_{"Emit JavaScript Event"};
     juce::TextButton midiLearnButton_{"MIDI Learn"};
 
     juce::Label labelUpdatedFromJavaScript_{"label", "Not updated from JavaScript yet"};
+
+    juce::WebSliderRelay webOutputLevelRelay_;
+    juce::WebBrowserComponent webView_;
+    juce::WebSliderParameterAttachment webOutputLevelAttachment_;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynpleAudioProcessorEditor)
 };

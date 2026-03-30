@@ -44,6 +44,9 @@ constexpr auto localDevServerAddress{"http://127.0.0.1:8080"};
 SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
     : AudioProcessorEditor(&p),
       processorRef(p),
+      outputLevelAttachment_(*processorRef.getApvts().getParameter(parameter_id::outputLevel.getParamID()),
+                             outputLevelSlider_),
+      webOutputLevelRelay_(parameter_id::outputLevel.getParamID()),
       webView_(juce::WebBrowserComponent::Options()
                    .withResourceProvider([this](const auto& url) { return getResource(url); },
                                          juce::URL(localDevServerAddress).getOrigin())
@@ -57,13 +60,16 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
                                               juce::WebBrowserComponent::NativeFunctionCompletion completion) {
                                            nativeFunction(args, std::move(completion));
                                        })
-                   .withEventListener("exampleJavaScriptEvent", [this](juce::var objectFromFrontEnd) {
-                       labelUpdatedFromJavaScript_.setText(
-                           "Received event from JavaScript with data: " +
-                               objectFromFrontEnd.getProperty("emittedCount", 0).toString(),
-                           juce::dontSendNotification);
-                   }))
-
+                   .withEventListener("exampleJavaScriptEvent",
+                                      [this](juce::var objectFromFrontEnd) {
+                                          labelUpdatedFromJavaScript_.setText(
+                                              "Received event from JavaScript with data: " +
+                                                  objectFromFrontEnd.getProperty("emittedCount", 0).toString(),
+                                              juce::dontSendNotification);
+                                      })
+                   .withOptionsFrom(webOutputLevelRelay_)),
+      webOutputLevelAttachment_(*processorRef.getApvts().getParameter(parameter_id::outputLevel.getParamID()),
+                                webOutputLevelRelay_)
 {
     // webView_.goToURL(webView_.getResourceProviderRoot());
     webView_.goToURL(localDevServerAddress);
@@ -90,9 +96,12 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
     labelUpdatedFromJavaScript_.setColour(juce::Label::textColourId, juce::Colours::black);
 
     addAndMakeVisible(webView_);
+    addAndMakeVisible(outputLevelSlider_);
     addAndMakeVisible(runJavaScriptButton_);
     addAndMakeVisible(emitJavaScriptEventButton_);
     addAndMakeVisible(labelUpdatedFromJavaScript_);
+
+    outputLevelSlider_.setSliderStyle(juce::Slider::LinearBar);
 
     setResizable(true, true);
     setSize(800, 600);
@@ -113,6 +122,7 @@ void SynpleAudioProcessorEditor::resized()
     runJavaScriptButton_.setBounds(bounds.removeFromTop(50).reduced(5));
     emitJavaScriptEventButton_.setBounds(bounds.removeFromTop(50).reduced(5));
     labelUpdatedFromJavaScript_.setBounds(bounds.removeFromTop(50).reduced(5));
+    outputLevelSlider_.setBounds(bounds.removeFromTop(50).reduced(5));
 }
 
 void SynpleAudioProcessorEditor::buttonClicked(juce::Button* button)

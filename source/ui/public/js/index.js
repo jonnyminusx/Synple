@@ -38,6 +38,32 @@ document.addEventListener("DOMContentLoaded", () => {
         window.__JUCE__.backend.emitEvent("exampleJavaScriptEvent", { emittedCount: emittedCount });
     });
 
+    const slider = document.getElementById("outputLevelSlider");
+    const sliderState = Juce.getSliderState("outputLevel");
+
+    let sliderReady = false;
+
+    const applySliderProperties = () => {
+        const p = sliderState.properties;
+        slider.min = p.start;
+        slider.max = p.end;
+        slider.step = p.interval > 0 ? p.interval : (p.end - p.start) / p.numSteps;
+        slider.value = sliderState.getScaledValue();
+        sliderReady = true;
+    };
+
+    sliderState.propertiesChangedEvent.addListener(applySliderProperties);
+
+    sliderState.valueChangedEvent.addListener(() => {
+        if (!sliderReady) return;
+        slider.value = sliderState.getScaledValue();
+    });
+
+    slider.oninput = function () {
+        if (!sliderReady) return;
+        sliderState.setNormalisedValue((this.value - slider.min) / (slider.max - slider.min));
+    };
+
     const base = -60;
     Plotly.newPlot("outputLevelPlot", {
         data: [
