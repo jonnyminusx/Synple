@@ -28,6 +28,10 @@ CPMAddPackage(
 
 # Make sure you include any new source files here
 set(SourceFiles
+        source/juce/Parameters.cpp
+        source/juce/Parameters.h
+        source/juce/Presets.cpp
+        source/juce/Presets.h
         source/juce/PluginEditor.cpp
         source/juce/PluginEditor.h
         source/juce/PluginProcessor.cpp
