@@ -26,20 +26,25 @@ class Synth
 
     void setNoiseMix(const float noiseMix);
     void setOscillatorMix(const float oscillatorMix);
-    void setDetune(const float semi, const float cent);
+    void setDetune(const float detune);
     void setTune(const float tune);
     void setPolyphonic(const bool polyphonic);
     void setOutputLevel(const float outputLevel);
-    void setVolumeTrim(const float filterReso);
+    void setVolumeTrim(const float volumeTrim);
     void setOutputLevelInstantly(const float outputLevel);
-    void setFilterVelocity(const float filterVelocity);
-    void setLfoIncrement(const float lfoRateParam, const float inverseSampleRate);
-    void setVibratoAmount(const float vibratoParam);
-    void setGlide(const int glideMode, const float glideRate, const float glideBend, const float inverseSampleRate);
-    void setFilterKeyTracking(const float filterKeyTrackingParam);
-    void setFilterQ(const float filterReso);
+    void setIgnoreVelocity(const bool ignoreVelocity);
+    void setVelocitySensitivity(const float velocitySensitivity);
+    void setLfoIncrement(const float lfoIncrement);
+    void setVibratoAmount(const float vibratoAmount);
+    void setPwmDepth(const float pwmDepth);
+    void setGlideMode(const int glideMode);
+    void setGlideRate(const float glideRate);
+    void setGlideBend(const float glideBend);
+    void setFilterKeyTracking(const float filterKeyTracking);
+    void setFilterQ(const float filterQ);
     void setFilterLfoDepth(const float filterLfoDepth);
-    void setFilterEnvelope(const ADSR& adsr, const float envDepth);
+    void setFilterEnvelope(const ADSR& adsr);
+    void setFilterEnvelopeDepth(const float envDepth);
     void setEnvelope(const ADSR& adsr);
 
     midi::CC resoCC = 0x47;

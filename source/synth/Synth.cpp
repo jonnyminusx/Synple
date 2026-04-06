@@ -159,9 +159,9 @@ void Synth::controlChange(const uint8_t controller, const uint8_t value)
     }
 }
 
-void Synth::setVolumeTrim(const float filterReso)
+void Synth::setVolumeTrim(const float volumeTrim)
 {
-    volumeTrim_ = 0.0008f * (3.2f - oscillatorMix_ - 25.0f * noiseMix_) * (1.5f - 0.5f * filterReso);
+    volumeTrim_ = volumeTrim;
 }
 
 void Synth::updateLfo()
@@ -363,9 +363,9 @@ void Synth::setOscillatorMix(const float oscillatorMix)
     oscillatorMix_ = oscillatorMix;
 }
 
-void Synth::setDetune(const float semi, const float cent)
+void Synth::setDetune(const float detune)
 {
-    detune_ = std::pow(1.059463094359f, -semi - 0.01f * cent);
+    detune_ = detune;
 }
 
 void Synth::setTune(const float tune)
@@ -383,79 +383,72 @@ void Synth::setOutputLevel(const float outputLevel)
     outputLevelSmoother_.setTargetValue(outputLevel);
 }
 
-void Synth::setFilterVelocity(const float filterVelocity)
+void Synth::setIgnoreVelocity(const bool ignoreVelocity)
 {
-    if (filterVelocity < -90.0f)
-    {
-        ignoreVelocity_ = true;
-        velocitySensitivity_ = 0.0f;
-    }
-    else
-    {
-        ignoreVelocity_ = false;
-        velocitySensitivity_ = filterVelocity * 0.0005f;
-    }
+    ignoreVelocity_ = ignoreVelocity;
 }
 
-void Synth::setLfoIncrement(const float lfoRateParam, const float inverseSampleRate)
+void Synth::setVelocitySensitivity(const float velocitySensitivity)
 {
-    const float inverseUpdateRate = inverseSampleRate * lfoMaxSamplesPerUpdate_;
-    const float lfoRate = std::exp(7.0f * lfoRateParam - 4.0f);
-    lfoIncrement_ = lfoRate * inverseUpdateRate * constants::tau;
+    velocitySensitivity_ = velocitySensitivity;
 }
 
-void Synth::setVibratoAmount(const float vibratoParam)
+void Synth::setLfoIncrement(const float lfoIncrement)
 {
-    const float vibrato = vibratoParam / 200.0f;
-    vibratoAmount_ = 0.2f * vibrato * vibrato;
-    pwmDepth_ = vibratoAmount_;
-    if (vibrato < 0.0f)
-    {
-        vibratoAmount_ = 0.0f;
-    }
+    lfoIncrement_ = lfoIncrement;
 }
 
-void Synth::setGlide(const int glideMode, const float glideRate, const float glideBend, const float inverseSampleRate)
+void Synth::setVibratoAmount(const float vibratoAmount)
 {
-    const float inverseUpdateRate = inverseSampleRate * lfoMaxSamplesPerUpdate_;
+    vibratoAmount_ = vibratoAmount;
+}
 
+void Synth::setPwmDepth(const float pwmDepth)
+{
+    pwmDepth_ = pwmDepth;
+}
+
+void Synth::setGlideMode(const int glideMode)
+{
     glideMode_ = static_cast<GlideMode>(glideMode);
+}
 
-    if (glideRate < 2.0f)
-    {
-        glideRate_ = 1.0f; // No glide.
-    }
-    else
-    {
-        glideRate_ = 1.0f - std::exp(-inverseUpdateRate * std::exp(6.0f - 0.07f * glideRate));
-    }
+void Synth::setGlideRate(const float glideRate)
+{
+    glideRate_ = glideRate;
+}
 
+void Synth::setGlideBend(const float glideBend)
+{
     glideBend_ = glideBend;
 }
 
-void Synth::setFilterKeyTracking(const float filterKeyTrackingParam)
+void Synth::setFilterKeyTracking(const float filterKeyTracking)
 {
-    filterKeyTracking_ = (0.08f * filterKeyTrackingParam) - 1.5f;
+    filterKeyTracking_ = filterKeyTracking;
 }
 
-void Synth::setFilterQ(const float filterReso)
+void Synth::setFilterQ(const float filterQ)
 {
-    filterQ_ = std::exp(3.0f * filterReso);
+    filterQ_ = filterQ;
 }
 
 void Synth::setFilterLfoDepth(const float filterLfoDepth)
 {
-    filterLfoDepth_ = 2.5f * filterLfoDepth * filterLfoDepth;
+    filterLfoDepth_ = filterLfoDepth;
 }
 
-void Synth::setFilterEnvelope(const ADSR& adsr, const float envDepth)
+void Synth::setFilterEnvelope(const ADSR& adsr)
 {
     for (Voice& voice : voices_)
     {
         voice.filterEnvelope().setADSR(adsr);
     }
+}
 
-    filterEnvDepth_ = 0.06f * envDepth;
+void Synth::setFilterEnvelopeDepth(const float envDepth)
+{
+    filterEnvDepth_ = envDepth;
 }
 
 void Synth::setOutputLevelInstantly(const float outputLevel)

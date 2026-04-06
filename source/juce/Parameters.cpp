@@ -224,6 +224,286 @@ Parameters::Parameters(juce::AudioProcessor& processor) : apvts_(processor, null
     castParameter(apvts_, parameter_id::polyMode, polyModeParam_);
 }
 
+juce::AudioProcessorValueTreeState& Parameters::getApvts()
+{
+    return apvts_;
+}
+
+float Parameters::oscillatorMix() const
+{
+    return oscMix() / 100.0f;
+}
+
+float Parameters::filterResonance() const
+{
+    return filterReso() / 100.0f;
+}
+
+float Parameters::filterEnvelopeDepth() const
+{
+    return 0.06f * filterEnv();
+}
+
+float Parameters::outputGain() const
+{
+    return juce::Decibels::decibelsToGain(outputLevel());
+}
+
+bool Parameters::isPolyphonic() const
+{
+    return polyMode() == 1;
+}
+
+int Parameters::glideModeIndex() const
+{
+    return glideMode();
+}
+
+float Parameters::glideBendSemitones() const
+{
+    return glideBend();
+}
+
+float Parameters::oscMix() const
+{
+    return oscMixParam_->get();
+}
+
+float Parameters::oscTune() const
+{
+    return oscTuneParam_->get();
+}
+
+float Parameters::oscFine() const
+{
+    return oscFineParam_->get();
+}
+
+int Parameters::glideMode() const
+{
+    return glideModeParam_->getIndex();
+}
+
+float Parameters::glideRate() const
+{
+    return glideRateParam_->get();
+}
+
+float Parameters::glideBend() const
+{
+    return glideBendParam_->get();
+}
+
+float Parameters::filterFreq() const
+{
+    return filterFreqParam_->get();
+}
+
+float Parameters::filterReso() const
+{
+    return filterResoParam_->get();
+}
+
+float Parameters::filterEnv() const
+{
+    return filterEnvParam_->get();
+}
+
+float Parameters::filterLFO() const
+{
+    return filterLFOParam_->get();
+}
+
+float Parameters::filterVelocity() const
+{
+    return filterVelocityParam_->get();
+}
+
+float Parameters::filterAttack() const
+{
+    return filterAttackParam_->get();
+}
+
+float Parameters::filterDecay() const
+{
+    return filterDecayParam_->get();
+}
+
+float Parameters::filterSustain() const
+{
+    return filterSustainParam_->get();
+}
+
+float Parameters::filterRelease() const
+{
+    return filterReleaseParam_->get();
+}
+
+float Parameters::envAttack() const
+{
+    return envAttackParam_->get();
+}
+
+float Parameters::envDecay() const
+{
+    return envDecayParam_->get();
+}
+
+float Parameters::envSustain() const
+{
+    return envSustainParam_->get();
+}
+
+float Parameters::envRelease() const
+{
+    return envReleaseParam_->get();
+}
+
+float Parameters::lfoRate() const
+{
+    return lfoRateParam_->get();
+}
+
+float Parameters::vibrato() const
+{
+    return vibratoParam_->get();
+}
+
+float Parameters::noise() const
+{
+    return noiseParam_->get();
+}
+
+float Parameters::octave() const
+{
+    return octaveParam_->get();
+}
+
+float Parameters::tuning() const
+{
+    return tuningParam_->get();
+}
+
+float Parameters::outputLevel() const
+{
+    return outputLevelParam_->get();
+}
+
+int Parameters::polyMode() const
+{
+    return polyModeParam_->getIndex();
+}
+
+float Parameters::multiplierFromParam(const float rateScale, const float paramValue)
+{
+    return std::exp(-rateScale * std::exp(5.5f - 0.075f * paramValue));
+}
+
+float Parameters::detune() const
+{
+    return std::pow(1.059463094359f, -oscTune() - 0.01f * oscFine());
+}
+
+float Parameters::tune(const float sampleRate) const
+{
+    const float tuneInSemi{-36.3763f - 12.0f * octave() - tuning() / 100.0f};
+    return sampleRate * std::exp(0.05776226505f * tuneInSemi);
+}
+
+float Parameters::filterQ() const
+{
+    return std::exp(3.0f * filterResonance());
+}
+
+float Parameters::filterKeyTracking() const
+{
+    return (0.08f * filterFreq()) - 1.5f;
+}
+
+bool Parameters::shouldIgnoreVelocity() const
+{
+    return filterVelocity() < -90.0f;
+}
+
+float Parameters::filterVelocitySensitivity() const
+{
+    return shouldIgnoreVelocity() ? 0.0f : filterVelocity() * 0.0005f;
+}
+
+float Parameters::filterLfoDepth() const
+{
+    const float depth{filterLFO() / 100.0f};
+    return 2.5f * depth * depth;
+}
+
+synth::ADSR Parameters::envelope(const float inverseSampleRate) const
+{
+    const float releaseParamValue{envRelease()};
+    const float release = releaseParamValue < 1.0f ? 0.75f : multiplierFromParam(inverseSampleRate, releaseParamValue);
+
+    return synth::ADSR{multiplierFromParam(inverseSampleRate, envAttack()),
+                       multiplierFromParam(inverseSampleRate, envDecay()),
+                       envSustain() / 100.0f,
+                       release};
+}
+
+synth::ADSR Parameters::filterEnvelope(const float inverseUpdateRate) const
+{
+    const float sustain{filterSustain() / 100.0f};
+
+    return synth::ADSR{multiplierFromParam(inverseUpdateRate, filterAttack()),
+                       multiplierFromParam(inverseUpdateRate, filterDecay()),
+                       sustain * sustain,
+                       multiplierFromParam(inverseUpdateRate, filterRelease())};
+}
+
+float Parameters::noiseMix() const
+{
+    const float normalisedNoise{noise() / 100.0f};
+    return normalisedNoise * normalisedNoise * 0.06f;
+}
+
+float Parameters::volumeTrim() const
+{
+    return 0.0008f * (3.2f - oscillatorMix() - 25.0f * noiseMix()) * (1.5f - 0.5f * filterResonance());
+}
+
+float Parameters::lfoIncrement(const float inverseSampleRate, const float updateInterval) const
+{
+    const float inverseUpdateRate = inverseSampleRate * updateInterval;
+    const float lfoHz = std::exp(7.0f * lfoRate() - 4.0f);
+    return lfoHz * inverseUpdateRate * juce::MathConstants<float>::twoPi;
+}
+
+float Parameters::vibratoAmount() const
+{
+    const float rawVibrato{vibrato() / 200.0f};
+    if (rawVibrato < 0.0f)
+    {
+        return 0.0f;
+    }
+
+    return 0.2f * rawVibrato * rawVibrato;
+}
+
+float Parameters::pwmDepth() const
+{
+    const float rawVibrato{vibrato() / 200.0f};
+    return 0.2f * rawVibrato * rawVibrato;
+}
+
+float Parameters::glideRateCoefficient(const float inverseSampleRate, const float updateInterval) const
+{
+    const float inverseUpdateRate = inverseSampleRate * updateInterval;
+
+    if (glideRate() < 2.0f)
+    {
+        return 1.0f;
+    }
+
+    return 1.0f - std::exp(-inverseUpdateRate * std::exp(6.0f - 0.07f * glideRate()));
+}
+
 void Parameters::fillParameterArray(juce::RangedAudioParameter** params) const
 {
     params[0] = oscMixParam_;

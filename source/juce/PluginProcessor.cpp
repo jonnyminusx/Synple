@@ -200,7 +200,7 @@ void SynpleAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::
 void SynpleAudioProcessor::reset()
 {
     synth_.reset();
-    synth_.setOutputLevelInstantly(juce::Decibels::decibelsToGain(parameters_.outputLevel()));
+    synth_.setOutputLevelInstantly(parameters_.outputGain());
 
     midiLearn.store(false);
     midiLearnCC_.store(synth_.resoCC);
@@ -267,52 +267,32 @@ void SynpleAudioProcessor::update()
 {
     const float sampleRate{static_cast<float>(getSampleRate())};
     const float inverseSampleRate{1.0f / sampleRate};
+    constexpr float modulationUpdateInterval{32.0f};
 
-    synth_.setOscillatorMix(parameters_.oscMix() / 100.0f);
-    synth_.setDetune(parameters_.oscTune(), parameters_.oscFine());
+    synth_.setOscillatorMix(parameters_.oscillatorMix());
+    synth_.setDetune(parameters_.detune());
+    synth_.setTune(parameters_.tune(sampleRate));
 
-    const float octave{parameters_.octave()};
-    const float tuning{parameters_.tuning()};
-    const float tuneInSemi{-36.3763f - 12.0f * octave - tuning / 100.0f};
-    synth_.setTune(sampleRate * std::exp(0.05776226505f * tuneInSemi));
+    synth_.setFilterQ(parameters_.filterQ());
+    synth_.setFilterKeyTracking(parameters_.filterKeyTracking());
+    synth_.setIgnoreVelocity(parameters_.shouldIgnoreVelocity());
+    synth_.setVelocitySensitivity(parameters_.filterVelocitySensitivity());
+    synth_.setFilterLfoDepth(parameters_.filterLfoDepth());
+    synth_.setEnvelope(parameters_.envelope(inverseSampleRate));
 
-    const float filterReso{parameters_.filterReso() / 100.0f};
-    synth_.setFilterQ(filterReso);
-    synth_.setFilterKeyTracking(parameters_.filterFreq());
-    synth_.setFilterVelocity(parameters_.filterVelocity());
-    synth_.setFilterLfoDepth(parameters_.filterLFO() / 100.0f);
+    synth_.setNoiseMix(parameters_.noiseMix());
+    synth_.setOutputLevel(parameters_.outputGain());
+    synth_.setVolumeTrim(parameters_.volumeTrim());
 
-    const auto multiplierFromParam = [](const float rateScale, const float paramValue) {
-        return std::exp(-rateScale * std::exp(5.5f - 0.075f * paramValue));
-    };
-
-    const float releaseParamValue{parameters_.envRelease()};
-    const float envelopeRelease =
-        releaseParamValue < 1.0f ? 0.75f : multiplierFromParam(inverseSampleRate, releaseParamValue);
-    synth_.setEnvelope(synth::ADSR{multiplierFromParam(inverseSampleRate, parameters_.envAttack()),
-                                   multiplierFromParam(inverseSampleRate, parameters_.envDecay()),
-                                   parameters_.envSustain() / 100.0f,
-                                   envelopeRelease});
-
-    const float noiseMix{parameters_.noise() / 100.0f};
-    synth_.setNoiseMix(noiseMix * noiseMix * 0.06f);
-
-    synth_.setOutputLevel(juce::Decibels::decibelsToGain(parameters_.outputLevel()));
-    synth_.setVolumeTrim(filterReso);
-
-    synth_.setPolyphonic(parameters_.polyMode() == 1);
-    synth_.setLfoIncrement(parameters_.lfoRate(), inverseSampleRate);
-    synth_.setVibratoAmount(parameters_.vibrato());
-    synth_.setGlide(parameters_.glideMode(), parameters_.glideRate(), parameters_.glideBend(), inverseSampleRate);
-
-    constexpr float filterEnvelopeUpdateInterval{32.0f};
-    const float inverseUpdateRate{inverseSampleRate * filterEnvelopeUpdateInterval};
-    const float filterSustain{parameters_.filterSustain() / 100.0f};
-    synth_.setFilterEnvelope(synth::ADSR{multiplierFromParam(inverseUpdateRate, parameters_.filterAttack()),
-                                         multiplierFromParam(inverseUpdateRate, parameters_.filterDecay()),
-                                         filterSustain * filterSustain,
-                                         multiplierFromParam(inverseUpdateRate, parameters_.filterRelease())},
-                             parameters_.filterEnv());
+    synth_.setPolyphonic(parameters_.isPolyphonic());
+    synth_.setLfoIncrement(parameters_.lfoIncrement(inverseSampleRate, modulationUpdateInterval));
+    synth_.setVibratoAmount(parameters_.vibratoAmount());
+    synth_.setPwmDepth(parameters_.pwmDepth());
+    synth_.setGlideMode(parameters_.glideModeIndex());
+    synth_.setGlideRate(parameters_.glideRateCoefficient(inverseSampleRate, modulationUpdateInterval));
+    synth_.setGlideBend(parameters_.glideBendSemitones());
+    synth_.setFilterEnvelope(parameters_.filterEnvelope(inverseSampleRate * modulationUpdateInterval));
+    synth_.setFilterEnvelopeDepth(parameters_.filterEnvelopeDepth());
 }
 
 void SynpleAudioProcessor::splitBufferByEvents(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)

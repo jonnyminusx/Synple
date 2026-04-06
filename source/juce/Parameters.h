@@ -1,5 +1,6 @@
 #pragma once
 
+#include "synth/ADSR.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 
 class Parameters
@@ -7,116 +8,30 @@ class Parameters
   public:
     explicit Parameters(juce::AudioProcessor& processor);
 
-    juce::AudioProcessorValueTreeState& getApvts()
-    {
-        return apvts_;
-    }
+    juce::AudioProcessorValueTreeState& getApvts();
 
-    // Typed value accessors
-    float oscMix() const
-    {
-        return oscMixParam_->get();
-    }
-    float oscTune() const
-    {
-        return oscTuneParam_->get();
-    }
-    float oscFine() const
-    {
-        return oscFineParam_->get();
-    }
-    int glideMode() const
-    {
-        return glideModeParam_->getIndex();
-    }
-    float glideRate() const
-    {
-        return glideRateParam_->get();
-    }
-    float glideBend() const
-    {
-        return glideBendParam_->get();
-    }
-    float filterFreq() const
-    {
-        return filterFreqParam_->get();
-    }
-    float filterReso() const
-    {
-        return filterResoParam_->get();
-    }
-    float filterEnv() const
-    {
-        return filterEnvParam_->get();
-    }
-    float filterLFO() const
-    {
-        return filterLFOParam_->get();
-    }
-    float filterVelocity() const
-    {
-        return filterVelocityParam_->get();
-    }
-    float filterAttack() const
-    {
-        return filterAttackParam_->get();
-    }
-    float filterDecay() const
-    {
-        return filterDecayParam_->get();
-    }
-    float filterSustain() const
-    {
-        return filterSustainParam_->get();
-    }
-    float filterRelease() const
-    {
-        return filterReleaseParam_->get();
-    }
-    float envAttack() const
-    {
-        return envAttackParam_->get();
-    }
-    float envDecay() const
-    {
-        return envDecayParam_->get();
-    }
-    float envSustain() const
-    {
-        return envSustainParam_->get();
-    }
-    float envRelease() const
-    {
-        return envReleaseParam_->get();
-    }
-    float lfoRate() const
-    {
-        return lfoRateParam_->get();
-    }
-    float vibrato() const
-    {
-        return vibratoParam_->get();
-    }
-    float noise() const
-    {
-        return noiseParam_->get();
-    }
-    float octave() const
-    {
-        return octaveParam_->get();
-    }
-    float tuning() const
-    {
-        return tuningParam_->get();
-    }
-    float outputLevel() const
-    {
-        return outputLevelParam_->get();
-    }
-    int polyMode() const
-    {
-        return polyModeParam_->getIndex();
-    }
+    float oscillatorMix() const;
+    float detune() const;
+    float tune(float sampleRate) const;
+    float filterResonance() const;
+    float filterQ() const;
+    float filterKeyTracking() const;
+    bool shouldIgnoreVelocity() const;
+    float filterVelocitySensitivity() const;
+    float filterLfoDepth() const;
+    float filterEnvelopeDepth() const;
+    synth::ADSR envelope(float inverseSampleRate) const;
+    synth::ADSR filterEnvelope(float inverseUpdateRate) const;
+    float noiseMix() const;
+    float volumeTrim() const;
+    float outputGain() const;
+    bool isPolyphonic() const;
+    float lfoIncrement(float inverseSampleRate, float updateInterval) const;
+    float vibratoAmount() const;
+    float pwmDepth() const;
+    int glideModeIndex() const;
+    float glideBendSemitones() const;
+    float glideRateCoefficient(float inverseSampleRate, float updateInterval) const;
 
     // Fills a 26-element array with all parameters in canonical preset order
     void fillParameterArray(juce::RangedAudioParameter** params) const;
@@ -125,6 +40,36 @@ class Parameters
     void setOutputLevelFromMidi(float normalised0to1);
 
   private:
+    static float multiplierFromParam(float rateScale, float paramValue);
+
+    // Raw parameter accessors for internal mapping only
+    float oscMix() const;
+    float oscTune() const;
+    float oscFine() const;
+    int glideMode() const;
+    float glideRate() const;
+    float glideBend() const;
+    float filterFreq() const;
+    float filterReso() const;
+    float filterEnv() const;
+    float filterLFO() const;
+    float filterVelocity() const;
+    float filterAttack() const;
+    float filterDecay() const;
+    float filterSustain() const;
+    float filterRelease() const;
+    float envAttack() const;
+    float envDecay() const;
+    float envSustain() const;
+    float envRelease() const;
+    float lfoRate() const;
+    float vibrato() const;
+    float noise() const;
+    float octave() const;
+    float tuning() const;
+    float outputLevel() const;
+    int polyMode() const;
+
     // apvts_ must be declared first so it is constructed before the raw pointers
     juce::AudioProcessorValueTreeState apvts_;
 
