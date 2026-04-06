@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ADSR.h"
 #include "GlideMode.h"
 #include "NoiseGenerator.h"
 #include "Voice.h"
@@ -38,17 +39,8 @@ class Synth
     void setFilterKeyTracking(const float filterKeyTrackingParam);
     void setFilterQ(const float filterReso);
     void setFilterLfoDepth(const float filterLfoDepth);
-    void setFilterEnvelope(const float attack,
-                           const float decay,
-                           const float sustain,
-                           const float release,
-                           const float envDepth,
-                           const float inverseSampleRate);
-
-    void setEnvelopeDecay(const float decayTime);
-    void setEnvelopeAttack(const float attackTime);
-    void setEnvelopeSustain(const float sustainLevel);
-    void setEnvelopeRelease(const float releaseTime);
+    void setFilterEnvelope(const ADSR& adsr, const float envDepth);
+    void setEnvelope(const ADSR& adsr);
 
     midi::CC resoCC = 0x47;
 
@@ -86,11 +78,6 @@ class Synth
     float velocitySensitivity_{0.0f};
     bool ignoreVelocity_{false};
 
-    float envelopeAttack_{0.0f};
-    float envelopeDecay_{0.0f};
-    float envelopeSustain_{0.0f};
-    float envelopeRelease_{0.0f};
-
     float sampleRate_{44100.0f};
     bool sustainPedalPressed_{false};
 
@@ -112,11 +99,6 @@ class Synth
     float filterControl_{0.0f};
     float filterZip_{0.0f};
     float pressure_{0.0f};
-
-    float filterAttack_{0.0f};
-    float filterDecay_{0.0f};
-    float filterSustain_{0.0f};
-    float filterRelease_{0.0f};
     float filterEnvDepth_{0.0f};
 };
 

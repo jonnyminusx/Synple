@@ -20,13 +20,13 @@ void Envelope::attack()
 {
     level_ += silence + silence;
     target_ = 2.0f;
-    multiplier_ = attackMultiplier_;
+    multiplier_ = adsr_.attack;
 }
 
 void Envelope::release()
 {
     target_ = 0.0f;
-    multiplier_ = releaseMultiplier_;
+    multiplier_ = adsr_.release;
 }
 
 bool Envelope::isActive() const
@@ -59,24 +59,9 @@ void Envelope::setMultiplier(const float multiplier)
     multiplier_ = multiplier;
 }
 
-void Envelope::setAttackMultiplier(const float attackMultiplier)
+void Envelope::setADSR(const ADSR& adsr)
 {
-    attackMultiplier_ = attackMultiplier;
-}
-
-void Envelope::setDecayMultiplier(const float decayMultiplier)
-{
-    decayMultiplier_ = decayMultiplier;
-}
-
-void Envelope::setSustainLevel(const float sustainLevel)
-{
-    sustainLevel_ = sustainLevel;
-}
-
-void Envelope::setReleaseMultiplier(const float releaseMultiplier)
-{
-    releaseMultiplier_ = releaseMultiplier;
+    adsr_ = adsr;
 }
 
 float Envelope::nextValue()
@@ -85,8 +70,8 @@ float Envelope::nextValue()
 
     if (level_ + target_ > 3.0f)
     {
-        multiplier_ = decayMultiplier_;
-        target_ = sustainLevel_;
+        multiplier_ = adsr_.decay;
+        target_ = adsr_.sustain;
     }
 
     return level_;

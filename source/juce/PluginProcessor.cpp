@@ -282,18 +282,17 @@ void SynpleAudioProcessor::update()
     synth_.setFilterVelocity(parameters_.filterVelocity());
     synth_.setFilterLfoDepth(parameters_.filterLFO() / 100.0f);
 
-    synth_.setEnvelopeAttack(std::exp(-inverseSampleRate * std::exp(5.5f - 0.075f * parameters_.envAttack())));
-    synth_.setEnvelopeDecay(std::exp(-inverseSampleRate * std::exp(5.5f - 0.075f * parameters_.envDecay())));
-    synth_.setEnvelopeSustain(parameters_.envSustain() / 100.0f);
+    const auto multiplierFromParam = [](const float rateScale, const float paramValue) {
+        return std::exp(-rateScale * std::exp(5.5f - 0.075f * paramValue));
+    };
+
     const float releaseParamValue{parameters_.envRelease()};
-    if (releaseParamValue < 1.0f)
-    {
-        synth_.setEnvelopeRelease(0.75f);
-    }
-    else
-    {
-        synth_.setEnvelopeRelease(std::exp(-inverseSampleRate * std::exp(5.5f - 0.075f * releaseParamValue)));
-    }
+    const float envelopeRelease =
+        releaseParamValue < 1.0f ? 0.75f : multiplierFromParam(inverseSampleRate, releaseParamValue);
+    synth_.setEnvelope(synth::ADSR{multiplierFromParam(inverseSampleRate, parameters_.envAttack()),
+                                   multiplierFromParam(inverseSampleRate, parameters_.envDecay()),
+                                   parameters_.envSustain() / 100.0f,
+                                   envelopeRelease});
 
     const float noiseMix{parameters_.noise() / 100.0f};
     synth_.setNoiseMix(noiseMix * noiseMix * 0.06f);
@@ -306,12 +305,14 @@ void SynpleAudioProcessor::update()
     synth_.setVibratoAmount(parameters_.vibrato());
     synth_.setGlide(parameters_.glideMode(), parameters_.glideRate(), parameters_.glideBend(), inverseSampleRate);
 
-    synth_.setFilterEnvelope(parameters_.filterAttack(),
-                             parameters_.filterDecay(),
-                             parameters_.filterSustain(),
-                             parameters_.filterRelease(),
-                             parameters_.filterEnv(),
-                             inverseSampleRate);
+    constexpr float filterEnvelopeUpdateInterval{32.0f};
+    const float inverseUpdateRate{inverseSampleRate * filterEnvelopeUpdateInterval};
+    const float filterSustain{parameters_.filterSustain() / 100.0f};
+    synth_.setFilterEnvelope(synth::ADSR{multiplierFromParam(inverseUpdateRate, parameters_.filterAttack()),
+                                         multiplierFromParam(inverseUpdateRate, parameters_.filterDecay()),
+                                         filterSustain * filterSustain,
+                                         multiplierFromParam(inverseUpdateRate, parameters_.filterRelease())},
+                             parameters_.filterEnv());
 }
 
 void SynpleAudioProcessor::splitBufferByEvents(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)

@@ -253,17 +253,9 @@ void Synth::startVoice(const size_t voiceIdx, const int note, const int velocity
     Voice& voice = voices_[voiceIdx];
 
     Envelope& envelope = voice.envelope();
-    envelope.setAttackMultiplier(envelopeAttack_);
-    envelope.setDecayMultiplier(envelopeDecay_);
-    envelope.setSustainLevel(envelopeSustain_);
-    envelope.setReleaseMultiplier(envelopeRelease_);
     envelope.attack();
 
     Envelope& filterEnvelope = voice.filterEnvelope();
-    filterEnvelope.setAttackMultiplier(filterAttack_);
-    filterEnvelope.setDecayMultiplier(filterDecay_);
-    filterEnvelope.setSustainLevel(filterSustain_);
-    filterEnvelope.setReleaseMultiplier(filterRelease_);
     filterEnvelope.attack();
 
     voice.noteOn(note,
@@ -456,20 +448,13 @@ void Synth::setFilterLfoDepth(const float filterLfoDepth)
     filterLfoDepth_ = 2.5f * filterLfoDepth * filterLfoDepth;
 }
 
-void Synth::setFilterEnvelope(const float attack,
-                              const float decay,
-                              const float sustain,
-                              const float release,
-                              const float envDepth,
-                              const float inverseSampleRate)
+void Synth::setFilterEnvelope(const ADSR& adsr, const float envDepth)
 {
-    const float inverseUpdateRate = inverseSampleRate * lfoMaxSamplesPerUpdate_;
+    for (Voice& voice : voices_)
+    {
+        voice.filterEnvelope().setADSR(adsr);
+    }
 
-    filterAttack_ = std::exp(-inverseUpdateRate * std::exp(5.5f - 0.075f * attack));
-    filterDecay_ = std::exp(-inverseUpdateRate * std::exp(5.5f - 0.075f * decay));
-    const float filterSustain{sustain / 100.0f};
-    filterSustain_ = filterSustain * filterSustain;
-    filterRelease_ = std::exp(-inverseUpdateRate * std::exp(5.5f - 0.075f * release));
     filterEnvDepth_ = 0.06f * envDepth;
 }
 
@@ -478,24 +463,12 @@ void Synth::setOutputLevelInstantly(const float outputLevel)
     outputLevelSmoother_.setCurrentAndTargetValue(outputLevel);
 }
 
-void Synth::setEnvelopeDecay(const float decayTime)
+void Synth::setEnvelope(const ADSR& adsr)
 {
-    envelopeDecay_ = decayTime;
-}
-
-void Synth::setEnvelopeAttack(const float attackTime)
-{
-    envelopeAttack_ = attackTime;
-}
-
-void Synth::setEnvelopeSustain(const float sustainLevel)
-{
-    envelopeSustain_ = sustainLevel;
-}
-
-void Synth::setEnvelopeRelease(const float releaseTime)
-{
-    envelopeRelease_ = releaseTime;
+    for (Voice& voice : voices_)
+    {
+        voice.envelope().setADSR(adsr);
+    }
 }
 
 } // namespace synth

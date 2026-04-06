@@ -35,6 +35,7 @@ set(SourceFiles
         source/juce/PluginProcessor.cpp
         source/juce/PluginProcessor.h
         source/midi/CC.h
+        source/synth/ADSR.h
         source/synth/AudioBuffer.cpp
         source/synth/AudioBuffer.h
         source/synth/Envelope.cpp
