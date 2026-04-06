@@ -1,5 +1,6 @@
 #include "Parameters.h"
 #include "ParameterIDs.h"
+#include "synth/ADSR.h"
 #include <cmath>
 
 namespace

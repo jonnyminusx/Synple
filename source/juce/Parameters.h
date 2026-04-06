@@ -1,7 +1,11 @@
 #pragma once
 
-#include "synth/ADSR.h"
 #include <juce_audio_processors/juce_audio_processors.h>
+
+namespace synth
+{
+struct ADSR;
+}
 
 class Parameters
 {

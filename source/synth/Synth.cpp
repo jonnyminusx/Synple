@@ -1,4 +1,5 @@
 #include "Synth.h"
+#include "AudioBuffer.h"
 #include "Output.h"
 #include "utils/constants.h"
 #include "utils/protectYourEars.h"

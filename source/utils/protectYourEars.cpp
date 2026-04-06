@@ -1,5 +1,7 @@
 #include "protectYourEars.h"
 
+#include "synth/AudioBuffer.h"
+
 #include <juce_core/juce_core.h>
 
 #include <cmath>

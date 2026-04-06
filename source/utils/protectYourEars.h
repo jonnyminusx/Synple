@@ -1,6 +1,9 @@
 #pragma once
 
-#include "synth/AudioBuffer.h"
+namespace synth
+{
+class AudioBuffer;
+}
 
 namespace utils
 {

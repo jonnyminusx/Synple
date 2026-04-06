@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ADSR.h"
 #include "GlideMode.h"
 #include "NoiseGenerator.h"
 #include "Voice.h"
@@ -12,6 +11,7 @@
 namespace synth
 {
 
+struct ADSR;
 class AudioBuffer;
 
 class Synth
