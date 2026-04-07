@@ -30,6 +30,9 @@ class SynpleAudioProcessorEditor final : public juce::AudioProcessorEditor, priv
     juce::Slider outputLevelSlider_;
     juce::SliderParameterAttachment outputLevelAttachment_;
 
+    juce::ToggleButton polyphonicToggle_{"Polyphonic"};
+    juce::ButtonParameterAttachment polyphonicToggleAttachment_;
+
     juce::TextButton runJavaScriptButton_{"Run JavaScript"};
     juce::TextButton emitJavaScriptEventButton_{"Emit JavaScript Event"};
     juce::TextButton midiLearnButton_{"MIDI Learn"};
@@ -37,8 +40,11 @@ class SynpleAudioProcessorEditor final : public juce::AudioProcessorEditor, priv
     juce::Label labelUpdatedFromJavaScript_{"label", "Not updated from JavaScript yet"};
 
     juce::WebSliderRelay webOutputLevelRelay_;
+    juce::WebToggleButtonRelay webPolyphonicToggleRelay_;
+
     juce::WebBrowserComponent webView_;
     juce::WebSliderParameterAttachment webOutputLevelAttachment_;
+    juce::WebToggleButtonParameterAttachment webPolyphonicToggleAttachment_;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynpleAudioProcessorEditor)
 };

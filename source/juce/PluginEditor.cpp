@@ -46,7 +46,10 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
       processorRef(p),
       outputLevelAttachment_(*processorRef.getApvts().getParameter(parameter_id::outputLevel.getParamID()),
                              outputLevelSlider_),
+      polyphonicToggleAttachment_(*processorRef.getApvts().getParameter(parameter_id::polyMode.getParamID()),
+                                  polyphonicToggle_),
       webOutputLevelRelay_(parameter_id::outputLevel.getParamID()),
+      webPolyphonicToggleRelay_(parameter_id::polyMode.getParamID()),
       webView_(juce::WebBrowserComponent::Options()
                    .withResourceProvider([this](const auto& url) { return getResource(url); },
                                          juce::URL(localDevServerAddress).getOrigin())
@@ -67,9 +70,12 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
                                                   objectFromFrontEnd.getProperty("emittedCount", 0).toString(),
                                               juce::dontSendNotification);
                                       })
-                   .withOptionsFrom(webOutputLevelRelay_)),
+                   .withOptionsFrom(webOutputLevelRelay_)
+                   .withOptionsFrom(webPolyphonicToggleRelay_)),
       webOutputLevelAttachment_(*processorRef.getApvts().getParameter(parameter_id::outputLevel.getParamID()),
-                                webOutputLevelRelay_)
+                                webOutputLevelRelay_),
+      webPolyphonicToggleAttachment_(*processorRef.getApvts().getParameter(parameter_id::polyMode.getParamID()),
+                                     webPolyphonicToggleRelay_)
 {
     // webView_.goToURL(webView_.getResourceProviderRoot());
     webView_.goToURL(localDevServerAddress);
@@ -94,9 +100,13 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
     };
 
     labelUpdatedFromJavaScript_.setColour(juce::Label::textColourId, juce::Colours::black);
+    polyphonicToggle_.setColour(juce::ToggleButton::textColourId, juce::Colours::black);
+    polyphonicToggle_.setColour(juce::ToggleButton::tickColourId, juce::Colours::black);
+    polyphonicToggle_.setColour(juce::ToggleButton::tickDisabledColourId, juce::Colours::black);
 
     addAndMakeVisible(webView_);
     addAndMakeVisible(outputLevelSlider_);
+    addAndMakeVisible(polyphonicToggle_);
     addAndMakeVisible(runJavaScriptButton_);
     addAndMakeVisible(emitJavaScriptEventButton_);
     addAndMakeVisible(labelUpdatedFromJavaScript_);
@@ -123,6 +133,7 @@ void SynpleAudioProcessorEditor::resized()
     emitJavaScriptEventButton_.setBounds(bounds.removeFromTop(50).reduced(5));
     labelUpdatedFromJavaScript_.setBounds(bounds.removeFromTop(50).reduced(5));
     outputLevelSlider_.setBounds(bounds.removeFromTop(50).reduced(5));
+    polyphonicToggle_.setBounds(bounds.removeFromTop(50).reduced(5));
 }
 
 void SynpleAudioProcessorEditor::buttonClicked(juce::Button* button)

@@ -64,6 +64,25 @@ document.addEventListener("DOMContentLoaded", () => {
         sliderState.setNormalisedValue((this.value - slider.min) / (slider.max - slider.min));
     };
 
+    const polyphonicToggle = document.getElementById("polyphonicToggle");
+    const polyphonicToggleState = Juce.getToggleState("polyMode");
+
+    let toggleReady = false;
+
+    polyphonicToggleState.propertiesChangedEvent.addListener(() => {
+        toggleReady = true;
+    });
+
+    polyphonicToggleState.valueChangedEvent.addListener(() => {
+        if (!toggleReady) return;
+        polyphonicToggle.checked = polyphonicToggleState.getValue();
+    });
+
+    polyphonicToggle.onchange = function () {
+        if (!toggleReady) return;
+        polyphonicToggleState.setValue(this.checked);
+    };
+
     const base = -60;
     Plotly.newPlot("outputLevelPlot", {
         data: [
