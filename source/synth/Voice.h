@@ -3,13 +3,13 @@
 #include "Envelope.h"
 #include "Filter.h"
 #include "Oscillator.h"
+#include "Parameters.h"
 #include <optional>
 
 namespace synth
 {
 
 struct Output;
-enum class GlideMode;
 
 class Voice
 {
@@ -20,25 +20,16 @@ class Voice
     void noteOn(const int note,
                 const int lastNote,
                 const int velocity,
-                const float velocitySensitivity,
-                const float volumeTrim,
-                const float oscillatorMix,
-                const float tune,
-                const float detune,
-                const float glideBend,
                 const float sampleRate,
                 const size_t voiceIdx,
                 const bool pwm,
                 const bool isPlayingLegatoStyle,
-                const GlideMode glideMode);
+                const Parameters& parameters);
     void noteOnRestart(const int note,
                        const int velocity,
-                       const float velocitySensitivity,
-                       const float tune,
-                       const float detune,
                        const float sampleRate,
                        const size_t voiceIdx,
-                       const GlideMode glideMode);
+                       const Parameters& parameters);
     void noteOff(const int note, const bool sustainPedalPressed);
     void release();
     void updatePanning();

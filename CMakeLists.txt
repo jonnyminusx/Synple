@@ -49,9 +49,10 @@ set(SourceFiles
         source/synth/Oscillator.h
         source/synth/Output.h
         source/synth/Output.cpp
-    source/synth/Preset.h
-    source/synth/Presets.cpp
-    source/synth/Presets.h
+        source/synth/Parameters.h
+        source/synth/Preset.h
+        source/synth/Presets.cpp
+        source/synth/Presets.h
         source/synth/SineOscillator.cpp
         source/synth/SineOscillator.h
         source/synth/Synth.cpp

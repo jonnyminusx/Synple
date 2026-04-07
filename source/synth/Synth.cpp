@@ -56,7 +56,7 @@ void Synth::render(AudioBuffer& audioBuffer)
 
         for (Voice& voice : voices_)
         {
-            output += voice.render(noise, pitchBend_, detune_);
+            output += voice.render(noise, pitchBend_, parameters_.detune);
         }
 
         output *= outputLevelSmoother_.getNextValue();
@@ -162,7 +162,7 @@ void Synth::controlChange(const uint8_t controller, const uint8_t value)
 
 void Synth::setVolumeTrim(const float volumeTrim)
 {
-    volumeTrim_ = volumeTrim;
+    parameters_.volumeTrim = volumeTrim;
 }
 
 void Synth::updateLfo()
@@ -187,7 +187,7 @@ void Synth::updateLfo()
         {
             voice.setModulation(vibratoModulation, pwm);
             voice.updateLfo(glideRate_, filterZip_, filterQ_ * resonanceCtl_, pitchBend_, filterEnvDepth_);
-            voice.updatePeriod(pitchBend_, detune_);
+            voice.updatePeriod(pitchBend_, parameters_.detune);
         }
     }
 }
@@ -259,26 +259,13 @@ void Synth::startVoice(const size_t voiceIdx, const int note, const int velocity
     Envelope& filterEnvelope = voice.filterEnvelope();
     filterEnvelope.attack();
 
-    voice.noteOn(note,
-                 lastNote_,
-                 velocity,
-                 velocitySensitivity_,
-                 volumeTrim_,
-                 oscillatorMix_,
-                 tune_,
-                 detune_,
-                 glideBend_,
-                 sampleRate_,
-                 voiceIdx,
-                 isInPwmMode(),
-                 isPlayingLegatoStyle(),
-                 glideMode_);
+    voice.noteOn(note, lastNote_, velocity, sampleRate_, voiceIdx, isInPwmMode(), isPlayingLegatoStyle(), parameters_);
     lastNote_ = note;
 }
 
 void Synth::restartMonoVoice(const int note, [[maybe_unused]] const int velocity)
 {
-    voices_[0].noteOnRestart(note, velocity, velocitySensitivity_, tune_, detune_, sampleRate_, 0, glideMode_);
+    voices_[0].noteOnRestart(note, velocity, sampleRate_, 0, parameters_);
 }
 
 size_t Synth::selectVoiceIndexToUse() const
@@ -361,17 +348,17 @@ void Synth::setNoiseMix(const float noiseMix)
 
 void Synth::setOscillatorMix(const float oscillatorMix)
 {
-    oscillatorMix_ = oscillatorMix;
+    parameters_.oscillatorMix = oscillatorMix;
 }
 
 void Synth::setDetune(const float detune)
 {
-    detune_ = detune;
+    parameters_.detune = detune;
 }
 
 void Synth::setTune(const float tune)
 {
-    tune_ = tune;
+    parameters_.tune = tune;
 }
 
 void Synth::setPolyphonic(const bool polyphonic)
@@ -391,7 +378,7 @@ void Synth::setIgnoreVelocity(const bool ignoreVelocity)
 
 void Synth::setVelocitySensitivity(const float velocitySensitivity)
 {
-    velocitySensitivity_ = velocitySensitivity;
+    parameters_.velocitySensitivity = velocitySensitivity;
 }
 
 void Synth::setLfoIncrement(const float lfoIncrement)
@@ -411,7 +398,7 @@ void Synth::setPwmDepth(const float pwmDepth)
 
 void Synth::setGlideMode(const int glideMode)
 {
-    glideMode_ = static_cast<GlideMode>(glideMode);
+    parameters_.glideMode = static_cast<GlideMode>(glideMode);
 }
 
 void Synth::setGlideRate(const float glideRate)
@@ -421,7 +408,7 @@ void Synth::setGlideRate(const float glideRate)
 
 void Synth::setGlideBend(const float glideBend)
 {
-    glideBend_ = glideBend;
+    parameters_.glideBend = glideBend;
 }
 
 void Synth::setFilterKeyTracking(const float filterKeyTracking)

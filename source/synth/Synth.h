@@ -1,7 +1,7 @@
 #pragma once
 
-#include "GlideMode.h"
 #include "NoiseGenerator.h"
+#include "Parameters.h"
 #include "Voice.h"
 #include "midi/CC.h"
 
@@ -69,18 +69,14 @@ class Synth
     std::array<Voice, maxNumVoices_> voices_;
     int lastNote_{0};
 
-    float oscillatorMix_{0.0f};
-    float tune_{0.0f};
-    float detune_{0.0f};
+    Parameters parameters_{};
     float pitchBend_{0.0f};
     float modWheel_{0.0f};
 
     NoiseGenerator noiseGenerator_;
     float noiseMix_{0.0f};
 
-    float volumeTrim_{0.0f};
     juce::LinearSmoothedValue<float> outputLevelSmoother_{0.0f};
-    float velocitySensitivity_{0.0f};
     bool ignoreVelocity_{false};
 
     float sampleRate_{44100.0f};
@@ -93,9 +89,7 @@ class Synth
     float vibratoAmount_{0.0f};
     float pwmDepth_{0.0f};
 
-    GlideMode glideMode_{GlideMode::Off};
     float glideRate_{0.0f};
-    float glideBend_{0.0f};
 
     float filterKeyTracking_{0.0f};
     float filterQ_{0.0f};
