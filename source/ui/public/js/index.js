@@ -83,6 +83,30 @@ document.addEventListener("DOMContentLoaded", () => {
         polyphonicToggleState.setValue(this.checked);
     };
 
+    const glideModeComboBox = document.getElementById("glideModeComboBox");
+    const glideModeState = Juce.getComboBoxState("glideMode");
+
+    let comboBoxReady = false;
+
+    glideModeState.propertiesChangedEvent.addListener(() => {
+        glideModeComboBox.innerHTML = "";
+        glideModeState.properties.choices.forEach((choice) => {
+            glideModeComboBox.innerHTML += `<option value="${choice}">${choice}</option>`;
+        });
+        comboBoxReady = true;
+    });
+
+    glideModeComboBox.onchange = function () {
+        if (!comboBoxReady) return;
+        glideModeState.setChoiceIndex(this.selectedIndex);
+    }
+
+    glideModeState.valueChangedEvent.addListener(() => {
+        if (!comboBoxReady) return;
+        console.log("Glide mode changed, new index: ", glideModeState.getChoiceIndex());
+        glideModeComboBox.selectedIndex = glideModeState.getChoiceIndex();
+    });
+
     const base = -60;
     Plotly.newPlot("outputLevelPlot", {
         data: [

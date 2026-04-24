@@ -48,8 +48,11 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
                              outputLevelSlider_),
       polyphonicToggleAttachment_(*processorRef.getApvts().getParameter(parameter_id::polyMode.getParamID()),
                                   polyphonicToggle_),
+      glideModeAttachment_(*processorRef.getApvts().getParameter(parameter_id::glideMode.getParamID()),
+                           glideModeComboBox_),
       webOutputLevelRelay_(parameter_id::outputLevel.getParamID()),
       webPolyphonicToggleRelay_(parameter_id::polyMode.getParamID()),
+      webGlideModeRelay_(parameter_id::glideMode.getParamID()),
       webView_(juce::WebBrowserComponent::Options()
                    .withResourceProvider([this](const auto& url) { return getResource(url); },
                                          juce::URL(localDevServerAddress).getOrigin())
@@ -71,11 +74,14 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
                                               juce::dontSendNotification);
                                       })
                    .withOptionsFrom(webOutputLevelRelay_)
-                   .withOptionsFrom(webPolyphonicToggleRelay_)),
+                   .withOptionsFrom(webPolyphonicToggleRelay_)
+                   .withOptionsFrom(webGlideModeRelay_)),
       webOutputLevelAttachment_(*processorRef.getApvts().getParameter(parameter_id::outputLevel.getParamID()),
                                 webOutputLevelRelay_),
       webPolyphonicToggleAttachment_(*processorRef.getApvts().getParameter(parameter_id::polyMode.getParamID()),
-                                     webPolyphonicToggleRelay_)
+                                     webPolyphonicToggleRelay_),
+      webGlideModeAttachment_(*processorRef.getApvts().getParameter(parameter_id::glideMode.getParamID()),
+                              webGlideModeRelay_)
 {
     // webView_.goToURL(webView_.getResourceProviderRoot());
     webView_.goToURL(localDevServerAddress);
@@ -107,11 +113,18 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
     addAndMakeVisible(webView_);
     addAndMakeVisible(outputLevelSlider_);
     addAndMakeVisible(polyphonicToggle_);
+    addAndMakeVisible(glideModeLabel_);
+    addAndMakeVisible(glideModeComboBox_);
     addAndMakeVisible(runJavaScriptButton_);
     addAndMakeVisible(emitJavaScriptEventButton_);
     addAndMakeVisible(labelUpdatedFromJavaScript_);
 
     outputLevelSlider_.setSliderStyle(juce::Slider::LinearBar);
+
+    juce::AudioParameterChoice* glideModeParam{static_cast<juce::AudioParameterChoice*>(
+        processorRef.getApvts().getParameter(parameter_id::glideMode.getParamID()))};
+    glideModeComboBox_.addItemList(glideModeParam->choices, 1);
+    glideModeComboBox_.setSelectedId(glideModeParam->getIndex() + 1, juce::dontSendNotification);
 
     setResizable(true, true);
     setSize(800, 600);
@@ -134,6 +147,8 @@ void SynpleAudioProcessorEditor::resized()
     labelUpdatedFromJavaScript_.setBounds(bounds.removeFromTop(50).reduced(5));
     outputLevelSlider_.setBounds(bounds.removeFromTop(50).reduced(5));
     polyphonicToggle_.setBounds(bounds.removeFromTop(50).reduced(5));
+    glideModeLabel_.setBounds(bounds.removeFromTop(50).reduced(5));
+    glideModeComboBox_.setBounds(bounds.removeFromTop(50).reduced(5));
 }
 
 void SynpleAudioProcessorEditor::buttonClicked(juce::Button* button)

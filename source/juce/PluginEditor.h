@@ -33,6 +33,10 @@ class SynpleAudioProcessorEditor final : public juce::AudioProcessorEditor, priv
     juce::ToggleButton polyphonicToggle_{"Polyphonic"};
     juce::ButtonParameterAttachment polyphonicToggleAttachment_;
 
+    juce::Label glideModeLabel_{"glideModeLabel", "Glide Mode"};
+    juce::ComboBox glideModeComboBox_;
+    juce::ComboBoxParameterAttachment glideModeAttachment_;
+
     juce::TextButton runJavaScriptButton_{"Run JavaScript"};
     juce::TextButton emitJavaScriptEventButton_{"Emit JavaScript Event"};
     juce::TextButton midiLearnButton_{"MIDI Learn"};
@@ -41,10 +45,12 @@ class SynpleAudioProcessorEditor final : public juce::AudioProcessorEditor, priv
 
     juce::WebSliderRelay webOutputLevelRelay_;
     juce::WebToggleButtonRelay webPolyphonicToggleRelay_;
+    juce::WebComboBoxRelay webGlideModeRelay_;
 
     juce::WebBrowserComponent webView_;
     juce::WebSliderParameterAttachment webOutputLevelAttachment_;
     juce::WebToggleButtonParameterAttachment webPolyphonicToggleAttachment_;
+    juce::WebComboBoxParameterAttachment webGlideModeAttachment_;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynpleAudioProcessorEditor)
 };
