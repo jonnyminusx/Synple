@@ -11,7 +11,11 @@ namespace utils
 
 namespace
 {
-void printWarning(const std::string& problem, const std::string& solution, const size_t channel, const size_t sample)
+
+void printWarning([[maybe_unused]] const std::string& problem,
+                  [[maybe_unused]] const std::string& solution,
+                  [[maybe_unused]] const size_t channel,
+                  [[maybe_unused]] const size_t sample)
 {
     DBG("Warning: Sample value is " << problem << " at channel: " << channel << ", sample: " << sample << " - "
                                     << solution);

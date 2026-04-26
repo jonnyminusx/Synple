@@ -11,7 +11,7 @@ AudioBuffer::AudioBuffer(std::vector<std::span<float>> channels) : channels_(std
     // Assume all channels have the same size
     if (!channels_.empty())
     {
-        const auto expectedSize = channels_[0].size();
+        [[maybe_unused]] const auto expectedSize = channels_[0].size();
         assert(std::all_of(channels_.begin(), channels_.end(), [expectedSize](const auto& span) {
             return span.size() == expectedSize;
         }));
