@@ -86,11 +86,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     JUCE_PRODUCT_VERSION="${PROJECT_VERSION}"
 )
 
-juce_add_binary_data(BinaryData
-    SOURCES
-        resources/Lato-Medium.ttf
-)
-
 # How we want our SourceFiles to appear in our IDE
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SourceFiles})
 
@@ -125,7 +120,43 @@ target_link_libraries(${PROJECT_NAME}
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags
         PRIVATE
-        BinaryData
+        WebViewFiles
 )
 
 file( COPY "${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/juce-src/modules/juce_gui_extra/native/javascript/" DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/source/ui/public/js/juce/")
+
+# Folder where web UI data reside
+set(WEBVIEW_FILES_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/source/ui/public")
+
+# Zip WebView files
+set(WEBVIEW_FILES_ZIP_NAME "webview_files.zip")
+set(TARGET_WEBVIEW_FILES_ZIP_PATH "${CMAKE_BINARY_DIR}/${WEBVIEW_FILES_ZIP_NAME}")
+cmake_path(ABSOLUTE_PATH WEBVIEW_FILES_SOURCE_DIR NORMALIZE OUTPUT_VARIABLE PUBLIC_PATH )
+cmake_path(GET PUBLIC_PATH PARENT_PATH WORKING_DIRECTORY)
+
+add_custom_target(ZipWebViewFiles
+  COMMAND
+  ${CMAKE_COMMAND} -E tar cvf
+  "${TARGET_WEBVIEW_FILES_ZIP_PATH}"
+  --format=zip
+  "${PUBLIC_PATH}"
+  BYPRODUCTS
+  "${TARGET_WEBVIEW_FILES_ZIP_PATH}"
+  WORKING_DIRECTORY
+  "${WORKING_DIRECTORY}"
+  COMMENT "Zipping WebView files..."
+  VERBATIM
+)
+
+# Pass the prefix of the zipped files (e.g., "public/") to C++
+cmake_path(GET PUBLIC_PATH FILENAME ZIPPED_FILES_PREFIX)
+target_compile_definitions(${PROJECT_NAME} PRIVATE ZIPPED_FILES_PREFIX="${ZIPPED_FILES_PREFIX}/")
+
+# Package web UI sources as binary data
+juce_add_binary_data(WebViewFiles
+    HEADER_NAME WebViewFiles.h
+    NAMESPACE webview_files
+    SOURCES ${TARGET_WEBVIEW_FILES_ZIP_PATH}
+)
+add_dependencies(WebViewFiles ZipWebViewFiles)
+

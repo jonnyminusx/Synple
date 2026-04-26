@@ -1,5 +1,8 @@
 #include "PluginEditor.h"
 #include "PluginProcessor.h"
+#include "WebViewFiles.h"
+
+#include <ranges>
 
 namespace
 {
@@ -34,6 +37,32 @@ const char* getMimeForExtension(const juce::String& extension)
 
     jassertfalse;
     return "";
+}
+
+#ifndef ZIPPED_FILES_PREFIX
+#error                                                                                                                 \
+    "You must provide the prefix of zipped web UI files' paths, e.g., 'public/', in the ZIPPED_FILES_PREFIX compile definition"
+#endif
+
+std::vector<std::byte> getWebViewFileAsBytes(const juce::String& filepath)
+{
+    juce::MemoryInputStream zipStream{webview_files::webview_files_zip, webview_files::webview_files_zipSize, false};
+    juce::ZipFile zipFile{zipStream};
+
+    if (auto* zipEntry = zipFile.getEntry(ZIPPED_FILES_PREFIX + filepath))
+    {
+        const std::unique_ptr<juce::InputStream> entryStream{zipFile.createStreamForEntry(*zipEntry)};
+
+        if (entryStream == nullptr)
+        {
+            jassertfalse;
+            return {};
+        }
+
+        return streamToVector(*entryStream);
+    }
+
+    return {};
 }
 
 constexpr auto localDevServerAddress{"http://127.0.0.1:8080"};
@@ -83,8 +112,8 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
       webGlideModeAttachment_(*processorRef.getApvts().getParameter(parameter_id::glideMode.getParamID()),
                               webGlideModeRelay_)
 {
-    // webView_.goToURL(webView_.getResourceProviderRoot());
-    webView_.goToURL(localDevServerAddress);
+    webView_.goToURL(webView_.getResourceProviderRoot());
+    // webView_.goToURL(localDevServerAddress);
 
     runJavaScriptButton_.onClick = [this] {
         constexpr auto javaScriptToRun = "console.log(\"Hello from C++!\");";
@@ -198,12 +227,12 @@ std::optional<SynpleAudioProcessorEditor::Resource> SynpleAudioProcessorEditor::
         return Resource(streamToVector(stream), juce::String("application/json"));
     }
 
-    const auto resource{resourceFileRoot.getChildFile(resourceToRetrieve).createInputStream()};
+    const auto resource{getWebViewFileAsBytes(resourceToRetrieve)};
 
-    if (resource)
+    if (!resource.empty())
     {
         const auto extension{resourceToRetrieve.fromLastOccurrenceOf(".", false, false)};
-        return Resource(streamToVector(*resource), getMimeForExtension(extension));
+        return Resource(std::move(resource), getMimeForExtension(extension));
     }
 
     return std::nullopt;
