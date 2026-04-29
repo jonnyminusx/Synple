@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 
 # Change to your project name
-project(JLX11 VERSION 0.0.1)
+project(Synple VERSION 0.0.1)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -90,7 +90,7 @@ juce_add_plugin(${PROJECT_NAME}
         PLUGIN_MANUFACTURER_CODE Mphm
         PLUGIN_CODE Jx11
         FORMATS VST3 AU Standalone
-        PRODUCT_NAME "JLX11"        
+        PRODUCT_NAME "Synple"
 )
 
 get_target_property(PRODUCT_NAME ${PROJECT_NAME} JUCE_PRODUCT_NAME)
