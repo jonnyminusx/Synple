@@ -4,6 +4,17 @@ cmake_minimum_required(VERSION 3.24)
 project(JLX11 VERSION 0.0.1)
 
 set(CMAKE_CXX_STANDARD 20)
+
+# On Linux, pull in system library include paths that JUCE modules need
+if (UNIX AND NOT APPLE)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+    pkg_check_modules(WEBKIT webkit2gtk-4.1)
+    if (NOT WEBKIT_FOUND)
+        pkg_check_modules(WEBKIT REQUIRED webkit2gtk-4.0)
+    endif()
+    include_directories(SYSTEM ${GTK3_INCLUDE_DIRS} ${WEBKIT_INCLUDE_DIRS})
+endif()
 set(CMAKE_XCODE_GENERATE_SCHEME OFF)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
