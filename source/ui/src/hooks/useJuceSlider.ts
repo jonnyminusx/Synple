@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { getSliderState } from '../lib/juce/index.js'
-import type { SliderProperties } from '../lib/juce/index.js'
+
+type SliderProperties = ReturnType<typeof getSliderState>['properties']
 
 const DEFAULT_PROPS: SliderProperties = {
   start: 0, end: 1, skew: 1, name: '', label: '', numSteps: 100, interval: 0, parameterIndex: -1,
