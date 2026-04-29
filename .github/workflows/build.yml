@@ -33,6 +33,9 @@ jobs:
           restore-keys: |
             juce-${{ runner.os }}-
 
+      - name: Install Node dependencies
+        run: cd source/ui && npm ci
+
       - name: Configure
         run: cmake -B build
 

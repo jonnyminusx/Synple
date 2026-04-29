@@ -42,12 +42,19 @@ There are no tests currently. Suggested testing tools from TODO.md: pluginval, a
 
 ### WebView UI development
 
-The UI files in `source/ui/public/` are zipped at build time into `webview_files.zip` and bundled as binary data. During development you can point the webview at a local dev server instead:
+The UI is a React + TypeScript + Tailwind app in `source/ui/`. Source lives in `source/ui/src/`. Vite builds to `source/ui/public/`, which CMake then zips and bundles as binary data.
 
-- In `PluginEditor.cpp`, comment out `webView_.goToURL(webView_.getResourceProviderRoot())` and uncomment `webView_.goToURL(localDevServerAddress)` (pointing to `http://127.0.0.1:8080`).
-- Serve `source/ui/public/` on port 8080.
+**First-time setup** — run once after checkout:
+```bash
+cd source/ui && npm install
+```
 
-The JUCE JS bridge files are copied from the JUCE source into `source/ui/public/js/juce/` by CMake — do not edit them manually.
+CMake runs `npm run build` automatically as part of the plugin build. The JUCE JS bridge files are copied by CMake from the JUCE source into `source/ui/src/lib/juce/` — do not edit them manually.
+
+**Hot-reload development**: switch to the dev server so you don't need to rebuild the plugin for UI changes:
+1. In `PluginEditor.cpp`, comment out `webView_.goToURL(webView_.getResourceProviderRoot())` and uncomment `webView_.goToURL(localDevServerAddress)`.
+2. Run `cd source/ui && npm run dev` (serves on port 8080 with HMR).
+3. Reload the plugin window to pick up the dev server.
 
 ## Architecture
 
@@ -66,7 +73,7 @@ source/ui/     — WebView frontend (HTML/JS)
 1. `PluginProcessor` receives audio/MIDI from the host, splits the buffer by MIDI events, calls `Synth::render()`, and routes MIDI via `Synth::midiProcessor().process()`.
 2. `Synth` manages up to 8 `Voice` instances (1 active in mono mode). Each voice contains two `Oscillator`s, a `Filter`, and two `Envelope`s (amplitude + filter). A shared `NoiseGenerator` feeds noise into the mix.
 3. `Synth::updateLfo()` runs every 32 samples and drives vibrato, PWM depth, and filter modulation across all voices.
-4. Output level is smoothed via `juce::LinearSmoothedValue` and monitored with a JUCE `BallisticsFilter` envelope follower, whose value is exposed to the WebView as `outputLevel.json`.
+4. Output level is smoothed via `juce::LinearSmoothedValue` and monitored with a JUCE `BallisticsFilter` envelope follower.
 
 ### Parameter system
 
@@ -77,10 +84,8 @@ source/ui/     — WebView frontend (HTML/JS)
 ### WebView ↔ C++ bridge
 
 The editor uses JUCE's WebView integration:
-- **C++ → JS**: `webView_.emitEventIfBrowserIsVisible(eventId, data)` fires named events; the JS side listens with `window.__JUCE__.backend.addEventListener`.
-- **JS → C++**: `Juce.getNativeFunction("nativeFunction")` calls a handler registered with `.withNativeFunction(...)` in the editor constructor.
-- **Parameter sync**: `WebSliderRelay`, `WebToggleButtonRelay`, and `WebComboBoxRelay` objects + their `WebXxxParameterAttachment` counterparts keep the JS UI controls in sync with APVTS parameters automatically via the JUCE JS API (`Juce.getSliderState`, `Juce.getToggleState`, `Juce.getComboBoxState`).
-- **Resource requests**: `getResource()` in the editor serves files from the bundled zip and also handles ad-hoc JSON endpoints (`outputLevel.json`, `data.json`).
+- **Parameter sync**: `WebSliderRelay` and `WebComboBoxRelay` objects + their `WebXxxParameterAttachment` counterparts keep React state in sync with APVTS parameters automatically. React hooks in `source/ui/src/hooks/` wrap the JUCE JS API (`getSliderState`, `getComboBoxState`).
+- **Resource requests**: `getResource()` in the editor serves files from the bundled zip.
 
 ### Presets
 

@@ -1,0 +1,103 @@
+import { useCallback, useRef } from 'react'
+import { useJuceSlider } from '../hooks/useJuceSlider.js'
+
+interface KnobProps {
+  parameterId: string
+  label: string
+  formatValue?: (v: number) => string
+}
+
+const SIZE = 36
+const CX = SIZE / 2
+const CY = SIZE / 2
+const RADIUS = 13
+const SWEEP = 270
+const START_ANGLE = 225 // degrees from 3 o'clock (CSS/SVG convention: 0° = right)
+
+function polarXY(cx: number, cy: number, r: number, angleDeg: number) {
+  const rad = (angleDeg * Math.PI) / 180
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) }
+}
+
+function arcPath(cx: number, cy: number, r: number, startDeg: number, endDeg: number) {
+  const s = polarXY(cx, cy, r, startDeg)
+  const e = polarXY(cx, cy, r, endDeg)
+  const large = (endDeg - startDeg + 360) % 360 > 180 ? 1 : 0
+  return `M ${s.x} ${s.y} A ${r} ${r} 0 ${large} 1 ${e.x} ${e.y}`
+}
+
+export function Knob({ parameterId, label, formatValue }: KnobProps) {
+  const { scaledValue, normalisedValue, setNormalisedValue, onDragStart, onDragEnd } =
+    useJuceSlider(parameterId)
+
+  const dragRef = useRef<{ startY: number; startNorm: number } | null>(null)
+
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent<SVGSVGElement>) => {
+      ;(e.target as Element).setPointerCapture(e.pointerId)
+      dragRef.current = { startY: e.clientY, startNorm: normalisedValue }
+      onDragStart()
+    },
+    [normalisedValue, onDragStart],
+  )
+
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent<SVGSVGElement>) => {
+      if (!dragRef.current) return
+      const delta = (dragRef.current.startY - e.clientY) / 120
+      setNormalisedValue(Math.max(0, Math.min(1, dragRef.current.startNorm + delta)))
+    },
+    [setNormalisedValue],
+  )
+
+  const handlePointerUp = useCallback(
+    (e: React.PointerEvent<SVGSVGElement>) => {
+      dragRef.current = null
+      onDragEnd()
+    },
+    [onDragEnd],
+  )
+
+  const endAngle = START_ANGLE + normalisedValue * SWEEP
+  const dot = polarXY(CX, CY, RADIUS, endAngle)
+  const trackEnd = START_ANGLE + SWEEP
+  const valueText = formatValue ? formatValue(scaledValue) : scaledValue.toFixed(1)
+
+  return (
+    <div className="flex flex-col items-center gap-0.5 select-none cursor-ns-resize">
+      <svg
+        width={SIZE}
+        height={SIZE}
+        viewBox={`0 0 ${SIZE} ${SIZE}`}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+      >
+        {/* Track */}
+        <path
+          d={arcPath(CX, CY, RADIUS, START_ANGLE, trackEnd)}
+          fill="none"
+          stroke="#3f3f46"
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
+        {/* Value arc */}
+        {normalisedValue > 0.001 && (
+          <path
+            d={arcPath(CX, CY, RADIUS, START_ANGLE, endAngle)}
+            fill="none"
+            stroke="#f59e0b"
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
+        )}
+        {/* Dot */}
+        <circle cx={dot.x} cy={dot.y} r="2.5" fill="#fcd34d" />
+      </svg>
+      <span className="text-[9px] text-zinc-400 font-mono leading-none">{valueText}</span>
+      <span className="text-[9px] text-zinc-500 font-mono uppercase tracking-wide leading-none">
+        {label}
+      </span>
+    </div>
+  )
+}
