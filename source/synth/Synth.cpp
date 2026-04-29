@@ -138,7 +138,7 @@ void Synth::updateLfo()
 
         const midi::MidiState& midi{midiProcessor_.state()};
 
-        const float sineValue{std::sinf(lfo_)};
+        const float sineValue{std::sin(lfo_)};
         const float vibratoModulation{1.0f + sineValue * (midi.modWheel + vibratoAmount_)};
         const float pwm{1.0f + sineValue * (midi.modWheel + pwmDepth_)};
         const float filterMod{filterKeyTracking_ + midi.filterControl + (filterLfoDepth_ + midi.pressure) * sineValue};
