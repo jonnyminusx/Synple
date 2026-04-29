@@ -2,9 +2,8 @@
 
 #include "synth/AudioBuffer.h"
 
-#include <juce_core/juce_core.h>
-
 #include <cmath>
+#include <iostream>
 
 namespace utils
 {
@@ -17,8 +16,11 @@ void printWarning([[maybe_unused]] const std::string& problem,
                   [[maybe_unused]] const size_t channel,
                   [[maybe_unused]] const size_t sample)
 {
-    DBG("Warning: Sample value is " << problem << " at channel: " << channel << ", sample: " << sample << " - "
-                                    << solution);
+#ifndef NDEBUG
+    std::cerr << "Warning: Sample value is " << problem
+              << " at channel: " << channel << ", sample: " << sample
+              << " - " << solution << "\n";
+#endif
 }
 
 } // namespace

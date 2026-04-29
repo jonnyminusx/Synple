@@ -1,6 +1,6 @@
 #pragma once
 
-#include <juce_core/juce_core.h>
+#include <random>
 
 namespace synth
 {
@@ -12,7 +12,8 @@ class NoiseGenerator
     float nextValue();
 
   private:
-    juce::Random random_;
+    std::mt19937 rng_;
+    std::uniform_real_distribution<float> dist_{0.0f, 1.0f};
 };
 
 } // namespace synth
