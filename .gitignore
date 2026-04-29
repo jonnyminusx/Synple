@@ -32,4 +32,7 @@
 *.app
 
 build/
-source/ui/public/js/juce/
+source/ui/public/
+source/ui/node_modules/
+source/ui/src/lib/juce/
+source/ui/tsconfig.tsbuildinfo

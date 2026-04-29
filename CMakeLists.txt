@@ -166,9 +166,9 @@ target_link_libraries(${PROJECT_NAME}
         WebViewFiles
 )
 
-file( COPY "${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/juce-src/modules/juce_gui_extra/native/javascript/" DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/source/ui/public/js/juce/")
+file( COPY "${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/juce-src/modules/juce_gui_extra/native/javascript/" DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/source/ui/src/lib/juce/")
 
-# Folder where web UI data reside
+# Folder where web UI data reside (Vite build output)
 set(WEBVIEW_FILES_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/source/ui/public")
 
 # Zip WebView files
@@ -176,6 +176,15 @@ set(WEBVIEW_FILES_ZIP_NAME "webview_files.zip")
 set(TARGET_WEBVIEW_FILES_ZIP_PATH "${CMAKE_BINARY_DIR}/${WEBVIEW_FILES_ZIP_NAME}")
 cmake_path(ABSOLUTE_PATH WEBVIEW_FILES_SOURCE_DIR NORMALIZE OUTPUT_VARIABLE PUBLIC_PATH )
 cmake_path(GET PUBLIC_PATH PARENT_PATH WORKING_DIRECTORY)
+
+find_program(NPM_EXECUTABLE npm REQUIRED)
+
+add_custom_target(BuildWebUI
+  COMMAND ${NPM_EXECUTABLE} run build
+  WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/source/ui"
+  COMMENT "Building React WebView UI..."
+  VERBATIM
+)
 
 add_custom_target(ZipWebViewFiles
   COMMAND
@@ -201,6 +210,7 @@ juce_add_binary_data(WebViewFiles
     NAMESPACE webview_files
     SOURCES ${TARGET_WEBVIEW_FILES_ZIP_PATH}
 )
+add_dependencies(ZipWebViewFiles BuildWebUI)
 add_dependencies(WebViewFiles ZipWebViewFiles)
 
 endif() # BUILD_PLUGIN
