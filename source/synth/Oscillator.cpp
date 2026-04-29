@@ -68,9 +68,9 @@ float Oscillator::nextSample()
         increment_ = phaseMax_ / halfPeriod;
         phase_ = -phase_;
 
-        sin0_ = amplitude_ * std::sinf(phase_);
-        sin1_ = amplitude_ * std::sinf(phase_ - increment_);
-        dsin_ = 2.0f * std::cosf(increment_);
+        sin0_ = amplitude_ * std::sin(phase_);
+        sin1_ = amplitude_ * std::sin(phase_ - increment_);
+        dsin_ = 2.0f * std::cos(increment_);
 
         if (phase_ * phase_ > 1e-9)
         {

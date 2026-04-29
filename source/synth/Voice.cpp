@@ -3,6 +3,7 @@
 #include "GlideMode.h"
 #include "Output.h"
 #include "utils/constants.h"
+#include <cmath>
 
 #include <algorithm>
 #include <numbers>

@@ -3,7 +3,7 @@
 #include "NoiseGenerator.h"
 #include "Parameters.h"
 #include "Voice.h"
-#include "midi/CC.h"
+#include "midi/MidiProcessor.h"
 
 #include <cstdint>
 #include <juce_audio_basics/juce_audio_basics.h>
@@ -14,15 +14,22 @@ namespace synth
 struct ADSR;
 class AudioBuffer;
 
-class Synth
+class Synth : public midi::NoteHandler
 {
   public:
+    Synth();
+
     void allocateResources(const float sampleRate, const int samplesPerBlock);
     void deallocateResources() const;
     void reset();
     void render(AudioBuffer& audioBuffer);
-    void midiMessage(const uint8_t data0, const uint8_t data1, const uint8_t data2);
-    void controlChange(const uint8_t controller, const uint8_t value);
+
+    // midi::NoteHandler interface
+    void noteOn(int note, int velocity) override;
+    void noteOff(int note) override;
+    void allNotesOff() override;
+
+    midi::MidiProcessor& midiProcessor() { return midiProcessor_; }
 
     void setNoiseMix(const float noiseMix);
     void setOscillatorMix(const float oscillatorMix);
@@ -47,8 +54,6 @@ class Synth
     void setFilterEnvelopeDepth(const float envDepth);
     void setEnvelope(const ADSR& adsr);
 
-    midi::CC resoCC = 0x47;
-
   private:
     void startVoice(const size_t voiceIdx, const int note, const int velocity);
     void restartMonoVoice(const int note, const int velocity);
@@ -61,17 +66,14 @@ class Synth
     void processLastNotePriority(const int note);
     void updateLfo();
 
-    void noteOn(const int note, int velocity);
-    void noteOff(const int note);
-
     static constexpr int maxNumVoices_{8};
     int numVoices_{1};
     std::array<Voice, maxNumVoices_> voices_;
     int lastNote_{0};
 
     Parameters parameters_{};
-    float pitchBend_{0.0f};
-    float modWheel_{0.0f};
+
+    midi::MidiProcessor midiProcessor_;
 
     NoiseGenerator noiseGenerator_;
     float noiseMix_{0.0f};
@@ -80,7 +82,6 @@ class Synth
     bool ignoreVelocity_{false};
 
     float sampleRate_{44100.0f};
-    bool sustainPedalPressed_{false};
 
     static constexpr int lfoMaxSamplesPerUpdate_{32};
     float lfoIncrement_{0.0f};
@@ -93,11 +94,8 @@ class Synth
 
     float filterKeyTracking_{0.0f};
     float filterQ_{0.0f};
-    float resonanceCtl_{0.0f};
     float filterLfoDepth_{0.0f};
-    float filterControl_{0.0f};
     float filterZip_{0.0f};
-    float pressure_{0.0f};
     float filterEnvDepth_{0.0f};
 };
 

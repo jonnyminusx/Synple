@@ -7,6 +7,10 @@
 namespace synth
 {
 
+Synth::Synth() : midiProcessor_(*this)
+{
+}
+
 void Synth::allocateResources(const float sampleRate, [[maybe_unused]] const int samplesPerBlock)
 {
     sampleRate_ = sampleRate;
@@ -29,15 +33,10 @@ void Synth::reset()
     }
 
     noiseGenerator_.reset();
-    pitchBend_ = 1.0f;
-    modWheel_ = 0.0f;
-    sustainPedalPressed_ = false;
+    midiProcessor_.state() = midi::MidiState{};
     outputLevelSmoother_.reset(sampleRate_, 0.05);
     lfo_ = 0.0f;
     lfoStep_ = 0;
-    resonanceCtl_ = 1.0f;
-    pressure_ = 0.0f;
-    filterControl_ = 0.0f;
     filterZip_ = 0.0f;
 }
 
@@ -56,7 +55,7 @@ void Synth::render(AudioBuffer& audioBuffer)
 
         for (Voice& voice : voices_)
         {
-            output += voice.render(noise, pitchBend_, parameters_.detune);
+            output += voice.render(noise, midiProcessor_.state().pitchBend, parameters_.detune);
         }
 
         output *= outputLevelSmoother_.getNextValue();
@@ -75,88 +74,48 @@ void Synth::render(AudioBuffer& audioBuffer)
     utils::protectYourEars(audioBuffer);
 }
 
-void Synth::midiMessage(const uint8_t data0, const uint8_t data1, const uint8_t data2)
+void Synth::noteOn(const int note, const int velocity)
 {
-    switch (data0 & 0xF0)
+    int vel = velocity;
+    if (ignoreVelocity_)
     {
-    case 0x80: // Note Off
-    {
-        const uint8_t note = data1 & 0x7F;
-        noteOff(note);
-        break;
+        vel = 80;
     }
-    case 0x90: // Note On
+
+    const size_t voiceIdx{selectVoiceIndexToUse()};
+    if (isPolyphonic())
     {
-        const uint8_t note = data1 & 0x7F;
-        const uint8_t velocity = data2 & 0x7F;
-        if (velocity == 0)
+        startVoice(voiceIdx, note, vel);
+    }
+    else
+    {
+        if (voices_[voiceIdx].note() > 0)
         {
-            noteOff(note);
+            shiftQueuedNotes();
+            restartMonoVoice(note, vel);
         }
         else
         {
-            noteOn(note, velocity);
+            startVoice(voiceIdx, note, vel);
         }
-        break;
-    }
-    case 0xB0: // Control Change
-        controlChange(data1 & 0x7F, data2 & 0x7F);
-        break;
-    case 0xC0: // Program Change
-        break;
-    case 0xD0: // Channel Aftertouch
-        pressure_ = 0.0001f * float(data1 * data1);
-        break;
-    case 0xE0: // Pitch Bend
-        pitchBend_ = std::exp(-0.000014102f * data1 + (128 * data2) - 8192);
-        break;
-    case 0x01: // Modulation Wheel
-        modWheel_ = 0.000005f * float(data2 * data2);
-        break;
-    default:
-        break;
     }
 }
 
-void Synth::controlChange(const uint8_t controller, const uint8_t value)
+void Synth::noteOff(const int note)
 {
-    switch (controller)
+    processLastNotePriority(note);
+
+    for (Voice& voice : voices_)
     {
-    case 0x40: // Sustain pedal
-        sustainPedalPressed_ = value >= 64;
-
-        if (!sustainPedalPressed_)
-        {
-            noteOff(Voice::sustain);
-        }
-
-        break;
-
-    case 0x4A: // Filter +
-        filterControl_ = 0.02f * float(value);
-        break;
-
-    case 0x4B: // Filter -
-        filterControl_ = -0.03f * float(value);
-        break;
-
-    default: // All notes off
-        if (controller >= 0x78)
-        {
-            for (Voice& voice : voices_)
-            {
-                voice.reset();
-            }
-            sustainPedalPressed_ = false;
-        }
-
-        break;
+        voice.noteOff(note, midiProcessor_.state().sustainPedal);
     }
+}
 
-    // Resonance
-    if (controller == resoCC)
+void Synth::allNotesOff()
+{
+    for (Voice& voice : voices_)
     {
-        resonanceCtl_ = 154.0f / float(154 - value);
+        voice.reset();
     }
 }
 
@@ -177,17 +136,19 @@ void Synth::updateLfo()
             lfo_ -= constants::tau;
         }
 
-        const float sineValue{std::sinf(lfo_)};
-        const float vibratoModulation{1.0f + sineValue * (modWheel_ + vibratoAmount_)};
-        const float pwm{1.0f + sineValue * (modWheel_ + pwmDepth_)};
-        const float filterMod{filterKeyTracking_ + filterControl_ + (filterLfoDepth_ + pressure_) * sineValue};
+        const midi::MidiState& midi{midiProcessor_.state()};
+
+        const float sineValue{std::sin(lfo_)};
+        const float vibratoModulation{1.0f + sineValue * (midi.modWheel + vibratoAmount_)};
+        const float pwm{1.0f + sineValue * (midi.modWheel + pwmDepth_)};
+        const float filterMod{filterKeyTracking_ + midi.filterControl + (filterLfoDepth_ + midi.pressure) * sineValue};
         filterZip_ += 0.005f * (filterMod - filterZip_);
 
         for (Voice& voice : voices_)
         {
             voice.setModulation(vibratoModulation, pwm);
-            voice.updateLfo(glideRate_, filterZip_, filterQ_ * resonanceCtl_, pitchBend_, filterEnvDepth_);
-            voice.updatePeriod(pitchBend_, parameters_.detune);
+            voice.updateLfo(glideRate_, filterZip_, filterQ_ * midi.resonanceCtl, midi.pitchBend, filterEnvDepth_);
+            voice.updatePeriod(midi.pitchBend, parameters_.detune);
         }
     }
 }
@@ -216,32 +177,6 @@ int Synth::nextQueuedNote()
     }
 
     return note;
-}
-
-void Synth::noteOn(const int note, int velocity)
-{
-    if (ignoreVelocity_)
-    {
-        velocity = 80;
-    }
-
-    const size_t voiceIdx{selectVoiceIndexToUse()};
-    if (isPolyphonic())
-    {
-        startVoice(voiceIdx, note, velocity);
-    }
-    else
-    {
-        if (voices_[voiceIdx].note() > 0)
-        {
-            shiftQueuedNotes();
-            restartMonoVoice(note, velocity);
-        }
-        else
-        {
-            startVoice(voiceIdx, note, velocity);
-        }
-    }
 }
 
 void Synth::startVoice(const size_t voiceIdx, const int note, const int velocity)
@@ -328,16 +263,6 @@ void Synth::processLastNotePriority(const int note)
     if (queuedNote > 0)
     {
         restartMonoVoice(queuedNote, -1);
-    }
-}
-
-void Synth::noteOff(const int note)
-{
-    processLastNotePriority(note);
-
-    for (Voice& voice : voices_)
-    {
-        voice.noteOff(note, sustainPedalPressed_);
     }
 }
 

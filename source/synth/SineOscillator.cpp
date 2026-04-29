@@ -10,9 +10,9 @@ void Oscillator::reset()
 {
     phase_ = 0.0f;
 
-    sin0 = amplitude_ * std::sinf(constants::tau * phase_);
-    sin1 = amplitude_ * std::sinf(constants::tau * (phase_ + increment_));
-    dsin = 2.0f * std::cosf(increment_ * constants::tau);
+    sin0 = amplitude_ * std::sin(constants::tau * phase_);
+    sin1 = amplitude_ * std::sin(constants::tau * (phase_ + increment_));
+    dsin = 2.0f * std::cos(increment_ * constants::tau);
 }
 
 void Oscillator::setAmplitude(const float amplitude)

@@ -10,6 +10,24 @@ Synple is a subtractive synthesizer JUCE plugin built with C++20. It targets VST
 
 The project uses CMake with CPM for dependency management. JUCE is fetched from GitHub master on first build.
 
+### Linux system dependencies
+
+On Ubuntu/Debian, install these before configuring cmake:
+
+```bash
+apt-get install -y \
+    libasound2-dev \
+    libgl-dev \
+    libcurl4-openssl-dev \
+    libgtk-3-dev \
+    libxrandr-dev \
+    libwebkit2gtk-4.1-dev
+```
+
+Note: Ubuntu 24.04+ ships `webkit2gtk-4.1`; older distros may need `libwebkit2gtk-4.0-dev` instead. The `CMakeLists.txt` handles both automatically.
+
+### Configure and build
+
 ```bash
 # Configure (first time or after CMakeLists changes)
 cmake -B build
@@ -38,14 +56,14 @@ The JUCE JS bridge files are copied from the JUCE source into `source/ui/public/
 ```
 source/juce/   — JUCE plugin layer (AudioProcessor, AudioProcessorEditor, Parameters)
 source/synth/  — Pure synth engine (no JUCE dependencies except juce_audio_basics)
-source/midi/   — MIDI CC type alias
+source/midi/   — MIDI message processing (MidiProcessor, MidiState, NoteHandler, CC type alias)
 source/utils/  — Constants, ear protection utility
 source/ui/     — WebView frontend (HTML/JS)
 ```
 
 ### Signal flow
 
-1. `PluginProcessor` receives audio/MIDI from the host, splits the buffer by MIDI events, and calls `Synth::render()` and `Synth::midiMessage()`.
+1. `PluginProcessor` receives audio/MIDI from the host, splits the buffer by MIDI events, calls `Synth::render()`, and routes MIDI via `Synth::midiProcessor().process()`.
 2. `Synth` manages up to 8 `Voice` instances (1 active in mono mode). Each voice contains two `Oscillator`s, a `Filter`, and two `Envelope`s (amplitude + filter). A shared `NoiseGenerator` feeds noise into the mix.
 3. `Synth::updateLfo()` runs every 32 samples and drives vibrato, PWM depth, and filter modulation across all voices.
 4. Output level is smoothed via `juce::LinearSmoothedValue` and monitored with a JUCE `BallisticsFilter` envelope follower, whose value is exposed to the WebView as `outputLevel.json`.
