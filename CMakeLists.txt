@@ -4,6 +4,48 @@ cmake_minimum_required(VERSION 3.24)
 project(JLX11 VERSION 0.0.1)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_XCODE_GENERATE_SCHEME OFF)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+# Set to OFF to build only the test suite (no GTK/WebKit/JUCE required)
+option(BUILD_PLUGIN "Build the JUCE audio plugin" ON)
+
+# We're going to use CPM as our package manager
+set(CPM_DOWNLOAD_VERSION 0.34.0)
+set(CPM_DOWNLOAD_LOCATION "${CMAKE_BINARY_DIR}/cmake/CPM_${CPM_DOWNLOAD_VERSION}.cmake")
+
+if (NOT EXISTS ${CPM_DOWNLOAD_LOCATION})
+    message(STATUS "Downloading CPM.cmake to ${CPM_DOWNLOAD_LOCATION}")
+    file(DOWNLOAD https://github.com/cpm-cmake/CPM.cmake/releases/download/v${CPM_DOWNLOAD_VERSION}/CPM.cmake ${CPM_DOWNLOAD_LOCATION})
+endif ()
+
+include(${CPM_DOWNLOAD_LOCATION})
+
+# ─── Tests ────────────────────────────────────────────────────────────────────
+# The test binary depends only on pure-C++ synth sources; no JUCE or GTK needed.
+enable_testing()
+include(CTest)
+
+CPMAddPackage(
+    NAME Catch2
+    VERSION 3.5.2
+    GITHUB_REPOSITORY catchorg/Catch2
+)
+
+add_executable(SynthTests
+    tests/OscillatorAliasingTest.cpp
+    source/synth/Oscillator.cpp
+)
+
+target_include_directories(SynthTests PRIVATE source)
+target_compile_features(SynthTests PRIVATE cxx_std_20)
+target_link_libraries(SynthTests PRIVATE Catch2::Catch2WithMain)
+
+include("${Catch2_SOURCE_DIR}/extras/Catch.cmake")
+catch_discover_tests(SynthTests)
+
+# ─── Plugin ───────────────────────────────────────────────────────────────────
+if (BUILD_PLUGIN)
 
 # On Linux, pull in system library include paths that JUCE modules need
 if (UNIX AND NOT APPLE)
@@ -15,22 +57,8 @@ if (UNIX AND NOT APPLE)
     endif()
     include_directories(SYSTEM ${GTK3_INCLUDE_DIRS} ${WEBKIT_INCLUDE_DIRS})
 endif()
-set(CMAKE_XCODE_GENERATE_SCHEME OFF)
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# We're going to use CPM as our package manager to bring in JUCE
-# Check to see if we have CPM installed already.  Bring it in if we don't.
-set(CPM_DOWNLOAD_VERSION 0.34.0)
-set(CPM_DOWNLOAD_LOCATION "${CMAKE_BINARY_DIR}/cmake/CPM_${CPM_DOWNLOAD_VERSION}.cmake")
-
-if (NOT EXISTS ${CPM_DOWNLOAD_LOCATION})
-    message(STATUS "Downloading CPM.cmake to ${CPM_DOWNLOAD_LOCATION}")
-    file(DOWNLOAD https://github.com/cpm-cmake/CPM.cmake/releases/download/v${CPM_DOWNLOAD_VERSION}/CPM.cmake ${CPM_DOWNLOAD_LOCATION})
-endif ()
-
-include(${CPM_DOWNLOAD_LOCATION})
-
-# Bring in JUCE locally
+# Bring in JUCE
 CPMAddPackage(
     NAME juce
     GIT_REPOSITORY https://github.com/juce-framework/JUCE.git
@@ -90,7 +118,7 @@ juce_add_plugin(${PROJECT_NAME}
         PLUGIN_MANUFACTURER_CODE Mphm
         PLUGIN_CODE Jx11
         FORMATS VST3 AU Standalone
-        PRODUCT_NAME "JLX11"        
+        PRODUCT_NAME "JLX11"
 )
 
 get_target_property(PRODUCT_NAME ${PROJECT_NAME} JUCE_PRODUCT_NAME)
@@ -175,3 +203,4 @@ juce_add_binary_data(WebViewFiles
 )
 add_dependencies(WebViewFiles ZipWebViewFiles)
 
+endif() # BUILD_PLUGIN
