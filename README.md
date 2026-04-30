@@ -4,6 +4,8 @@ A subtractive synthesizer plugin built with C++20 and JUCE, with a React/TypeScr
 
 Targets VST3, AU, and Standalone formats.
 
+<img width="876" height="285" alt="image" src="https://github.com/user-attachments/assets/f6fc386b-fe35-4dfb-b07e-47060ca6b630" />
+
 ## Features
 
 - **8-voice polyphony** with mono/poly mode switching and voice stealing
