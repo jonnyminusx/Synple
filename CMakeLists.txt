@@ -35,7 +35,10 @@ CPMAddPackage(
 
 add_executable(SynthTests
     tests/OscillatorAliasingTest.cpp
+    tests/SanitiseBufferTest.cpp
+    source/synth/AudioBuffer.cpp
     source/synth/Oscillator.cpp
+    source/utils/sanitiseBuffer.cpp
 )
 
 target_include_directories(SynthTests PRIVATE source)
