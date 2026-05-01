@@ -35,6 +35,8 @@ CPMAddPackage(
 
 add_executable(SynthTests
     tests/OscillatorAliasingTest.cpp
+    tests/MidiProcessorTest.cpp
+    source/midi/MidiProcessor.cpp
     source/synth/Oscillator.cpp
 )
 
