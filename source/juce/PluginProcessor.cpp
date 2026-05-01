@@ -178,7 +178,7 @@ void SynpleAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear(i, 0, buffer.getNumSamples());
 
-    synth_.midiProcessor().resoCC = midiLearnCC_.load();
+    synth_.midiProcessor().setResoCC(midiLearnCC_.load());
 
     bool expected = true;
     if (isNonRealtime() || parametersChanged_.compare_exchange_strong(expected, false))
@@ -203,7 +203,7 @@ void SynpleAudioProcessor::reset()
     synth_.setOutputLevelInstantly(parameters_.outputGain());
 
     midiLearn.store(false);
-    midiLearnCC_.store(synth_.midiProcessor().resoCC);
+    midiLearnCC_.store(synth_.midiProcessor().resoCC());
 }
 
 //==============================================================================

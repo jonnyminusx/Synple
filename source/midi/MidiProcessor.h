@@ -19,13 +19,15 @@ class MidiProcessor
     const MidiState& state() const { return state_; }
     MidiState&       state()       { return state_; }
 
-    CC resoCC { 0x47 };
+    void setResoCC(CC cc) { resoCC_ = cc; }
+    CC   resoCC() const   { return resoCC_; }
 
   private:
     void controlChange(uint8_t controller, uint8_t value);
 
     MidiState    state_;
     NoteHandler& handler_;
+    CC           resoCC_{0x47};
 };
 
 } // namespace midi
