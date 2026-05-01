@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.24)
 
-# Change to your project name
 project(Synple VERSION 0.0.1)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_XCODE_GENERATE_SCHEME OFF)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -14,12 +15,12 @@ option(BUILD_PLUGIN "Build the JUCE audio plugin" ON)
 set(CPM_DOWNLOAD_VERSION 0.34.0)
 set(CPM_DOWNLOAD_LOCATION "${CMAKE_BINARY_DIR}/cmake/CPM_${CPM_DOWNLOAD_VERSION}.cmake")
 
-if (NOT EXISTS ${CPM_DOWNLOAD_LOCATION})
+if (NOT EXISTS "${CPM_DOWNLOAD_LOCATION}")
     message(STATUS "Downloading CPM.cmake to ${CPM_DOWNLOAD_LOCATION}")
-    file(DOWNLOAD https://github.com/cpm-cmake/CPM.cmake/releases/download/v${CPM_DOWNLOAD_VERSION}/CPM.cmake ${CPM_DOWNLOAD_LOCATION})
+    file(DOWNLOAD "https://github.com/cpm-cmake/CPM.cmake/releases/download/v${CPM_DOWNLOAD_VERSION}/CPM.cmake" "${CPM_DOWNLOAD_LOCATION}")
 endif ()
 
-include(${CPM_DOWNLOAD_LOCATION})
+include("${CPM_DOWNLOAD_LOCATION}")
 
 # ─── Tests ────────────────────────────────────────────────────────────────────
 # The test binary depends only on pure-C++ synth sources; no JUCE or GTK needed.
@@ -38,7 +39,6 @@ add_executable(SynthTests
 )
 
 target_include_directories(SynthTests PRIVATE source)
-target_compile_features(SynthTests PRIVATE cxx_std_20)
 target_link_libraries(SynthTests PRIVATE Catch2::Catch2WithMain)
 
 include("${Catch2_SOURCE_DIR}/extras/Catch.cmake")
@@ -65,49 +65,47 @@ CPMAddPackage(
     GIT_TAG origin/master
 )
 
-# Make sure you include any new source files here
 set(SourceFiles
-        source/juce/Parameters.cpp
-        source/juce/Parameters.h
-        source/juce/PluginEditor.cpp
-        source/juce/PluginEditor.h
-        source/juce/PluginProcessor.cpp
-        source/juce/PluginProcessor.h
-        source/midi/CC.h
-        source/midi/MidiProcessor.cpp
-        source/midi/MidiProcessor.h
-        source/midi/MidiState.h
-        source/midi/NoteHandler.h
-        source/synth/ADSR.h
-        source/synth/AudioBuffer.cpp
-        source/synth/AudioBuffer.h
-        source/synth/Envelope.cpp
-        source/synth/Envelope.h
-        source/synth/Filter.h
-        source/synth/Filter.cpp
-        source/synth/GlideMode.h
-        source/synth/NoiseGenerator.cpp
-        source/synth/NoiseGenerator.h
-        source/synth/Oscillator.cpp
-        source/synth/Oscillator.h
-        source/synth/Output.h
-        source/synth/Output.cpp
-        source/synth/Parameters.h
-        source/synth/Preset.h
-        source/synth/Presets.cpp
-        source/synth/Presets.h
-        source/synth/SineOscillator.cpp
-        source/synth/SineOscillator.h
-        source/synth/Synth.cpp
-        source/synth/Synth.h
-        source/synth/Voice.cpp
-        source/synth/Voice.h
-        source/utils/constants.h
-        source/utils/protectYourEars.cpp
-        source/utils/protectYourEars.h
+    source/juce/Parameters.cpp
+    source/juce/Parameters.h
+    source/juce/PluginEditor.cpp
+    source/juce/PluginEditor.h
+    source/juce/PluginProcessor.cpp
+    source/juce/PluginProcessor.h
+    source/midi/CC.h
+    source/midi/MidiProcessor.cpp
+    source/midi/MidiProcessor.h
+    source/midi/MidiState.h
+    source/midi/NoteHandler.h
+    source/synth/ADSR.h
+    source/synth/AudioBuffer.cpp
+    source/synth/AudioBuffer.h
+    source/synth/Envelope.cpp
+    source/synth/Envelope.h
+    source/synth/Filter.cpp
+    source/synth/Filter.h
+    source/synth/GlideMode.h
+    source/synth/NoiseGenerator.cpp
+    source/synth/NoiseGenerator.h
+    source/synth/Oscillator.cpp
+    source/synth/Oscillator.h
+    source/synth/Output.cpp
+    source/synth/Output.h
+    source/synth/Parameters.h
+    source/synth/Preset.h
+    source/synth/Presets.cpp
+    source/synth/Presets.h
+    source/synth/SineOscillator.cpp
+    source/synth/SineOscillator.h
+    source/synth/Synth.cpp
+    source/synth/Synth.h
+    source/synth/Voice.cpp
+    source/synth/Voice.h
+    source/utils/constants.h
+    source/utils/protectYourEars.cpp
+    source/utils/protectYourEars.h
 )
 
-# Change these to your own preferences
 juce_add_plugin(${PROJECT_NAME}
         COMPANY_NAME morphonium
         IS_SYNTH TRUE
@@ -129,16 +127,12 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     JUCE_PRODUCT_VERSION="${PROJECT_VERSION}"
 )
 
-# How we want our SourceFiles to appear in our IDE
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SourceFiles})
-
-# Make the SourceFiles buildable
 target_sources(${PROJECT_NAME} PRIVATE ${SourceFiles})
 
 # Add source directory to include paths to avoid relative includes
 target_include_directories(${PROJECT_NAME} PRIVATE source)
 
-# These are some toggleable options from the JUCE CMake API
 target_compile_definitions(${PROJECT_NAME}
     PUBLIC
         JUCE_WEB_BROWSER=1
@@ -146,10 +140,8 @@ target_compile_definitions(${PROJECT_NAME}
         JUCE_VST3_CAN_REPLACE_VST2=0
 )
 
-# JUCE libraries to bring into our project
 target_link_libraries(${PROJECT_NAME}
         PUBLIC
-        juce::juce_analytics
         juce::juce_audio_basics
         juce::juce_audio_devices
         juce::juce_core
@@ -166,7 +158,8 @@ target_link_libraries(${PROJECT_NAME}
         WebViewFiles
 )
 
-file( COPY "${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/juce-src/modules/juce_gui_extra/native/javascript/" DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/source/ui/src/lib/juce/")
+file(COPY "${CMAKE_BINARY_DIR}/_deps/juce-src/modules/juce_gui_extra/native/javascript/"
+     DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/source/ui/src/lib/juce/")
 
 # Folder where web UI data reside (Vite build output)
 set(WEBVIEW_FILES_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/source/ui/public")
@@ -174,7 +167,7 @@ set(WEBVIEW_FILES_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/source/ui/public")
 # Zip WebView files
 set(WEBVIEW_FILES_ZIP_NAME "webview_files.zip")
 set(TARGET_WEBVIEW_FILES_ZIP_PATH "${CMAKE_BINARY_DIR}/${WEBVIEW_FILES_ZIP_NAME}")
-cmake_path(ABSOLUTE_PATH WEBVIEW_FILES_SOURCE_DIR NORMALIZE OUTPUT_VARIABLE PUBLIC_PATH )
+set(PUBLIC_PATH "${WEBVIEW_FILES_SOURCE_DIR}")
 cmake_path(GET PUBLIC_PATH PARENT_PATH WORKING_DIRECTORY)
 
 find_program(NPM_EXECUTABLE npm REQUIRED)
