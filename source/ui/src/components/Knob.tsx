@@ -12,7 +12,7 @@ const CX = SIZE / 2
 const CY = SIZE / 2
 const RADIUS = 13
 const SWEEP = 270
-const START_ANGLE = 225 // degrees from 3 o'clock (CSS/SVG convention: 0° = right)
+const START_ANGLE = 135 // degrees from 3 o'clock (CSS/SVG convention: 0° = right)
 
 function polarXY(cx: number, cy: number, r: number, angleDeg: number) {
   const rad = (angleDeg * Math.PI) / 180
@@ -34,7 +34,7 @@ export function Knob({ parameterId, label, formatValue }: KnobProps) {
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
-      ;(e.target as Element).setPointerCapture(e.pointerId)
+      ; (e.target as Element).setPointerCapture(e.pointerId)
       dragRef.current = { startY: e.clientY, startNorm: normalisedValue }
       onDragStart()
     },
@@ -77,7 +77,7 @@ export function Knob({ parameterId, label, formatValue }: KnobProps) {
         <path
           d={arcPath(CX, CY, RADIUS, START_ANGLE, trackEnd)}
           fill="none"
-          stroke="#3f3f46"
+          stroke="#c7c7c7"
           strokeWidth="3"
           strokeLinecap="round"
         />
@@ -86,16 +86,16 @@ export function Knob({ parameterId, label, formatValue }: KnobProps) {
           <path
             d={arcPath(CX, CY, RADIUS, START_ANGLE, endAngle)}
             fill="none"
-            stroke="#f59e0b"
+            stroke="#464646"
             strokeWidth="3"
             strokeLinecap="round"
           />
         )}
         {/* Dot */}
-        <circle cx={dot.x} cy={dot.y} r="2.5" fill="#fcd34d" />
+        <circle cx={dot.x} cy={dot.y} r="2.5" fill="#717171" />
       </svg>
-      <span className="text-[9px] text-zinc-400 font-mono leading-none">{valueText}</span>
-      <span className="text-[9px] text-zinc-500 font-mono uppercase tracking-wide leading-none">
+      <span className="text-[9px] text-zinc-800 font-mono leading-none">{valueText}</span>
+      <span className="text-[9px] text-zinc-800 font-mono uppercase tracking-wide leading-none">
         {label}
       </span>
     </div>

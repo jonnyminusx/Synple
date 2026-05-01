@@ -9,7 +9,7 @@ function fmtPercent(v: number) { return v.toFixed(0) + '%' }
 
 export function GlobalSection() {
   return (
-    <Section label="Global">
+    <Section label="Global" borderClass="border-cyan-400" bgClass="bg-cyan-200">
       <Knob parameterId="noise" label="Noise" formatValue={fmtPercent} />
       <Knob parameterId="octave" label="Oct" formatValue={fmtOctave} />
       <Knob parameterId="tuning" label="Tune" formatValue={fmtCents} />

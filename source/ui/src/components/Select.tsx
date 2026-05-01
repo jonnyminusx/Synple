@@ -21,7 +21,7 @@ export function Select({ parameterId, label }: SelectProps) {
           </option>
         ))}
       </select>
-      <span className="text-[9px] text-zinc-500 font-mono uppercase tracking-wide leading-none">
+      <span className="text-[9px] text-zinc-800 font-mono uppercase tracking-wide leading-none">
         {label}
       </span>
     </div>

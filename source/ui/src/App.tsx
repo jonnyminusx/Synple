@@ -1,3 +1,5 @@
+import { useRef, useEffect } from 'react'
+import { getNativeFunction } from './lib/juce/index.js'
 import { OscSection } from './components/OscSection.js'
 import { GlideSection } from './components/GlideSection.js'
 import { FilterSection } from './components/FilterSection.js'
@@ -5,31 +7,45 @@ import { EnvSection } from './components/EnvSection.js'
 import { LfoSection } from './components/LfoSection.js'
 import { GlobalSection } from './components/GlobalSection.js'
 
+const setWindowSize = getNativeFunction('setWindowSize')
+
 export default function App() {
+  const contentRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      if (!contentRef.current) return
+      const rect = contentRef.current.getBoundingClientRect()
+      // Add the p-2 (8px) padding on each side that wraps the content
+      const w = Math.ceil(rect.right) + 8
+      const h = Math.ceil(rect.bottom) + 8
+      if (w > 0 && h > 0) setWindowSize(w, h)
+    })
+  }, [])
+
   return (
-    <div className="w-full h-screen bg-zinc-900 text-zinc-200 flex flex-col overflow-hidden select-none">
-      <div className="flex items-center px-3 py-1.5 border-b border-zinc-700/60">
-        <span className="text-sm font-mono font-bold tracking-[0.2em] text-zinc-300">Synple</span>
+    <div style={{ zoom: 1.2 }} className="w-full h-screen bg-zinc-600 text-zinc-200 flex flex-col overflow-hidden select-none">
+      <div className="flex items-center justify-between px-3 py-1.5 border-b border-zinc-500/60">
+        <span className="text-xl font-mono font-bold tracking-[0.2em] text-zinc-300 uppercase">Synple</span>
+        <span className="text-xs font-mono font-bold tracking-[0.15em] text-zinc-500 uppercase">Ghostwritten DSP</span>
       </div>
 
-      <div className="flex-1 flex flex-col gap-2 p-2 overflow-auto">
-        {/* Top row */}
-        <div className="flex gap-2 flex-wrap">
-          <OscSection />
-          <GlideSection />
-          <FilterSection />
-        </div>
+      <div className="flex-1 flex flex-col gap-2 p-2 overflow-hidden">
+        <div ref={contentRef} className="flex flex-col gap-2 w-fit">
+          {/* Top row */}
+          <div className="flex gap-2 justify-center">
+            <OscSection />
+            <LfoSection />
+            <FilterSection />
+            <EnvSection prefix="filter" label="Filter Env" borderClass="border-green-400" bgClass="bg-green-200" />
+          </div>
 
-        {/* Middle row */}
-        <div className="flex gap-2 flex-wrap">
-          <EnvSection prefix="env" label="Amp Env" />
-          <EnvSection prefix="filter" label="Filter Env" />
-        </div>
-
-        {/* Bottom row */}
-        <div className="flex gap-2 flex-wrap">
-          <LfoSection />
-          <GlobalSection />
+          {/* Bottom row */}
+          <div className="flex gap-2 justify-center">
+            <GlobalSection />
+            <GlideSection />
+            <EnvSection prefix="env" label="Amp Env" borderClass="border-violet-400" bgClass="bg-violet-200" />
+          </div>
         </div>
       </div>
     </div>
