@@ -69,15 +69,15 @@ void Voice::noteOn(const int note,
                    const Parameters& parameters)
 {
     const float adjustedVelocity{(0.004f * static_cast<float>((velocity + 64) * (velocity + 64))) - 8.0f};
-    const float osciillator1Amplitude{parameters.volumeTrim * adjustedVelocity};
-    const float period{calculatePeriod(note, parameters.tune, parameters.detune, voiceIdx)};
-    const int noteDistance{calculateNoteDistance(note, lastNote, parameters.glideMode, isPlayingLegatoStyle)};
+    const float osciillator1Amplitude{parameters.output.volumeTrim * adjustedVelocity};
+    const float period{calculatePeriod(note, parameters.oscillator.tune, parameters.oscillator.detune, voiceIdx)};
+    const int noteDistance{calculateNoteDistance(note, lastNote, parameters.glide.mode, isPlayingLegatoStyle)};
 
     note_ = note;
     cutoff_ = sampleRate / (period * constants::pi);
-    cutoff_ *= std::exp(parameters.velocitySensitivity * static_cast<float>(velocity - 64));
+    cutoff_ *= std::exp(parameters.filter.velocitySensitivity * static_cast<float>(velocity - 64));
     targetPeriod_ = period;
-    period_ = period * std::pow(1.059463094359f, static_cast<float>(noteDistance) - parameters.glideBend);
+    period_ = period * std::pow(1.059463094359f, static_cast<float>(noteDistance) - parameters.glide.bendSemitones);
 
     if (period_ < 6.0f)
     {
@@ -85,7 +85,7 @@ void Voice::noteOn(const int note,
     }
 
     oscillator1_.setAmplitude(osciillator1Amplitude);
-    oscillator2_.setAmplitude(osciillator1Amplitude * parameters.oscillatorMix);
+    oscillator2_.setAmplitude(osciillator1Amplitude * parameters.oscillator.mix);
 
     if (pwm)
     {
@@ -98,15 +98,15 @@ void Voice::noteOn(const int note,
 void Voice::noteOnRestart(
     const int note, const int velocity, const float sampleRate, const size_t voiceIdx, const Parameters& parameters)
 {
-    const float period{calculatePeriod(note, parameters.tune, parameters.detune, voiceIdx)};
+    const float period{calculatePeriod(note, parameters.oscillator.tune, parameters.oscillator.detune, voiceIdx)};
 
     note_ = note;
     cutoff_ = sampleRate / (period * constants::pi);
-    cutoff_ *= std::exp(parameters.velocitySensitivity * static_cast<float>(velocity - 64));
+    cutoff_ *= std::exp(parameters.filter.velocitySensitivity * static_cast<float>(velocity - 64));
 
     targetPeriod_ = period;
 
-    if (GlideMode::Off == parameters.glideMode)
+    if (GlideMode::Off == parameters.glide.mode)
     {
         period_ = period;
     }

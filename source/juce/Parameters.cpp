@@ -1,6 +1,6 @@
 #include "Parameters.h"
 #include "ParameterIDs.h"
-#include "synth/ADSR.h"
+#include "synth/Parameters.h"
 #include <cmath>
 
 namespace
@@ -503,6 +503,44 @@ float Parameters::glideRateCoefficient(const float inverseSampleRate, const floa
     }
 
     return 1.0f - std::exp(-inverseUpdateRate * std::exp(6.0f - 0.07f * glideRate()));
+}
+
+synth::Parameters Parameters::createSnapshot(const float sampleRate) const
+{
+    constexpr float modulationUpdateInterval{32.0f};
+    const float inverseSampleRate{1.0f / sampleRate};
+    const float inverseUpdateRate{inverseSampleRate * modulationUpdateInterval};
+
+    synth::Parameters p;
+
+    p.oscillator.mix      = oscillatorMix();
+    p.oscillator.tune     = tune(sampleRate);
+    p.oscillator.detune   = detune();
+    p.oscillator.noiseMix = noiseMix();
+
+    p.filter.keyTracking         = filterKeyTracking();
+    p.filter.q                   = filterQ();
+    p.filter.lfoDepth            = filterLfoDepth();
+    p.filter.envelopeDepth       = filterEnvelopeDepth();
+    p.filter.velocitySensitivity = filterVelocitySensitivity();
+    p.filter.envelope            = filterEnvelope(inverseUpdateRate);
+
+    p.lfo.increment     = lfoIncrement(inverseSampleRate, modulationUpdateInterval);
+    p.lfo.vibratoAmount = vibratoAmount();
+    p.lfo.pwmDepth      = pwmDepth();
+
+    p.glide.mode            = static_cast<synth::GlideMode>(glideModeIndex());
+    p.glide.rateCoefficient = glideRateCoefficient(inverseSampleRate, modulationUpdateInterval);
+    p.glide.bendSemitones   = glideBendSemitones();
+
+    p.output.gain           = outputGain();
+    p.output.volumeTrim     = volumeTrim();
+    p.output.polyphonic     = isPolyphonic();
+    p.output.ignoreVelocity = shouldIgnoreVelocity();
+
+    p.envelope = envelope(inverseSampleRate);
+
+    return p;
 }
 
 void Parameters::fillParameterArray(juce::RangedAudioParameter** params) const
