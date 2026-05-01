@@ -3,6 +3,7 @@
 #include "synth/AudioBuffer.h"
 
 #include <cmath>
+#include <string>
 #ifndef NDEBUG
 #include <iostream>
 #endif
