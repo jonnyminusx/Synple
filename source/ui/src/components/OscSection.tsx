@@ -7,7 +7,7 @@ function fmtCents(v: number) { return (v >= 0 ? '+' : '') + v.toFixed(1) + 'c' }
 
 export function OscSection() {
   return (
-    <Section label="OSC">
+    <Section label="OSC" borderClass="border-red-400" bgClass="bg-red-200">
       <Knob parameterId="oscMix" label="Mix" formatValue={fmtPercent} />
       <Knob parameterId="oscTune" label="Tune" formatValue={fmtSemitones} />
       <Knob parameterId="oscFine" label="Fine" formatValue={fmtCents} />

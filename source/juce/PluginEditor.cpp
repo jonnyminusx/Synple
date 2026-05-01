@@ -65,7 +65,7 @@ std::vector<std::byte> getWebViewFileAsBytes(const juce::String& filepath)
     return {};
 }
 
-constexpr auto localDevServerAddress{"http://127.0.0.1:8080"};
+constexpr auto localDevServerAddress{"http://localhost:8080"};
 
 } // namespace
 
@@ -105,7 +105,14 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
                    .withOptionsFrom(webOctaveRelay_)
                    .withOptionsFrom(webTuningRelay_)
                    .withOptionsFrom(webOutputLevelRelay_)
-                   .withOptionsFrom(webPolyModeRelay_)),
+                   .withOptionsFrom(webPolyModeRelay_)
+                   .withNativeFunction("setWindowSize",
+                                       [this](const juce::Array<juce::var>& args, auto complete) {
+                                           if (args.size() >= 2)
+                                               juce::MessageManager::callAsync(
+                                                   [this, w = (int)args[0], h = (int)args[1]]() { setSize(w, h); });
+                                           complete({});
+                                       })),
       webOscMixAttachment_(*p.getApvts().getParameter(parameter_id::oscMix.getParamID()), webOscMixRelay_),
       webOscTuneAttachment_(*p.getApvts().getParameter(parameter_id::oscTune.getParamID()), webOscTuneRelay_),
       webOscFineAttachment_(*p.getApvts().getParameter(parameter_id::oscFine.getParamID()), webOscFineRelay_),
@@ -116,11 +123,16 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
       webFilterResoAttachment_(*p.getApvts().getParameter(parameter_id::filterReso.getParamID()), webFilterResoRelay_),
       webFilterEnvAttachment_(*p.getApvts().getParameter(parameter_id::filterEnv.getParamID()), webFilterEnvRelay_),
       webFilterLFOAttachment_(*p.getApvts().getParameter(parameter_id::filterLFO.getParamID()), webFilterLFORelay_),
-      webFilterVelocityAttachment_(*p.getApvts().getParameter(parameter_id::filterVelocity.getParamID()), webFilterVelocityRelay_),
-      webFilterAttackAttachment_(*p.getApvts().getParameter(parameter_id::filterAttack.getParamID()), webFilterAttackRelay_),
-      webFilterDecayAttachment_(*p.getApvts().getParameter(parameter_id::filterDecay.getParamID()), webFilterDecayRelay_),
-      webFilterSustainAttachment_(*p.getApvts().getParameter(parameter_id::filterSustain.getParamID()), webFilterSustainRelay_),
-      webFilterReleaseAttachment_(*p.getApvts().getParameter(parameter_id::filterRelease.getParamID()), webFilterReleaseRelay_),
+      webFilterVelocityAttachment_(*p.getApvts().getParameter(parameter_id::filterVelocity.getParamID()),
+                                   webFilterVelocityRelay_),
+      webFilterAttackAttachment_(*p.getApvts().getParameter(parameter_id::filterAttack.getParamID()),
+                                 webFilterAttackRelay_),
+      webFilterDecayAttachment_(*p.getApvts().getParameter(parameter_id::filterDecay.getParamID()),
+                                webFilterDecayRelay_),
+      webFilterSustainAttachment_(*p.getApvts().getParameter(parameter_id::filterSustain.getParamID()),
+                                  webFilterSustainRelay_),
+      webFilterReleaseAttachment_(*p.getApvts().getParameter(parameter_id::filterRelease.getParamID()),
+                                  webFilterReleaseRelay_),
       webEnvAttackAttachment_(*p.getApvts().getParameter(parameter_id::envAttack.getParamID()), webEnvAttackRelay_),
       webEnvDecayAttachment_(*p.getApvts().getParameter(parameter_id::envDecay.getParamID()), webEnvDecayRelay_),
       webEnvSustainAttachment_(*p.getApvts().getParameter(parameter_id::envSustain.getParamID()), webEnvSustainRelay_),
@@ -130,7 +142,8 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
       webNoiseAttachment_(*p.getApvts().getParameter(parameter_id::noise.getParamID()), webNoiseRelay_),
       webOctaveAttachment_(*p.getApvts().getParameter(parameter_id::octave.getParamID()), webOctaveRelay_),
       webTuningAttachment_(*p.getApvts().getParameter(parameter_id::tuning.getParamID()), webTuningRelay_),
-      webOutputLevelAttachment_(*p.getApvts().getParameter(parameter_id::outputLevel.getParamID()), webOutputLevelRelay_),
+      webOutputLevelAttachment_(*p.getApvts().getParameter(parameter_id::outputLevel.getParamID()),
+                                webOutputLevelRelay_),
       webPolyModeAttachment_(*p.getApvts().getParameter(parameter_id::polyMode.getParamID()), webPolyModeRelay_)
 {
     webView_.goToURL(webView_.getResourceProviderRoot());
@@ -138,6 +151,7 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
 
     addAndMakeVisible(webView_);
     setResizable(true, true);
+    setResizeLimits(400, 150, 2000, 1000);
     setSize(800, 500);
 }
 
