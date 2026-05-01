@@ -44,6 +44,15 @@ target_link_libraries(SynthTests PRIVATE Catch2::Catch2WithMain)
 include("${Catch2_SOURCE_DIR}/extras/Catch.cmake")
 catch_discover_tests(SynthTests)
 
+add_custom_command(
+    TARGET SynthTests
+    POST_BUILD
+    COMMAND "$<TARGET_FILE:SynthTests>"
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+    COMMENT "Running unit tests..."
+    VERBATIM
+)
+
 # ─── Plugin ───────────────────────────────────────────────────────────────────
 if (BUILD_PLUGIN)
 
