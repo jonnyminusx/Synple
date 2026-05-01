@@ -102,8 +102,8 @@ set(SourceFiles
     source/synth/Voice.cpp
     source/synth/Voice.h
     source/utils/constants.h
-    source/utils/protectYourEars.cpp
-    source/utils/protectYourEars.h
+    source/utils/sanitiseBuffer.cpp
+    source/utils/sanitiseBuffer.h
 )
 
 juce_add_plugin(${PROJECT_NAME}
