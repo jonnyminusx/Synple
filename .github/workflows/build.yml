@@ -44,5 +44,10 @@ jobs:
       - name: Configure
         run: cmake -B build
 
+      - name: Check tidy
+        run: |
+          clang-tidy -p build \
+            $(find source/midi source/synth source/utils -name '*.cpp')
+
       - name: Build
         run: cmake --build build --parallel
