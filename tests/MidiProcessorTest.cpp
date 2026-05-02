@@ -8,7 +8,7 @@
 
 namespace {
 
-struct MockHandler : midi::NoteHandler
+struct FakeHandler : midi::NoteHandler
 {
     struct NoteOnEvent { int note; int velocity; };
 
@@ -29,7 +29,7 @@ struct MockHandler : midi::NoteHandler
 
 TEST_CASE("MidiState defaults", "[midi]")
 {
-    MockHandler handler;
+    FakeHandler handler;
     midi::MidiProcessor proc{handler};
 
     REQUIRE(proc.state().pitchBend     == Catch::Approx(1.0f));
@@ -44,7 +44,7 @@ TEST_CASE("MidiState defaults", "[midi]")
 
 TEST_CASE("Note On fires noteOn with correct note and velocity", "[midi][note]")
 {
-    MockHandler handler;
+    FakeHandler handler;
     midi::MidiProcessor proc{handler};
 
     proc.process(0x90, 60, 100);
@@ -56,7 +56,7 @@ TEST_CASE("Note On fires noteOn with correct note and velocity", "[midi][note]")
 
 TEST_CASE("Note On with velocity 0 is treated as Note Off", "[midi][note]")
 {
-    MockHandler handler;
+    FakeHandler handler;
     midi::MidiProcessor proc{handler};
 
     proc.process(0x90, 60, 0);
@@ -68,7 +68,7 @@ TEST_CASE("Note On with velocity 0 is treated as Note Off", "[midi][note]")
 
 TEST_CASE("Note Off fires noteOff", "[midi][note]")
 {
-    MockHandler handler;
+    FakeHandler handler;
     midi::MidiProcessor proc{handler};
 
     proc.process(0x80, 48, 64);
@@ -79,7 +79,7 @@ TEST_CASE("Note Off fires noteOff", "[midi][note]")
 
 TEST_CASE("MIDI channel nibble is ignored", "[midi][note]")
 {
-    MockHandler handler;
+    FakeHandler handler;
     midi::MidiProcessor proc{handler};
 
     proc.process(0x95, 48, 80); // Note On on channel 6
@@ -90,7 +90,7 @@ TEST_CASE("MIDI channel nibble is ignored", "[midi][note]")
 
 TEST_CASE("Note data bytes are masked to 7 bits", "[midi][note]")
 {
-    MockHandler handler;
+    FakeHandler handler;
     midi::MidiProcessor proc{handler};
 
     proc.process(0x90, 0x80 | 60, 0x80 | 100); // bit 7 set on data bytes
@@ -104,7 +104,7 @@ TEST_CASE("Note data bytes are masked to 7 bits", "[midi][note]")
 
 TEST_CASE("Mod wheel (CC 0x01) maps value to 0..1", "[midi][cc]")
 {
-    MockHandler handler;
+    FakeHandler handler;
     midi::MidiProcessor proc{handler};
 
     SECTION("zero")
@@ -130,7 +130,7 @@ TEST_CASE("Mod wheel (CC 0x01) maps value to 0..1", "[midi][cc]")
 
 TEST_CASE("Sustain pedal (CC 0x40)", "[midi][cc]")
 {
-    MockHandler handler;
+    FakeHandler handler;
     midi::MidiProcessor proc{handler};
 
     SECTION("value >= 64 sets sustainPedal")
@@ -167,7 +167,7 @@ TEST_CASE("Sustain pedal (CC 0x40)", "[midi][cc]")
 
 TEST_CASE("Filter CC 0x4A increases filterControl", "[midi][cc]")
 {
-    MockHandler handler;
+    FakeHandler handler;
     midi::MidiProcessor proc{handler};
 
     proc.process(0xB0, 0x4A, 100);
@@ -176,7 +176,7 @@ TEST_CASE("Filter CC 0x4A increases filterControl", "[midi][cc]")
 
 TEST_CASE("Filter CC 0x4B decreases filterControl", "[midi][cc]")
 {
-    MockHandler handler;
+    FakeHandler handler;
     midi::MidiProcessor proc{handler};
 
     proc.process(0xB0, 0x4B, 100);
@@ -187,7 +187,7 @@ TEST_CASE("Filter CC 0x4B decreases filterControl", "[midi][cc]")
 
 TEST_CASE("Resonance CC (default 0x47)", "[midi][cc]")
 {
-    MockHandler handler;
+    FakeHandler handler;
     midi::MidiProcessor proc{handler};
 
     SECTION("value 0 gives resonanceCtl = 1.0")
@@ -240,7 +240,7 @@ TEST_CASE("Resonance CC (default 0x47)", "[midi][cc]")
 
 TEST_CASE("All Notes Off (CC >= 0x78)", "[midi][cc]")
 {
-    MockHandler handler;
+    FakeHandler handler;
     midi::MidiProcessor proc{handler};
 
     SECTION("CC 0x78 triggers allNotesOff and clears sustain")
@@ -268,7 +268,7 @@ TEST_CASE("All Notes Off (CC >= 0x78)", "[midi][cc]")
 
 TEST_CASE("Channel Aftertouch (0xD0)", "[midi]")
 {
-    MockHandler handler;
+    FakeHandler handler;
     midi::MidiProcessor proc{handler};
 
     SECTION("zero input gives zero pressure")
@@ -298,7 +298,7 @@ TEST_CASE("Channel Aftertouch (0xD0)", "[midi]")
 
 TEST_CASE("Pitch Bend (0xE0)", "[midi]")
 {
-    MockHandler handler;
+    FakeHandler handler;
     midi::MidiProcessor proc{handler};
 
     SECTION("center position (data1=0, data2=64) gives pitchBend = 1.0")
