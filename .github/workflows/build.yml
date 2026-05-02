@@ -36,8 +36,18 @@ jobs:
       - name: Install Node dependencies
         run: cd source/ui && npm ci
 
+      - name: Check formatting
+        run: |
+          clang-format --dry-run --Werror \
+            $(find source/juce source/midi source/synth source/utils -name '*.cpp' -o -name '*.h')
+
       - name: Configure
         run: cmake -B build
+
+      - name: Check tidy
+        run: |
+          clang-tidy -p build \
+            $(find source/midi source/synth source/utils -name '*.cpp')
 
       - name: Build
         run: cmake --build build --parallel

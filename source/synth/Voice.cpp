@@ -139,7 +139,7 @@ void Voice::release()
 
 void Voice::updatePanning()
 {
-    const float panning{std::clamp((note_ - 60) / 24.0f, -1.0f, 1.0f)};
+    const float panning{std::clamp(static_cast<float>(note_ - 60) / 24.0f, -1.0f, 1.0f)};
     panLeft_ = std::sin(piOver4 * (1.0f - panning));
     panRight_ = std::sin(piOver4 * (1.0f + panning));
 }

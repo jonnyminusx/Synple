@@ -39,7 +39,8 @@ class Preset
            const float p24,
            const float p25)
     {
-        strcpy(this->name_, name);
+        std::strncpy(this->name_, name, sizeof(name_) - 1);
+        name_[sizeof(name_) - 1] = '\0';
 
         parameters_[0] = p0;   // Osc Mix
         parameters_[1] = p1;   // Osc Tune
@@ -69,15 +70,9 @@ class Preset
         parameters_[25] = p25; // Polyphony
     }
 
-    const char* name() const
-    {
-        return name_;
-    }
+    const char* name() const { return name_; }
 
-    const float* parameters() const
-    {
-        return parameters_;
-    }
+    const float* parameters() const { return parameters_; }
 
   private:
     char name_[40];

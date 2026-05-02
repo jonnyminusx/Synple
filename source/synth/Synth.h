@@ -27,6 +27,7 @@ class Synth : public midi::NoteHandler
     void noteOn(int note, int velocity) override;
     void noteOff(int note) override;
     void allNotesOff() override;
+    void sustainPedalReleased() override;
 
     midi::MidiProcessor& midiProcessor() { return midiProcessor_; }
 

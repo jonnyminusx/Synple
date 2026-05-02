@@ -2,14 +2,12 @@
 #include "AudioBuffer.h"
 #include "Output.h"
 #include "utils/constants.h"
-#include "utils/protectYourEars.h"
+#include "utils/sanitiseBuffer.h"
 
 namespace synth
 {
 
-Synth::Synth() : midiProcessor_(*this)
-{
-}
+Synth::Synth() : midiProcessor_(*this) {}
 
 void Synth::allocateResources(const float sampleRate, [[maybe_unused]] const int samplesPerBlock)
 {
@@ -21,9 +19,7 @@ void Synth::allocateResources(const float sampleRate, [[maybe_unused]] const int
     }
 }
 
-void Synth::deallocateResources() const
-{
-}
+void Synth::deallocateResources() const {}
 
 void Synth::reset()
 {
@@ -71,7 +67,7 @@ void Synth::render(AudioBuffer& audioBuffer)
         }
     }
 
-    utils::protectYourEars(audioBuffer);
+    utils::sanitiseBuffer(audioBuffer);
 }
 
 void Synth::noteOn(const int note, const int velocity)
@@ -119,6 +115,24 @@ void Synth::allNotesOff()
     }
 }
 
+void Synth::sustainPedalReleased()
+{
+    if (!isPolyphonic() && voices_[0].note() == Voice::sustain)
+    {
+        const int queued = nextQueuedNote();
+        if (queued > 0)
+        {
+            restartMonoVoice(queued, -1);
+            return;
+        }
+    }
+
+    for (Voice& voice : voices_)
+    {
+        voice.noteOff(Voice::sustain, false);
+    }
+}
+
 void Synth::updateLfo()
 {
     if (--lfoStep_ < 0)
@@ -136,13 +150,18 @@ void Synth::updateLfo()
         const float sineValue{std::sin(lfo_)};
         const float vibratoModulation{1.0f + sineValue * (midi.modWheel + parameters_.lfo.vibratoAmount)};
         const float pwm{1.0f + sineValue * (midi.modWheel + parameters_.lfo.pwmDepth)};
-        const float filterMod{parameters_.filter.keyTracking + midi.filterControl + (parameters_.filter.lfoDepth + midi.pressure) * sineValue};
+        const float filterMod{parameters_.filter.keyTracking + midi.filterControl +
+                              (parameters_.filter.lfoDepth + midi.pressure) * sineValue};
         filterZip_ += 0.005f * (filterMod - filterZip_);
 
         for (Voice& voice : voices_)
         {
             voice.setModulation(vibratoModulation, pwm);
-            voice.updateLfo(parameters_.glide.rateCoefficient, filterZip_, parameters_.filter.q * midi.resonanceCtl, midi.pitchBend, parameters_.filter.envelopeDepth);
+            voice.updateLfo(parameters_.glide.rateCoefficient,
+                            filterZip_,
+                            parameters_.filter.q * midi.resonanceCtl,
+                            midi.pitchBend,
+                            parameters_.filter.envelopeDepth);
             voice.updatePeriod(midi.pitchBend, parameters_.oscillator.detune);
         }
     }

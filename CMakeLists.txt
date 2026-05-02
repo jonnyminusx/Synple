@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.24)
 project(Synple VERSION 0.0.1)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_XCODE_GENERATE_SCHEME OFF)
@@ -22,6 +23,64 @@ endif ()
 
 include("${CPM_DOWNLOAD_LOCATION}")
 
+# ─── clang-format ─────────────────────────────────────────────────────────────
+find_program(CLANG_FORMAT clang-format)
+if (CLANG_FORMAT)
+    file(GLOB_RECURSE FORMAT_SOURCE_FILES
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/juce/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/juce/*.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/midi/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/midi/*.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/synth/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/synth/*.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/utils/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/utils/*.h"
+    )
+
+    set(FORMAT_STAMP "${CMAKE_BINARY_DIR}/clang-format.stamp")
+
+    add_custom_command(
+        OUTPUT "${FORMAT_STAMP}"
+        COMMAND ${CLANG_FORMAT} -i ${FORMAT_SOURCE_FILES}
+        COMMAND ${CMAKE_COMMAND} -E touch "${FORMAT_STAMP}"
+        DEPENDS ${FORMAT_SOURCE_FILES}
+        COMMENT "Running clang-format..."
+        VERBATIM
+    )
+
+    add_custom_target(format ALL DEPENDS "${FORMAT_STAMP}")
+else()
+    message(STATUS "clang-format not found — skipping format target")
+endif()
+
+# ─── clang-tidy ───────────────────────────────────────────────────────────────
+find_program(CLANG_TIDY clang-tidy)
+if (CLANG_TIDY)
+    file(GLOB_RECURSE TIDY_SOURCE_FILES
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/midi/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/synth/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/utils/*.cpp"
+    )
+    # Synth.cpp includes juce_audio_basics, which is only on the include path
+    # during the full plugin build. CI runs tidy on it directly after a full configure.
+    list(FILTER TIDY_SOURCE_FILES EXCLUDE REGEX ".*/Synth\\.cpp$")
+
+    set(TIDY_STAMP "${CMAKE_BINARY_DIR}/clang-tidy.stamp")
+
+    add_custom_command(
+        OUTPUT "${TIDY_STAMP}"
+        COMMAND ${CLANG_TIDY} -p "${CMAKE_BINARY_DIR}" ${TIDY_SOURCE_FILES}
+        COMMAND ${CMAKE_COMMAND} -E touch "${TIDY_STAMP}"
+        DEPENDS ${TIDY_SOURCE_FILES}
+        COMMENT "Running clang-tidy..."
+        VERBATIM
+    )
+
+    add_custom_target(tidy DEPENDS "${TIDY_STAMP}")
+else()
+    message(STATUS "clang-tidy not found — skipping tidy target")
+endif()
+
 # ─── Tests ────────────────────────────────────────────────────────────────────
 # The test binary depends only on pure-C++ synth sources; no JUCE or GTK needed.
 enable_testing()
@@ -35,7 +94,12 @@ CPMAddPackage(
 
 add_executable(SynthTests
     tests/OscillatorAliasingTest.cpp
+    tests/MidiProcessorTest.cpp
+    tests/SanitiseBufferTest.cpp
+    source/midi/MidiProcessor.cpp
+    source/synth/AudioBuffer.cpp
     source/synth/Oscillator.cpp
+    source/utils/sanitiseBuffer.cpp
 )
 
 target_include_directories(SynthTests PRIVATE source)
@@ -111,8 +175,8 @@ set(SourceFiles
     source/synth/Voice.cpp
     source/synth/Voice.h
     source/utils/constants.h
-    source/utils/protectYourEars.cpp
-    source/utils/protectYourEars.h
+    source/utils/sanitiseBuffer.cpp
+    source/utils/sanitiseBuffer.h
 )
 
 juce_add_plugin(${PROJECT_NAME}

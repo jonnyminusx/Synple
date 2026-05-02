@@ -38,7 +38,21 @@ cmake --build build
 # The plugin is copied automatically after build (COPY_PLUGIN_AFTER_BUILD TRUE)
 ```
 
-There are no tests currently. Suggested testing tools from TODO.md: pluginval, auval (macOS native), and thread sanitizer.
+### Testing
+
+Tests use Catch2 v3 and live in `tests/`. The `SynthTests` binary links only pure-C++ sources — no JUCE, GTK, or WebKit required.
+
+**Build tests only** (no system dependencies needed):
+```bash
+cmake -B build -DBUILD_PLUGIN=OFF
+cmake --build build --target SynthTests
+```
+
+**Adding a test file** — two steps:
+1. Create `tests/FooTest.cpp` (use `#include <catch2/catch_test_macros.hpp>` and `#include <catch2/catch_approx.hpp>`).
+2. In `CMakeLists.txt`, add `tests/FooTest.cpp` and any new `.cpp` sources to the `add_executable(SynthTests ...)` block.
+
+Only `source/synth/` and `source/midi/` sources are eligible — they are JUCE-free. Never add `source/juce/` files to `SynthTests`.
 
 ### WebView UI development
 
@@ -90,3 +104,57 @@ The editor uses JUCE's WebView integration:
 ### Presets
 
 `source/synth/Presets` stores factory presets as arrays of normalised parameter values. `PluginProcessor` implements `getNumPrograms` / `setCurrentProgram` using this class.
+
+## Code review guidelines
+
+### Naming
+- Classes/structs: PascalCase. Methods: camelCase.
+- Member variables (private/protected): trailing underscore (`period_`, `voices_`). This includes `static constexpr` class constants (`maxNumVoices_`, `lfoMaxSamplesPerUpdate_`).
+- File-scope or anonymous-namespace `constexpr` constants: no underscore (`piOver4`, `analog`, `silence`).
+- `#pragma once` in every header; never `#ifndef` include guards.
+
+### Include order (within each group, alphabetical is fine)
+1. Project headers — relative paths, no prefix (`"Voice.h"`, `"midi/MidiProcessor.h"`)
+2. Standard library — angle brackets (`<cstdint>`, `<array>`, `<numbers>`)
+3. JUCE headers last (`<juce_audio_basics/juce_audio_basics.h>`)
+
+### Class layout
+Enforce this order inside every class/struct:
+1. `public:` section first — constructor, core methods, interface overrides, then setters/getters/accessors.
+2. `private:` section last — helper methods first, member variables at the bottom.
+
+### Const-correctness and initialization
+- Every method that does not mutate state must be marked `const`.
+- Primitive parameters passed by value; complex/aggregate parameters passed by `const&`.
+- No `#define` for constants — use `constexpr` (or `inline constexpr` for file/namespace scope).
+- Member variables initialized in-class: use `{}` or `= value` syntax directly on the declaration.
+- Brace initialization throughout: `float x{0.0f}`, not `float x = 0.0f` or `float x(0.0f)`.
+
+### `auto`
+Avoid unless the type is verbose and unambiguous from context (e.g. `auto buffer = audioBuffer.channelBuffer(0)`). Spell out types in arithmetic, DSP, and MIDI code.
+
+### Namespaces
+- All source-layer code belongs in a named namespace matching its layer: `synth::`, `midi::`, `parameter_id::`.
+- File-local helpers and constants go in an anonymous `namespace { }` block (see `Voice.cpp`).
+- No `using namespace` directives anywhere.
+
+### Error handling
+- Use `jassert()` for internal invariant violations — not exceptions, not `assert()`.
+- Guard clauses with early return at system boundaries (e.g. index-range checks in `setCurrentProgram`).
+
+### C++20 idioms
+- Fixed-size collections: `std::array`. Non-owning views: `std::span`.
+- Range-based `for` loops over index loops wherever the index is not needed.
+- Math constants: `std::numbers::pi_v<float>` and friends, not hand-rolled literals or `M_PI`.
+- Every JUCE-owned class must carry `JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR` at the bottom of its `private:` section.
+
+### Comments and dividers
+- Prefer self-documenting names over explanatory comments.
+- Comment only when the *why* is non-obvious: MIDI status byte meanings, magic DSP coefficients, hardware/host quirks.
+- `//=====` section dividers belong only in `source/juce/` processor headers (matching JUCE convention). Do not use them in synth or midi layer headers.
+- No Doxygen/docstring blocks.
+
+### Layer discipline
+- `source/synth/` and `source/midi/` must stay JUCE-free (eligible for `SynthTests`). Never add a JUCE include to these layers.
+- Parameter IDs must come from `parameter_id::` constants in `ParameterIDs.h` — never raw string literals.
+- The synth engine reads parameters via `synth::Parameters` (a plain struct); do not reach from the synth layer back into `source/juce/`.
