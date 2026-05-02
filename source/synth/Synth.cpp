@@ -119,6 +119,24 @@ void Synth::allNotesOff()
     }
 }
 
+void Synth::sustainPedalReleased()
+{
+    if (!isPolyphonic() && voices_[0].note() == Voice::sustain)
+    {
+        const int queued = nextQueuedNote();
+        if (queued > 0)
+        {
+            restartMonoVoice(queued, -1);
+            return;
+        }
+    }
+
+    for (Voice& voice : voices_)
+    {
+        voice.noteOff(Voice::sustain, false);
+    }
+}
+
 void Synth::setVolumeTrim(const float volumeTrim)
 {
     parameters_.volumeTrim = volumeTrim;

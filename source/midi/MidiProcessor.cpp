@@ -39,13 +39,17 @@ void MidiProcessor::process(const uint8_t data0, const uint8_t data1, const uint
     case 0xC0: // Program Change — handled by the plugin layer
         break;
     case 0xD0: // Channel Aftertouch
-        state_.pressure = 0.0001f * float(data1 * data1);
+    {
+        const uint8_t pressure = data1 & 0x7F;
+        state_.pressure = 0.0001f * float(pressure * pressure);
         break;
+    }
     case 0xE0: // Pitch Bend
-        state_.pitchBend = std::exp(-0.000014102f * data1 + (128 * data2) - 8192);
+    {
+        const int raw14 = (int(data2) << 7) | int(data1);
+        state_.pitchBend = std::exp(-0.000014102f * float(raw14 - 8192));
         break;
-    // NOTE: case 0x01 in the original was dead code — the high nibble of a mod-wheel
-    // message (CC 0x01) is 0xB0, handled above via controlChange, not here.
+    }
     default:
         break;
     }
@@ -55,14 +59,16 @@ void MidiProcessor::controlChange(const uint8_t controller, const uint8_t value)
 {
     switch (controller)
     {
+    case 0x01: // Mod Wheel
+        state_.modWheel = float(value) / 127.0f;
+        break;
+
     case 0x40: // Sustain pedal
         state_.sustainPedal = value >= 64;
-
         if (!state_.sustainPedal)
         {
-            handler_.noteOff(sustainSentinel);
+            handler_.sustainPedalReleased();
         }
-
         break;
 
     case 0x4A: // Filter +
@@ -73,20 +79,17 @@ void MidiProcessor::controlChange(const uint8_t controller, const uint8_t value)
         state_.filterControl = -0.03f * float(value);
         break;
 
-    default: // All notes off
-        if (controller >= 0x78)
+    default:
+        if (controller == resoCC_)
+        {
+            state_.resonanceCtl = 154.0f / float(154 - value);
+        }
+        else if (controller >= 0x78)
         {
             state_.sustainPedal = false;
             handler_.allNotesOff();
         }
-
         break;
-    }
-
-    // Resonance
-    if (controller == resoCC)
-    {
-        state_.resonanceCtl = 154.0f / float(154 - value);
     }
 }
 

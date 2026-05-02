@@ -38,7 +38,21 @@ cmake --build build
 # The plugin is copied automatically after build (COPY_PLUGIN_AFTER_BUILD TRUE)
 ```
 
-There are no tests currently. Suggested testing tools from TODO.md: pluginval, auval (macOS native), and thread sanitizer.
+### Testing
+
+Tests use Catch2 v3 and live in `tests/`. The `SynthTests` binary links only pure-C++ sources — no JUCE, GTK, or WebKit required.
+
+**Build tests only** (no system dependencies needed):
+```bash
+cmake -B build -DBUILD_PLUGIN=OFF
+cmake --build build --target SynthTests
+```
+
+**Adding a test file** — two steps:
+1. Create `tests/FooTest.cpp` (use `#include <catch2/catch_test_macros.hpp>` and `#include <catch2/catch_approx.hpp>`).
+2. In `CMakeLists.txt`, add `tests/FooTest.cpp` and any new `.cpp` sources to the `add_executable(SynthTests ...)` block.
+
+Only `source/synth/` and `source/midi/` sources are eligible — they are JUCE-free. Never add `source/juce/` files to `SynthTests`.
 
 ### WebView UI development
 
