@@ -24,9 +24,7 @@ void printWarning(const std::string& problem, const std::string& solution, size_
               << solution << "\n";
 }
 #else
-void printWarning(const std::string&, const std::string&, size_t, size_t)
-{
-}
+void printWarning(const std::string&, const std::string&, size_t, size_t) {}
 #endif
 
 } // namespace

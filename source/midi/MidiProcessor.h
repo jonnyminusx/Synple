@@ -16,23 +16,11 @@ class MidiProcessor
 
     void process(uint8_t data0, uint8_t data1, uint8_t data2);
 
-    const MidiState& state() const
-    {
-        return state_;
-    }
-    MidiState& state()
-    {
-        return state_;
-    }
+    const MidiState& state() const { return state_; }
+    MidiState& state() { return state_; }
 
-    void setResoCC(CC cc)
-    {
-        resoCC_ = cc;
-    }
-    CC resoCC() const
-    {
-        return resoCC_;
-    }
+    void setResoCC(CC cc) { resoCC_ = cc; }
+    CC resoCC() const { return resoCC_; }
 
   private:
     void controlChange(uint8_t controller, uint8_t value);

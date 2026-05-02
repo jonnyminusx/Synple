@@ -5,9 +5,7 @@
 namespace midi
 {
 
-MidiProcessor::MidiProcessor(NoteHandler& handler) : handler_(handler)
-{
-}
+MidiProcessor::MidiProcessor(NoteHandler& handler) : handler_(handler) {}
 
 void MidiProcessor::process(const uint8_t data0, const uint8_t data1, const uint8_t data2)
 {
