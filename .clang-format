@@ -4,9 +4,9 @@ IndentWidth: 4
 UseTab: Never
 ColumnLimit: 120
 BinPackArguments: false
-BinPackParameters: OnePerLine
-BinPackLongBracedList: false
+BinPackParameters: false
 PackConstructorInitializers: CurrentLine
 AllowAllArgumentsOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true
 PointerAlignment: Left
+AllowShortFunctionsOnASingleLine: Inline

@@ -7,9 +7,7 @@
 namespace synth
 {
 
-Synth::Synth() : midiProcessor_(*this)
-{
-}
+Synth::Synth() : midiProcessor_(*this) {}
 
 void Synth::allocateResources(const float sampleRate, [[maybe_unused]] const int samplesPerBlock)
 {
@@ -21,9 +19,7 @@ void Synth::allocateResources(const float sampleRate, [[maybe_unused]] const int
     }
 }
 
-void Synth::deallocateResources() const
-{
-}
+void Synth::deallocateResources() const {}
 
 void Synth::reset()
 {

@@ -11,14 +11,8 @@ class Presets
   public:
     Presets();
 
-    size_t size() const
-    {
-        return presets_.size();
-    }
-    const Preset& operator[](size_t index) const
-    {
-        return presets_[index];
-    }
+    size_t size() const { return presets_.size(); }
+    const Preset& operator[](size_t index) const { return presets_[index]; }
 
   private:
     void createPrograms();
