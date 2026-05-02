@@ -11,6 +11,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Set to OFF to build only the test suite (no GTK/WebKit/JUCE required)
 option(BUILD_PLUGIN "Build the JUCE audio plugin" ON)
+option(ENABLE_SANITIZERS "Build SynthTests with ASan and UBSan" OFF)
 
 # We're going to use CPM as our package manager
 set(CPM_DOWNLOAD_VERSION 0.34.0)
@@ -53,25 +54,26 @@ else()
     message(STATUS "clang-format not found — skipping format target")
 endif()
 
+# Source files eligible for static analysis (JUCE-free layers only).
+# Synth.cpp is excluded locally because it includes juce_audio_basics, which
+# requires the full plugin build's include paths. CI runs analysis on it directly.
+file(GLOB_RECURSE ANALYSIS_SOURCE_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/source/midi/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/source/synth/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/source/utils/*.cpp"
+)
+list(FILTER ANALYSIS_SOURCE_FILES EXCLUDE REGEX ".*/Synth\\.cpp$")
+
 # ─── clang-tidy ───────────────────────────────────────────────────────────────
 find_program(CLANG_TIDY clang-tidy)
 if (CLANG_TIDY)
-    file(GLOB_RECURSE TIDY_SOURCE_FILES
-        "${CMAKE_CURRENT_SOURCE_DIR}/source/midi/*.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/source/synth/*.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/source/utils/*.cpp"
-    )
-    # Synth.cpp includes juce_audio_basics, which is only on the include path
-    # during the full plugin build. CI runs tidy on it directly after a full configure.
-    list(FILTER TIDY_SOURCE_FILES EXCLUDE REGEX ".*/Synth\\.cpp$")
-
     set(TIDY_STAMP "${CMAKE_BINARY_DIR}/clang-tidy.stamp")
 
     add_custom_command(
         OUTPUT "${TIDY_STAMP}"
-        COMMAND ${CLANG_TIDY} -p "${CMAKE_BINARY_DIR}" ${TIDY_SOURCE_FILES}
+        COMMAND ${CLANG_TIDY} -p "${CMAKE_BINARY_DIR}" ${ANALYSIS_SOURCE_FILES}
         COMMAND ${CMAKE_COMMAND} -E touch "${TIDY_STAMP}"
-        DEPENDS ${TIDY_SOURCE_FILES}
+        DEPENDS ${ANALYSIS_SOURCE_FILES}
         COMMENT "Running clang-tidy..."
         VERBATIM
     )
@@ -79,6 +81,19 @@ if (CLANG_TIDY)
     add_custom_target(tidy DEPENDS "${TIDY_STAMP}")
 else()
     message(STATUS "clang-tidy not found — skipping tidy target")
+endif()
+
+# ─── IWYU ─────────────────────────────────────────────────────────────────────
+find_program(IWYU_TOOL NAMES iwyu_tool.py)
+if (IWYU_TOOL)
+    add_custom_target(iwyu
+        COMMAND "${IWYU_TOOL}" -p "${CMAKE_BINARY_DIR}" ${ANALYSIS_SOURCE_FILES}
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+        COMMENT "Running include-what-you-use..."
+        VERBATIM
+    )
+else()
+    message(STATUS "iwyu_tool.py not found — skipping iwyu target")
 endif()
 
 # ─── Tests ────────────────────────────────────────────────────────────────────
@@ -104,6 +119,15 @@ add_executable(SynthTests
 
 target_include_directories(SynthTests PRIVATE source)
 target_link_libraries(SynthTests PRIVATE Catch2::Catch2WithMain)
+
+if (ENABLE_SANITIZERS)
+    target_compile_options(SynthTests PRIVATE
+        -fsanitize=address,undefined
+        -fno-omit-frame-pointer
+        -fno-sanitize-recover=all
+    )
+    target_link_options(SynthTests PRIVATE -fsanitize=address,undefined)
+endif()
 
 include("${Catch2_SOURCE_DIR}/extras/Catch.cmake")
 catch_discover_tests(SynthTests)
