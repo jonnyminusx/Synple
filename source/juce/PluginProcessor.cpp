@@ -265,34 +265,7 @@ void SynpleAudioProcessor::valueTreePropertyChanged(juce::ValueTree&, const juce
 
 void SynpleAudioProcessor::update()
 {
-    const float sampleRate{static_cast<float>(getSampleRate())};
-    const float inverseSampleRate{1.0f / sampleRate};
-    constexpr float modulationUpdateInterval{32.0f};
-
-    synth_.setOscillatorMix(parameters_.oscillatorMix());
-    synth_.setDetune(parameters_.detune());
-    synth_.setTune(parameters_.tune(sampleRate));
-
-    synth_.setFilterQ(parameters_.filterQ());
-    synth_.setFilterKeyTracking(parameters_.filterKeyTracking());
-    synth_.setIgnoreVelocity(parameters_.shouldIgnoreVelocity());
-    synth_.setVelocitySensitivity(parameters_.filterVelocitySensitivity());
-    synth_.setFilterLfoDepth(parameters_.filterLfoDepth());
-    synth_.setEnvelope(parameters_.envelope(inverseSampleRate));
-
-    synth_.setNoiseMix(parameters_.noiseMix());
-    synth_.setOutputLevel(parameters_.outputGain());
-    synth_.setVolumeTrim(parameters_.volumeTrim());
-
-    synth_.setPolyphonic(parameters_.isPolyphonic());
-    synth_.setLfoIncrement(parameters_.lfoIncrement(inverseSampleRate, modulationUpdateInterval));
-    synth_.setVibratoAmount(parameters_.vibratoAmount());
-    synth_.setPwmDepth(parameters_.pwmDepth());
-    synth_.setGlideMode(parameters_.glideModeIndex());
-    synth_.setGlideRate(parameters_.glideRateCoefficient(inverseSampleRate, modulationUpdateInterval));
-    synth_.setGlideBend(parameters_.glideBendSemitones());
-    synth_.setFilterEnvelope(parameters_.filterEnvelope(inverseSampleRate * modulationUpdateInterval));
-    synth_.setFilterEnvelopeDepth(parameters_.filterEnvelopeDepth());
+    synth_.setParameters(parameters_.createSnapshot(static_cast<float>(getSampleRate())));
 }
 
 void SynpleAudioProcessor::splitBufferByEvents(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)

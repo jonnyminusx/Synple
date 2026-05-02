@@ -1,11 +1,7 @@
 #pragma once
 
+#include "synth/Parameters.h"
 #include <juce_audio_processors/juce_audio_processors.h>
-
-namespace synth
-{
-struct ADSR;
-}
 
 class Parameters
 {
@@ -36,6 +32,11 @@ class Parameters
     int glideModeIndex() const;
     float glideBendSemitones() const;
     float glideRateCoefficient(float inverseSampleRate, float updateInterval) const;
+
+    // Build an engine-ready snapshot of all parameters at the given sample rate.
+    // All raw-to-engine-value transformations occur here; the returned struct is
+    // directly usable by the synth with no further conversion.
+    synth::Parameters createSnapshot(float sampleRate) const;
 
     // Fills a 26-element array with all parameters in canonical preset order
     void fillParameterArray(juce::RangedAudioParameter** params) const;

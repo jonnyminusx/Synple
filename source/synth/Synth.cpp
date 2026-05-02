@@ -45,13 +45,13 @@ void Synth::render(AudioBuffer& audioBuffer)
     {
         updateLfo();
 
-        const float noise{noiseGenerator_.nextValue() * noiseMix_};
+        const float noise{noiseGenerator_.nextValue() * parameters_.oscillator.noiseMix};
 
         Output output;
 
         for (Voice& voice : voices_)
         {
-            output += voice.render(noise, midiProcessor_.state().pitchBend, parameters_.detune);
+            output += voice.render(noise, midiProcessor_.state().pitchBend, parameters_.oscillator.detune);
         }
 
         output *= outputLevelSmoother_.getNextValue();
@@ -73,7 +73,7 @@ void Synth::render(AudioBuffer& audioBuffer)
 void Synth::noteOn(const int note, const int velocity)
 {
     int vel = velocity;
-    if (ignoreVelocity_)
+    if (parameters_.output.ignoreVelocity)
     {
         vel = 80;
     }
@@ -133,18 +133,13 @@ void Synth::sustainPedalReleased()
     }
 }
 
-void Synth::setVolumeTrim(const float volumeTrim)
-{
-    parameters_.volumeTrim = volumeTrim;
-}
-
 void Synth::updateLfo()
 {
     if (--lfoStep_ < 0)
     {
         lfoStep_ = lfoMaxSamplesPerUpdate_;
 
-        lfo_ += lfoIncrement_;
+        lfo_ += parameters_.lfo.increment;
         if (lfo_ > constants::pi)
         {
             lfo_ -= constants::tau;
@@ -153,16 +148,21 @@ void Synth::updateLfo()
         const midi::MidiState& midi{midiProcessor_.state()};
 
         const float sineValue{std::sin(lfo_)};
-        const float vibratoModulation{1.0f + sineValue * (midi.modWheel + vibratoAmount_)};
-        const float pwm{1.0f + sineValue * (midi.modWheel + pwmDepth_)};
-        const float filterMod{filterKeyTracking_ + midi.filterControl + (filterLfoDepth_ + midi.pressure) * sineValue};
+        const float vibratoModulation{1.0f + sineValue * (midi.modWheel + parameters_.lfo.vibratoAmount)};
+        const float pwm{1.0f + sineValue * (midi.modWheel + parameters_.lfo.pwmDepth)};
+        const float filterMod{parameters_.filter.keyTracking + midi.filterControl +
+                              (parameters_.filter.lfoDepth + midi.pressure) * sineValue};
         filterZip_ += 0.005f * (filterMod - filterZip_);
 
         for (Voice& voice : voices_)
         {
             voice.setModulation(vibratoModulation, pwm);
-            voice.updateLfo(glideRate_, filterZip_, filterQ_ * midi.resonanceCtl, midi.pitchBend, filterEnvDepth_);
-            voice.updatePeriod(midi.pitchBend, parameters_.detune);
+            voice.updateLfo(parameters_.glide.rateCoefficient,
+                            filterZip_,
+                            parameters_.filter.q * midi.resonanceCtl,
+                            midi.pitchBend,
+                            parameters_.filter.envelopeDepth);
+            voice.updatePeriod(midi.pitchBend, parameters_.oscillator.detune);
         }
     }
 }
@@ -252,7 +252,7 @@ bool Synth::isPolyphonic() const
 
 bool Synth::isInPwmMode() const
 {
-    return vibratoAmount_ == 0.0f && pwmDepth_ > 0.0f;
+    return parameters_.lfo.vibratoAmount == 0.0f && parameters_.lfo.pwmDepth > 0.0f;
 }
 
 bool Synth::isPlayingLegatoStyle() const
@@ -280,115 +280,21 @@ void Synth::processLastNotePriority(const int note)
     }
 }
 
-void Synth::setNoiseMix(const float noiseMix)
-{
-    noiseMix_ = noiseMix;
-}
-
-void Synth::setOscillatorMix(const float oscillatorMix)
-{
-    parameters_.oscillatorMix = oscillatorMix;
-}
-
-void Synth::setDetune(const float detune)
-{
-    parameters_.detune = detune;
-}
-
-void Synth::setTune(const float tune)
-{
-    parameters_.tune = tune;
-}
-
-void Synth::setPolyphonic(const bool polyphonic)
-{
-    numVoices_ = polyphonic ? maxNumVoices_ : 1;
-}
-
-void Synth::setOutputLevel(const float outputLevel)
-{
-    outputLevelSmoother_.setTargetValue(outputLevel);
-}
-
-void Synth::setIgnoreVelocity(const bool ignoreVelocity)
-{
-    ignoreVelocity_ = ignoreVelocity;
-}
-
-void Synth::setVelocitySensitivity(const float velocitySensitivity)
-{
-    parameters_.velocitySensitivity = velocitySensitivity;
-}
-
-void Synth::setLfoIncrement(const float lfoIncrement)
-{
-    lfoIncrement_ = lfoIncrement;
-}
-
-void Synth::setVibratoAmount(const float vibratoAmount)
-{
-    vibratoAmount_ = vibratoAmount;
-}
-
-void Synth::setPwmDepth(const float pwmDepth)
-{
-    pwmDepth_ = pwmDepth;
-}
-
-void Synth::setGlideMode(const int glideMode)
-{
-    parameters_.glideMode = static_cast<GlideMode>(glideMode);
-}
-
-void Synth::setGlideRate(const float glideRate)
-{
-    glideRate_ = glideRate;
-}
-
-void Synth::setGlideBend(const float glideBend)
-{
-    parameters_.glideBend = glideBend;
-}
-
-void Synth::setFilterKeyTracking(const float filterKeyTracking)
-{
-    filterKeyTracking_ = filterKeyTracking;
-}
-
-void Synth::setFilterQ(const float filterQ)
-{
-    filterQ_ = filterQ;
-}
-
-void Synth::setFilterLfoDepth(const float filterLfoDepth)
-{
-    filterLfoDepth_ = filterLfoDepth;
-}
-
-void Synth::setFilterEnvelope(const ADSR& adsr)
+void Synth::setParameters(const Parameters& params)
 {
     for (Voice& voice : voices_)
     {
-        voice.filterEnvelope().setADSR(adsr);
+        voice.envelope().setADSR(params.envelope);
+        voice.filterEnvelope().setADSR(params.filter.envelope);
     }
-}
-
-void Synth::setFilterEnvelopeDepth(const float envDepth)
-{
-    filterEnvDepth_ = envDepth;
+    outputLevelSmoother_.setTargetValue(params.output.gain);
+    numVoices_ = params.output.polyphonic ? maxNumVoices_ : 1;
+    parameters_ = params;
 }
 
 void Synth::setOutputLevelInstantly(const float outputLevel)
 {
     outputLevelSmoother_.setCurrentAndTargetValue(outputLevel);
-}
-
-void Synth::setEnvelope(const ADSR& adsr)
-{
-    for (Voice& voice : voices_)
-    {
-        voice.envelope().setADSR(adsr);
-    }
 }
 
 } // namespace synth
