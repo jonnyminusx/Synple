@@ -8,6 +8,6 @@ class AudioBuffer;
 namespace utils
 {
 
-void protectYourEars(synth::AudioBuffer& buffer);
+void sanitiseBuffer(synth::AudioBuffer& buffer);
 
 } // namespace utils

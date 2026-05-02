@@ -1,9 +1,12 @@
-#include "protectYourEars.h"
+#include "sanitiseBuffer.h"
 
 #include "synth/AudioBuffer.h"
 
 #include <cmath>
+#include <string>
+#ifndef NDEBUG
 #include <iostream>
+#endif
 
 namespace utils
 {
@@ -11,21 +14,24 @@ namespace utils
 namespace
 {
 
-void printWarning([[maybe_unused]] const std::string& problem,
-                  [[maybe_unused]] const std::string& solution,
-                  [[maybe_unused]] const size_t channel,
-                  [[maybe_unused]] const size_t sample)
-{
+constexpr float kClampThreshold   = 1.0f;
+constexpr float kSilenceThreshold = 2.0f;
+
 #ifndef NDEBUG
+void printWarning(const std::string& problem, const std::string& solution,
+                  size_t channel, size_t sample)
+{
     std::cerr << "Warning: Sample value is " << problem
               << " at channel: " << channel << ", sample: " << sample
               << " - " << solution << "\n";
-#endif
 }
+#else
+void printWarning(const std::string&, const std::string&, size_t, size_t) {}
+#endif
 
 } // namespace
 
-void protectYourEars(synth::AudioBuffer& buffer)
+void sanitiseBuffer(synth::AudioBuffer& buffer)
 {
     for (size_t channel = 0; channel < buffer.channelCount(); ++channel)
     {
@@ -34,33 +40,27 @@ void protectYourEars(synth::AudioBuffer& buffer)
         size_t sampleIndex = 0;
         for (float& sampleValue : buffer.channelBuffer(channel))
         {
-            if (std::isnan(sampleValue))
+            if (!std::isfinite(sampleValue))
             {
-                printWarning("nan", "silencing channel", channel, sampleIndex);
+                printWarning("non-finite", "silencing channel", channel, sampleIndex);
                 shouldSilence = true;
                 break;
             }
-            else if (std::isinf(sampleValue))
-            {
-                printWarning("inf", "silencing channel", channel, sampleIndex);
-                shouldSilence = true;
-                break;
-            }
-            else if (sampleValue < -2.0f || sampleValue > 2.0f)
+            else if (sampleValue < -kSilenceThreshold || sampleValue > kSilenceThreshold)
             {
                 printWarning("out of range", "silencing channel", channel, sampleIndex);
                 shouldSilence = true;
                 break;
             }
-            else if (sampleValue < -1.0f)
+            else if (sampleValue < -kClampThreshold)
             {
                 printWarning("out of range", "clamping to -1.0f", channel, sampleIndex);
-                sampleValue = -1.0f;
+                sampleValue = -kClampThreshold;
             }
-            else if (sampleValue > 1.0f)
+            else if (sampleValue > kClampThreshold)
             {
                 printWarning("out of range", "clamping to 1.0f", channel, sampleIndex);
-                sampleValue = 1.0f;
+                sampleValue = kClampThreshold;
             }
             ++sampleIndex;
         }

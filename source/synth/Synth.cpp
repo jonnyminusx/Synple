@@ -2,7 +2,7 @@
 #include "AudioBuffer.h"
 #include "Output.h"
 #include "utils/constants.h"
-#include "utils/protectYourEars.h"
+#include "utils/sanitiseBuffer.h"
 
 namespace synth
 {
@@ -71,7 +71,7 @@ void Synth::render(AudioBuffer& audioBuffer)
         }
     }
 
-    utils::protectYourEars(audioBuffer);
+    utils::sanitiseBuffer(audioBuffer);
 }
 
 void Synth::noteOn(const int note, const int velocity)
