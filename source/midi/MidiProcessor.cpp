@@ -21,7 +21,7 @@ void MidiProcessor::process(const uint8_t data0, const uint8_t data1, const uint
     }
     case 0x90: // Note On
     {
-        const uint8_t note     = data1 & 0x7F;
+        const uint8_t note = data1 & 0x7F;
         const uint8_t velocity = data2 & 0x7F;
         if (velocity == 0)
         {

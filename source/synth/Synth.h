@@ -30,7 +30,10 @@ class Synth : public midi::NoteHandler
     void allNotesOff() override;
     void sustainPedalReleased() override;
 
-    midi::MidiProcessor& midiProcessor() { return midiProcessor_; }
+    midi::MidiProcessor& midiProcessor()
+    {
+        return midiProcessor_;
+    }
 
     void setNoiseMix(const float noiseMix);
     void setOscillatorMix(const float oscillatorMix);

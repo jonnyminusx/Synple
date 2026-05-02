@@ -22,6 +22,36 @@ endif ()
 
 include("${CPM_DOWNLOAD_LOCATION}")
 
+# ─── clang-format ─────────────────────────────────────────────────────────────
+find_program(CLANG_FORMAT clang-format)
+if (CLANG_FORMAT)
+    file(GLOB_RECURSE FORMAT_SOURCE_FILES
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/juce/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/juce/*.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/midi/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/midi/*.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/synth/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/synth/*.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/utils/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/utils/*.h"
+    )
+
+    set(FORMAT_STAMP "${CMAKE_BINARY_DIR}/clang-format.stamp")
+
+    add_custom_command(
+        OUTPUT "${FORMAT_STAMP}"
+        COMMAND ${CLANG_FORMAT} -i ${FORMAT_SOURCE_FILES}
+        COMMAND ${CMAKE_COMMAND} -E touch "${FORMAT_STAMP}"
+        DEPENDS ${FORMAT_SOURCE_FILES}
+        COMMENT "Running clang-format..."
+        VERBATIM
+    )
+
+    add_custom_target(format ALL DEPENDS "${FORMAT_STAMP}")
+else()
+    message(STATUS "clang-format not found — skipping format target")
+endif()
+
 # ─── Tests ────────────────────────────────────────────────────────────────────
 # The test binary depends only on pure-C++ synth sources; no JUCE or GTK needed.
 enable_testing()

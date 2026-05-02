@@ -14,19 +14,19 @@ namespace utils
 namespace
 {
 
-constexpr float kClampThreshold   = 1.0f;
+constexpr float kClampThreshold = 1.0f;
 constexpr float kSilenceThreshold = 2.0f;
 
 #ifndef NDEBUG
-void printWarning(const std::string& problem, const std::string& solution,
-                  size_t channel, size_t sample)
+void printWarning(const std::string& problem, const std::string& solution, size_t channel, size_t sample)
 {
-    std::cerr << "Warning: Sample value is " << problem
-              << " at channel: " << channel << ", sample: " << sample
-              << " - " << solution << "\n";
+    std::cerr << "Warning: Sample value is " << problem << " at channel: " << channel << ", sample: " << sample << " - "
+              << solution << "\n";
 }
 #else
-void printWarning(const std::string&, const std::string&, size_t, size_t) {}
+void printWarning(const std::string&, const std::string&, size_t, size_t)
+{
+}
 #endif
 
 } // namespace
