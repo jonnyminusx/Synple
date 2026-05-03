@@ -2,6 +2,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "midi/MidiProcessor.h"
+#include "midi/NoteHandler.h"
 
 #include <cmath>
 #include <vector>

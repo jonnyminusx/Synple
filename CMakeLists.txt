@@ -84,7 +84,7 @@ else()
 endif()
 
 # ─── IWYU ─────────────────────────────────────────────────────────────────────
-find_program(IWYU_TOOL NAMES iwyu_tool.py)
+find_program(IWYU_TOOL NAMES iwyu_tool.py iwyu_tool)
 if (IWYU_TOOL)
     add_custom_target(iwyu
         COMMAND "${IWYU_TOOL}" -p "${CMAKE_BINARY_DIR}" ${ANALYSIS_SOURCE_FILES}
