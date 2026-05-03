@@ -52,9 +52,8 @@ jobs:
 
       - name: Check IWYU
         run: |
-          iwyu_tool.py -p build \
-            $(find source/midi source/synth source/utils -name '*.cpp' ! -name 'Synth.cpp')
-        continue-on-error: true
+          iwyu_tool -p build \
+            $(find source/midi source/synth source/utils -name '*.cpp')
 
       - name: Build
         run: cmake --build build --parallel
