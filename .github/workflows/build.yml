@@ -64,10 +64,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Cache CPM
+      - name: Cache CPM and Catch2
         uses: actions/cache@v4
         with:
-          path: build/cmake
+          path: |
+            build/_deps
+            build/cmake
           key: cpm-${{ runner.os }}-${{ hashFiles('CMakeLists.txt') }}
 
       - name: Configure

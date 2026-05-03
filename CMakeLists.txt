@@ -85,14 +85,20 @@ endif()
 # ─── IWYU ─────────────────────────────────────────────────────────────────────
 find_program(IWYU_TOOL NAMES iwyu_tool.py iwyu_tool)
 if (IWYU_TOOL)
-    add_custom_target(iwyu
+    set(IWYU_STAMP "${CMAKE_BINARY_DIR}/iwyu.stamp")
+
+    add_custom_command(
+        OUTPUT "${IWYU_STAMP}"
         COMMAND "${IWYU_TOOL}" -p "${CMAKE_BINARY_DIR}" ${ANALYSIS_SOURCE_FILES}
-        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+        COMMAND ${CMAKE_COMMAND} -E touch "${IWYU_STAMP}"
+        DEPENDS ${ANALYSIS_SOURCE_FILES}
         COMMENT "Running include-what-you-use..."
         VERBATIM
     )
+
+    add_custom_target(iwyu DEPENDS "${IWYU_STAMP}")
 else()
-    message(STATUS "iwyu_tool.py not found — skipping iwyu target")
+    message(STATUS "iwyu_tool not found — skipping iwyu target")
 endif()
 
 # ─── Tests ────────────────────────────────────────────────────────────────────

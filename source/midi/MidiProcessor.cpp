@@ -1,4 +1,5 @@
 #include "midi/MidiProcessor.h"
+
 #include "midi/NoteHandler.h"
 
 #include <cmath>
