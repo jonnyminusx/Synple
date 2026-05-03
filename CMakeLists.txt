@@ -55,14 +55,13 @@ else()
 endif()
 
 # Source files eligible for static analysis (JUCE-free layers only).
-# Synth.cpp is excluded locally because it includes juce_audio_basics, which
-# requires the full plugin build's include paths. CI runs analysis on it directly.
+# Requires a full build (BUILD_PLUGIN=ON) so that compile_commands.json
+# contains entries for all files, including those that depend on juce_audio_basics.
 file(GLOB_RECURSE ANALYSIS_SOURCE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/source/midi/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/source/synth/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/source/utils/*.cpp"
 )
-list(FILTER ANALYSIS_SOURCE_FILES EXCLUDE REGEX ".*/Synth\\.cpp$")
 
 # ─── clang-tidy ───────────────────────────────────────────────────────────────
 find_program(CLANG_TIDY clang-tidy)

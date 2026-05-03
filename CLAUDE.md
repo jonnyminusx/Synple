@@ -48,6 +48,12 @@ cmake -B build -DBUILD_PLUGIN=OFF
 cmake --build build --target SynthTests
 ```
 
+**Static analysis** (`tidy`, `iwyu`) requires a full build so that `compile_commands.json` contains entries for all source files. Run after a normal `cmake -B build` (system deps required):
+```bash
+cmake --build build --target tidy
+cmake --build build --target iwyu
+```
+
 **Adding a test file** — two steps:
 1. Create `tests/FooTest.cpp` (use `#include <catch2/catch_test_macros.hpp>` and `#include <catch2/catch_approx.hpp>`).
 2. In `CMakeLists.txt`, add `tests/FooTest.cpp` and any new `.cpp` sources to the `add_executable(SynthTests ...)` block.
