@@ -1,5 +1,6 @@
 #include "Envelope.h"
-#include <cmath>
+
+#include "ADSR.h"
 
 namespace synth
 {

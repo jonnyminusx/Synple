@@ -3,13 +3,14 @@
 #include "Envelope.h"
 #include "Filter.h"
 #include "Oscillator.h"
-#include "Parameters.h"
-#include <optional>
+
+#include <cstddef>
 
 namespace synth
 {
 
 struct Output;
+struct Parameters;
 
 class Voice
 {

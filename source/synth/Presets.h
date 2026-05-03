@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Preset.h"
+
+#include <cstddef>
 #include <vector>
 
 namespace synth

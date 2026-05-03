@@ -1,6 +1,7 @@
 #include "NoiseGenerator.h"
 
 #include <chrono>
+#include <cstdint>
 
 namespace synth
 {

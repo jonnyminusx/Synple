@@ -4,8 +4,10 @@
 #include "Parameters.h"
 #include "Voice.h"
 #include "midi/MidiProcessor.h"
+#include "midi/NoteHandler.h"
 
-#include <cstdint>
+#include <array>
+#include <cstddef>
 #include <juce_audio_basics/juce_audio_basics.h>
 
 namespace synth
