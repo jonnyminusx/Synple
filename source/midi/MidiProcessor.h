@@ -2,12 +2,13 @@
 
 #include "midi/CC.h"
 #include "midi/MidiState.h"
-#include "midi/NoteHandler.h"
 
 #include <cstdint>
 
 namespace midi
 {
+
+struct NoteHandler;
 
 class MidiProcessor
 {

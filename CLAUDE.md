@@ -21,10 +21,15 @@ apt-get install -y \
     libcurl4-openssl-dev \
     libgtk-3-dev \
     libxrandr-dev \
-    libwebkit2gtk-4.1-dev
+    libwebkit2gtk-4.1-dev \
+    clang-format \
+    clang-tidy \
+    iwyu
 ```
 
 Note: Ubuntu 24.04+ ships `webkit2gtk-4.1`; older distros may need `libwebkit2gtk-4.0-dev` instead. The `CMakeLists.txt` handles both automatically.
+
+`clang-format`, `clang-tidy`, and `iwyu` are only needed to run the static-analysis CMake targets locally. CI installs them automatically.
 
 ### Configure and build
 
@@ -42,17 +47,36 @@ cmake --build build
 
 Tests use Catch2 v3 and live in `tests/`. The `SynthTests` binary links only pure-C++ sources — no JUCE, GTK, or WebKit required.
 
-**Build tests only** (no system dependencies needed):
+**Build and run tests** (no system dependencies needed):
 ```bash
 cmake -B build -DBUILD_PLUGIN=OFF
 cmake --build build --target SynthTests
 ```
 
+**Run tests with AddressSanitizer + UBSan** (catches memory errors and undefined behaviour):
+```bash
+cmake -B build -DBUILD_PLUGIN=OFF -DENABLE_SANITIZERS=ON
+cmake --build build
+```
+Set `ASAN_OPTIONS=detect_leaks=1` and `UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1` in the environment for full diagnostics. The `sanitizers` CI job runs with these flags on every PR.
+
+**Auto-format all source files**:
+```bash
+cmake --build build --target format
+```
+
+**Static analysis** (`tidy`, `iwyu`) requires a full plugin build so that `compile_commands.json` contains entries for all source files, including those that depend on `juce_audio_basics`. Run after a normal `cmake -B build` (system deps required):
+```bash
+cmake --build build --target tidy
+cmake --build build --target iwyu
+```
+Both targets operate on `source/midi/`, `source/synth/`, and `source/utils/` only — `source/juce/` is excluded because JUCE macros produce false positives.
+
 **Adding a test file** — two steps:
 1. Create `tests/FooTest.cpp` (use `#include <catch2/catch_test_macros.hpp>` and `#include <catch2/catch_approx.hpp>`).
 2. In `CMakeLists.txt`, add `tests/FooTest.cpp` and any new `.cpp` sources to the `add_executable(SynthTests ...)` block.
 
-Only `source/synth/` and `source/midi/` sources are eligible — they are JUCE-free. Never add `source/juce/` files to `SynthTests`.
+Sources from `source/synth/`, `source/midi/`, and `source/utils/` are eligible — they are JUCE-free. Never add `source/juce/` files to `SynthTests`.
 
 ### WebView UI development
 
@@ -69,6 +93,17 @@ CMake runs `npm run build` automatically as part of the plugin build. The JUCE J
 1. In `PluginEditor.cpp`, comment out `webView_.goToURL(webView_.getResourceProviderRoot())` and uncomment `webView_.goToURL(localDevServerAddress)`.
 2. Run `cd source/ui && npm run dev` (serves on port 8080 with HMR).
 3. Reload the plugin window to pick up the dev server.
+
+### CI
+
+`.github/workflows/build.yml` runs two parallel jobs on every PR and push to `main`:
+
+| Job | Steps |
+|-----|-------|
+| `build` | Install system deps → cache JUCE + CPM → `npm ci` → clang-format check (dry-run, error on violation) → Configure → clang-tidy → IWYU → Build |
+| `sanitizers` | Cache CPM + Catch2 → Configure (`-DBUILD_PLUGIN=OFF -DENABLE_SANITIZERS=ON`) → Build and run `SynthTests` under ASan + UBSan |
+
+The `sanitizers` job does not need system libraries (no GTK, WebKit, JUCE) — it only builds the pure-C++ test binary.
 
 ## Architecture
 

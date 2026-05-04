@@ -1,11 +1,15 @@
 #include "Voice.h"
 
+#include "Envelope.h"
+#include "Filter.h"
 #include "GlideMode.h"
+#include "Oscillator.h"
 #include "Output.h"
+#include "Parameters.h"
 #include "utils/constants.h"
-#include <cmath>
 
 #include <algorithm>
+#include <cmath>
 #include <numbers>
 
 namespace synth

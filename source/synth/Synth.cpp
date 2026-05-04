@@ -1,8 +1,17 @@
 #include "Synth.h"
+
 #include "AudioBuffer.h"
+#include "Envelope.h"
+#include "GlideMode.h"
 #include "Output.h"
+#include "midi/MidiState.h"
 #include "utils/constants.h"
 #include "utils/sanitiseBuffer.h"
+
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <span>
 
 namespace synth
 {
