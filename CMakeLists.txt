@@ -28,6 +28,8 @@ include("${CPM_DOWNLOAD_LOCATION}")
 find_program(CLANG_FORMAT clang-format)
 if (CLANG_FORMAT)
     file(GLOB_RECURSE FORMAT_SOURCE_FILES
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/dsp/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/dsp/*.h"
         "${CMAKE_CURRENT_SOURCE_DIR}/source/juce/*.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/source/juce/*.h"
         "${CMAKE_CURRENT_SOURCE_DIR}/source/midi/*.cpp"
@@ -58,6 +60,7 @@ endif()
 # Requires a full build (BUILD_PLUGIN=ON) so that compile_commands.json
 # contains entries for all files, including those that depend on juce_audio_basics.
 file(GLOB_RECURSE ANALYSIS_SOURCE_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/source/dsp/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/source/midi/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/source/synth/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/source/utils/*.cpp"
@@ -113,9 +116,11 @@ CPMAddPackage(
 )
 
 add_executable(SynthTests
+    tests/FilterTest.cpp
     tests/OscillatorAliasingTest.cpp
     tests/MidiProcessorTest.cpp
     tests/SanitiseBufferTest.cpp
+    source/dsp/Filter.cpp
     source/midi/MidiProcessor.cpp
     source/synth/AudioBuffer.cpp
     source/synth/Oscillator.cpp
@@ -179,13 +184,14 @@ set(SourceFiles
     source/midi/MidiProcessor.h
     source/midi/MidiState.h
     source/midi/NoteHandler.h
+    source/dsp/Filter.cpp
+    source/dsp/Filter.h
+    source/dsp/Goertzel.h
     source/synth/ADSR.h
     source/synth/AudioBuffer.cpp
     source/synth/AudioBuffer.h
     source/synth/Envelope.cpp
     source/synth/Envelope.h
-    source/synth/Filter.cpp
-    source/synth/Filter.h
     source/synth/GlideMode.h
     source/synth/NoiseGenerator.cpp
     source/synth/NoiseGenerator.h

@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 
+#include "dsp/Goertzel.h"
 #include "synth/Oscillator.h"
 
 #include <cmath>
@@ -9,31 +10,6 @@
 namespace {
 
 constexpr float pi = std::numbers::pi_v<float>;
-
-// Evaluates the energy at a specific frequency using the Goertzel algorithm.
-// A Hann window is applied before evaluation to suppress sidelobes, which
-// prevents energy from nearby harmonics leaking into alias frequency bins.
-// Returns a raw magnitude comparable across frequencies on the same signal.
-float goertzel(const std::vector<float>& samples, float targetFreq, float sampleRate)
-{
-    const int N = static_cast<int>(samples.size());
-    const float omega = 2.0f * pi * targetFreq / sampleRate;
-    const float coeff = 2.0f * std::cos(omega);
-    float s1 = 0.0f;
-    float s2 = 0.0f;
-
-    for (int i = 0; i < N; ++i)
-    {
-        const float w = 0.5f - 0.5f * std::cos(2.0f * pi * static_cast<float>(i) / static_cast<float>(N - 1));
-        const float s0 = samples[i] * w + coeff * s1 - s2;
-        s2 = s1;
-        s1 = s0;
-    }
-
-    const float real = s1 - s2 * std::cos(omega);
-    const float imag = s2 * std::sin(omega);
-    return std::sqrt(real * real + imag * imag);
-}
 
 // Renders the sawtooth pipeline from Voice::render() using a single active
 // oscillator. osc2 has zero amplitude so it contributes nothing, matching
@@ -96,7 +72,7 @@ AliasingResult measureAliasing(const std::vector<float>& signal,
                                float minSeparationHz = 100.0f)
 {
     const float nyquist = sampleRate / 2.0f;
-    const float fundamentalMag = goertzel(signal, f0, sampleRate);
+    const float fundamentalMag = dsp::goertzel(signal, f0, sampleRate);
 
     float worstAlias = 0.0f;
     float worstAliasFreq = 0.0f;
@@ -125,7 +101,7 @@ AliasingResult measureAliasing(const std::vector<float>& signal,
         if (nearHarmonic)
             continue;
 
-        const float mag = goertzel(signal, aliasFreq, sampleRate);
+        const float mag = dsp::goertzel(signal, aliasFreq, sampleRate);
         if (mag > worstAlias)
         {
             worstAlias = mag;
@@ -148,21 +124,21 @@ TEST_CASE("Oscillator produces a signal at the expected fundamental frequency", 
     SECTION("440 Hz")
     {
         auto signal = renderSawtooth(440.0f, sampleRate, N);
-        const float mag = goertzel(signal, 440.0f, sampleRate);
+        const float mag = dsp::goertzel(signal, 440.0f, sampleRate);
         REQUIRE(mag > 1.0f);
     }
 
     SECTION("3000 Hz")
     {
         auto signal = renderSawtooth(3000.0f, sampleRate, N);
-        const float mag = goertzel(signal, 3000.0f, sampleRate);
+        const float mag = dsp::goertzel(signal, 3000.0f, sampleRate);
         REQUIRE(mag > 1.0f);
     }
 
     SECTION("7000 Hz")
     {
         auto signal = renderSawtooth(7000.0f, sampleRate, N);
-        const float mag = goertzel(signal, 7000.0f, sampleRate);
+        const float mag = dsp::goertzel(signal, 7000.0f, sampleRate);
         REQUIRE(mag > 1.0f);
     }
 }
