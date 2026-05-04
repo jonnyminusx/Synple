@@ -6,30 +6,33 @@
 namespace synth
 {
 
-void Oscillator::reset()
+void SineOscillator::reset()
 {
     phase_ = 0.0f;
 
-    sin0 = amplitude_ * std::sin(constants::tau * phase_);
-    sin1 = amplitude_ * std::sin(constants::tau * (phase_ + increment_));
-    dsin = 2.0f * std::cos(increment_ * constants::tau);
+    sinN_ = amplitude_ * std::sin(constants::tau * phase_);
+    // sinNm1_ represents sin(phase - normalizedFreq_), i.e. one step back.
+    // Using -normalizedFreq_ here so the first nextSample() returns sin(+freq),
+    // giving a sine that rises from zero rather than one that dips negative.
+    sinNm1_ = amplitude_ * std::sin(-constants::tau * normalizedFreq_);
+    sinRecurrenceCoeff_ = 2.0f * std::cos(normalizedFreq_ * constants::tau);
 }
 
-void Oscillator::setAmplitude(const float amplitude)
+void SineOscillator::setAmplitude(const float amplitude)
 {
     amplitude_ = amplitude;
 }
 
-void Oscillator::setIncrement(const float increment)
+void SineOscillator::setNormalizedFreq(const float normalizedFreq)
 {
-    increment_ = increment;
+    normalizedFreq_ = normalizedFreq;
 }
 
-float Oscillator::nextSample()
+float SineOscillator::nextSample()
 {
-    float sinx = (dsin * sin0) - sin1;
-    sin1 = sin0;
-    sin0 = sinx;
+    const float sinx = (sinRecurrenceCoeff_ * sinN_) - sinNm1_;
+    sinNm1_ = sinN_;
+    sinN_ = sinx;
     return sinx;
 }
 

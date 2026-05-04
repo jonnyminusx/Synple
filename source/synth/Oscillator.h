@@ -21,13 +21,13 @@ class Oscillator
 
     float increment_{0.0f};
     float phase_{0.0f};
-    float phaseMax_{0.0f};
+    float halfPhase_{0.0f};
 
-    float sin0_{0.0f};
-    float sin1_{0.0f};
-    float dsin_{0.0f};
+    float sinN_{0.0f};
+    float sinNm1_{0.0f};
+    float sinRecurrenceCoeff_{0.0f};
 
-    float dc_{0.0f};
+    float dcOffset_{0.0f};
 };
 
 } // namespace synth
