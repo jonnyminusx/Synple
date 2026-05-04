@@ -49,8 +49,10 @@ float Filter::render(const float x)
     s1_ = 2.0f * v1 - s1_;
     s2_ = 2.0f * v2 - s2_;
     // Flush denormals: prevents x86 soft-float slowdown during long quiet sustains.
-    if (std::abs(s1_) < 1e-30f) s1_ = 0.0f;
-    if (std::abs(s2_) < 1e-30f) s2_ = 0.0f;
+    if (std::abs(s1_) < 1e-30f)
+        s1_ = 0.0f;
+    if (std::abs(s2_) < 1e-30f)
+        s2_ = 0.0f;
     return v2;
 }
 

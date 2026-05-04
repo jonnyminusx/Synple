@@ -7,7 +7,8 @@
 #include <numbers>
 #include <vector>
 
-namespace {
+namespace
+{
 
 constexpr float pi = std::numbers::pi_v<float>;
 
@@ -65,11 +66,8 @@ struct AliasingResult
 // alias magnitude relative to the fundamental, skipping alias bins that are
 // within minSeparationHz of a true harmonic (to avoid measuring harmonic
 // energy rather than alias energy due to spectral leakage).
-AliasingResult measureAliasing(const std::vector<float>& signal,
-                               float f0,
-                               float sampleRate,
-                               int maxHarmonic = 30,
-                               float minSeparationHz = 100.0f)
+AliasingResult measureAliasing(
+    const std::vector<float>& signal, float f0, float sampleRate, int maxHarmonic = 30, float minSeparationHz = 100.0f)
 {
     const float nyquist = sampleRate / 2.0f;
     const float fundamentalMag = dsp::goertzel(signal, f0, sampleRate);

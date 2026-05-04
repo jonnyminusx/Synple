@@ -8,7 +8,8 @@
 #include <numbers>
 #include <vector>
 
-namespace {
+namespace
+{
 
 constexpr float sampleRate = 44100.0f;
 constexpr int warmup = 4096;

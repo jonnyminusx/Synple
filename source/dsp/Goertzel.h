@@ -21,8 +21,8 @@ inline float goertzel(const std::vector<float>& samples, float targetFreq, float
 
     for (int i = 0; i < N; ++i)
     {
-        const float w = 0.5f - 0.5f * std::cos(2.0f * std::numbers::pi_v<float> * static_cast<float>(i)
-                                                / static_cast<float>(N - 1));
+        const float w = 0.5f - 0.5f * std::cos(2.0f * std::numbers::pi_v<float> * static_cast<float>(i) /
+                                               static_cast<float>(N - 1));
         const float s0 = samples[i] * w + coeff * s1 - s2;
         s2 = s1;
         s1 = s0;

@@ -1,6 +1,9 @@
 #pragma once
 
-namespace dsp { class Filter; }
+namespace dsp
+{
+class Filter;
+}
 
 namespace synth
 {
