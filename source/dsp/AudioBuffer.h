@@ -4,7 +4,7 @@
 #include <span>
 #include <vector>
 
-namespace synth
+namespace dsp
 {
 
 class AudioBuffer
@@ -17,9 +17,10 @@ class AudioBuffer
     size_t sampleCount() const;
     size_t channelCount() const;
     void clear(const size_t channel);
+    void sanitise();
 
   private:
     std::vector<std::span<float>> channels_;
 };
 
-} // namespace synth
+} // namespace dsp
