@@ -120,11 +120,11 @@ add_executable(SynthTests
     tests/OscillatorAliasingTest.cpp
     tests/MidiProcessorTest.cpp
     tests/SanitiseBufferTest.cpp
+    source/dsp/AudioBuffer.cpp
     source/dsp/Filter.cpp
+    source/dsp/NoiseGenerator.cpp
     source/midi/MidiProcessor.cpp
-    source/synth/AudioBuffer.cpp
     source/synth/Oscillator.cpp
-    source/utils/sanitiseBuffer.cpp
 )
 
 target_include_directories(SynthTests PRIVATE source)
@@ -173,6 +173,10 @@ CPMAddPackage(
 )
 
 set(SourceFiles
+    source/dsp/AudioBuffer.cpp
+    source/dsp/AudioBuffer.h
+    source/dsp/NoiseGenerator.cpp
+    source/dsp/NoiseGenerator.h
     source/juce/Parameters.cpp
     source/juce/Parameters.h
     source/juce/PluginEditor.cpp
@@ -188,13 +192,9 @@ set(SourceFiles
     source/dsp/Filter.h
     source/dsp/Goertzel.h
     source/synth/ADSR.h
-    source/synth/AudioBuffer.cpp
-    source/synth/AudioBuffer.h
     source/synth/Envelope.cpp
     source/synth/Envelope.h
     source/synth/GlideMode.h
-    source/synth/NoiseGenerator.cpp
-    source/synth/NoiseGenerator.h
     source/synth/Oscillator.cpp
     source/synth/Oscillator.h
     source/synth/Output.cpp
@@ -210,8 +210,6 @@ set(SourceFiles
     source/synth/Voice.cpp
     source/synth/Voice.h
     source/utils/constants.h
-    source/utils/sanitiseBuffer.cpp
-    source/utils/sanitiseBuffer.h
 )
 
 juce_add_plugin(${PROJECT_NAME}
