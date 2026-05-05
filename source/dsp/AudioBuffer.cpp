@@ -4,11 +4,11 @@
 #include <cassert>
 #include <cmath>
 #include <cstddef>
+#include <string>
+#include <utility>
 #ifndef NDEBUG
 #include <iostream>
-#include <string>
 #endif
-#include <utility>
 
 namespace dsp
 {
