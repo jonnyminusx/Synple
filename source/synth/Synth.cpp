@@ -1,12 +1,11 @@
 #include "Synth.h"
 
-#include "AudioBuffer.h"
 #include "Envelope.h"
 #include "GlideMode.h"
 #include "Output.h"
+#include "dsp/AudioBuffer.h"
 #include "midi/MidiState.h"
 #include "utils/constants.h"
-#include "utils/sanitiseBuffer.h"
 
 #include <algorithm>
 #include <cmath>
@@ -45,7 +44,7 @@ void Synth::reset()
     filterZip_ = 0.0f;
 }
 
-void Synth::render(AudioBuffer& audioBuffer)
+void Synth::render(dsp::AudioBuffer& audioBuffer)
 {
     const auto audioBufferLeft{audioBuffer.channelBuffer(0)};
     const auto audioBufferRight{audioBuffer.channelCount() > 1 ? audioBuffer.channelBuffer(1) : std::span<float>{}};
@@ -76,7 +75,7 @@ void Synth::render(AudioBuffer& audioBuffer)
         }
     }
 
-    utils::sanitiseBuffer(audioBuffer);
+    audioBuffer.sanitise();
 }
 
 void Synth::noteOn(const int note, const int velocity)

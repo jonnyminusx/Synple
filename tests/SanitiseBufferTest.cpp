@@ -1,7 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "synth/AudioBuffer.h"
-#include "utils/sanitiseBuffer.h"
+#include "dsp/AudioBuffer.h"
 
 #include <limits>
 #include <span>
@@ -12,26 +11,26 @@ namespace
 
 // Builds an AudioBuffer whose channel spans point into `channels`.
 // `channels` must outlive the returned buffer.
-synth::AudioBuffer makeBuffer(std::vector<std::vector<float>>& channels)
+dsp::AudioBuffer makeBuffer(std::vector<std::vector<float>>& channels)
 {
     std::vector<std::span<float>> spans;
     for (auto& ch : channels)
         spans.push_back(std::span<float>(ch));
-    return synth::AudioBuffer(std::move(spans));
+    return dsp::AudioBuffer(std::move(spans));
 }
 
 } // namespace
 
 // ─── Clean audio ─────────────────────────────────────────────────────────────
 
-TEST_CASE("sanitiseBuffer leaves clean audio unchanged", "[sanitise]")
+TEST_CASE("sanitise leaves clean audio unchanged", "[sanitise]")
 {
     SECTION("zero buffer is unmodified")
     {
         std::vector<std::vector<float>> data = {{0.0f, 0.0f, 0.0f}};
         auto buffer = makeBuffer(data);
 
-        utils::sanitiseBuffer(buffer);
+        buffer.sanitise();
 
         for (float s : buffer.channelBuffer(0))
             REQUIRE(s == 0.0f);
@@ -42,7 +41,7 @@ TEST_CASE("sanitiseBuffer leaves clean audio unchanged", "[sanitise]")
         std::vector<std::vector<float>> data = {{-0.9f, 0.0f, 0.5f, 0.999f}};
         auto buffer = makeBuffer(data);
 
-        utils::sanitiseBuffer(buffer);
+        buffer.sanitise();
 
         auto ch = buffer.channelBuffer(0);
         REQUIRE(ch[0] == -0.9f);
@@ -56,7 +55,7 @@ TEST_CASE("sanitiseBuffer leaves clean audio unchanged", "[sanitise]")
         std::vector<std::vector<float>> data = {{-1.0f, 1.0f}};
         auto buffer = makeBuffer(data);
 
-        utils::sanitiseBuffer(buffer);
+        buffer.sanitise();
 
         REQUIRE(buffer.channelBuffer(0)[0] == -1.0f);
         REQUIRE(buffer.channelBuffer(0)[1] == 1.0f);
@@ -65,14 +64,14 @@ TEST_CASE("sanitiseBuffer leaves clean audio unchanged", "[sanitise]")
 
 // ─── Soft clipping ───────────────────────────────────────────────────────────
 
-TEST_CASE("sanitiseBuffer clamps samples in the range (1, 2] and [-2, -1)", "[sanitise][clamp]")
+TEST_CASE("sanitise clamps samples in the range (1, 2] and [-2, -1)", "[sanitise][clamp]")
 {
     SECTION("positive sample above 1.0 is clamped to 1.0")
     {
         std::vector<std::vector<float>> data = {{0.0f, 1.5f, 0.0f}};
         auto buffer = makeBuffer(data);
 
-        utils::sanitiseBuffer(buffer);
+        buffer.sanitise();
 
         auto ch = buffer.channelBuffer(0);
         REQUIRE(ch[0] == 0.0f);
@@ -85,7 +84,7 @@ TEST_CASE("sanitiseBuffer clamps samples in the range (1, 2] and [-2, -1)", "[sa
         std::vector<std::vector<float>> data = {{0.0f, -1.5f, 0.0f}};
         auto buffer = makeBuffer(data);
 
-        utils::sanitiseBuffer(buffer);
+        buffer.sanitise();
 
         auto ch = buffer.channelBuffer(0);
         REQUIRE(ch[0] == 0.0f);
@@ -98,7 +97,7 @@ TEST_CASE("sanitiseBuffer clamps samples in the range (1, 2] and [-2, -1)", "[sa
         std::vector<std::vector<float>> data = {{0.5f, 2.0f, 0.5f}};
         auto buffer = makeBuffer(data);
 
-        utils::sanitiseBuffer(buffer);
+        buffer.sanitise();
 
         auto ch = buffer.channelBuffer(0);
         REQUIRE(ch[0] == 0.5f);
@@ -111,7 +110,7 @@ TEST_CASE("sanitiseBuffer clamps samples in the range (1, 2] and [-2, -1)", "[sa
         std::vector<std::vector<float>> data = {{0.5f, -2.0f, 0.5f}};
         auto buffer = makeBuffer(data);
 
-        utils::sanitiseBuffer(buffer);
+        buffer.sanitise();
 
         auto ch = buffer.channelBuffer(0);
         REQUIRE(ch[0] == 0.5f);
@@ -124,7 +123,7 @@ TEST_CASE("sanitiseBuffer clamps samples in the range (1, 2] and [-2, -1)", "[sa
         std::vector<std::vector<float>> data = {{1.2f, -1.8f, 1.9f}};
         auto buffer = makeBuffer(data);
 
-        utils::sanitiseBuffer(buffer);
+        buffer.sanitise();
 
         auto ch = buffer.channelBuffer(0);
         REQUIRE(ch[0] == 1.0f);
@@ -135,14 +134,14 @@ TEST_CASE("sanitiseBuffer clamps samples in the range (1, 2] and [-2, -1)", "[sa
 
 // ─── Gross out-of-range silencing ────────────────────────────────────────────
 
-TEST_CASE("sanitiseBuffer silences the channel when a sample exceeds ±2", "[sanitise][silence]")
+TEST_CASE("sanitise silences the channel when a sample exceeds ±2", "[sanitise][silence]")
 {
     SECTION("sample just above 2.0 silences the channel")
     {
         std::vector<std::vector<float>> data = {{0.5f, 2.1f, 0.5f}};
         auto buffer = makeBuffer(data);
 
-        utils::sanitiseBuffer(buffer);
+        buffer.sanitise();
 
         for (float s : buffer.channelBuffer(0))
             REQUIRE(s == 0.0f);
@@ -153,7 +152,7 @@ TEST_CASE("sanitiseBuffer silences the channel when a sample exceeds ±2", "[san
         std::vector<std::vector<float>> data = {{0.5f, -2.1f, 0.5f}};
         auto buffer = makeBuffer(data);
 
-        utils::sanitiseBuffer(buffer);
+        buffer.sanitise();
 
         for (float s : buffer.channelBuffer(0))
             REQUIRE(s == 0.0f);
@@ -164,7 +163,7 @@ TEST_CASE("sanitiseBuffer silences the channel when a sample exceeds ±2", "[san
         std::vector<std::vector<float>> data = {{3.0f, 0.5f, 0.5f}};
         auto buffer = makeBuffer(data);
 
-        utils::sanitiseBuffer(buffer);
+        buffer.sanitise();
 
         for (float s : buffer.channelBuffer(0))
             REQUIRE(s == 0.0f);
@@ -175,7 +174,7 @@ TEST_CASE("sanitiseBuffer silences the channel when a sample exceeds ±2", "[san
         std::vector<std::vector<float>> data = {{0.5f, 0.5f, 3.0f}};
         auto buffer = makeBuffer(data);
 
-        utils::sanitiseBuffer(buffer);
+        buffer.sanitise();
 
         for (float s : buffer.channelBuffer(0))
             REQUIRE(s == 0.0f);
@@ -188,7 +187,7 @@ TEST_CASE("sanitiseBuffer silences the channel when a sample exceeds ±2", "[san
         std::vector<std::vector<float>> data = {{1.5f, 3.0f}};
         auto buffer = makeBuffer(data);
 
-        utils::sanitiseBuffer(buffer);
+        buffer.sanitise();
 
         for (float s : buffer.channelBuffer(0))
             REQUIRE(s == 0.0f);
@@ -197,7 +196,7 @@ TEST_CASE("sanitiseBuffer silences the channel when a sample exceeds ±2", "[san
 
 // ─── Non-finite values ───────────────────────────────────────────────────────
 
-TEST_CASE("sanitiseBuffer silences the channel on non-finite samples", "[sanitise][silence]")
+TEST_CASE("sanitise silences the channel on non-finite samples", "[sanitise][silence]")
 {
     const float inf = std::numeric_limits<float>::infinity();
     const float nan = std::numeric_limits<float>::quiet_NaN();
@@ -207,7 +206,7 @@ TEST_CASE("sanitiseBuffer silences the channel on non-finite samples", "[sanitis
         std::vector<std::vector<float>> data = {{0.5f, nan, 0.5f}};
         auto buffer = makeBuffer(data);
 
-        utils::sanitiseBuffer(buffer);
+        buffer.sanitise();
 
         for (float s : buffer.channelBuffer(0))
             REQUIRE(s == 0.0f);
@@ -218,7 +217,7 @@ TEST_CASE("sanitiseBuffer silences the channel on non-finite samples", "[sanitis
         std::vector<std::vector<float>> data = {{0.5f, inf, 0.5f}};
         auto buffer = makeBuffer(data);
 
-        utils::sanitiseBuffer(buffer);
+        buffer.sanitise();
 
         for (float s : buffer.channelBuffer(0))
             REQUIRE(s == 0.0f);
@@ -229,7 +228,7 @@ TEST_CASE("sanitiseBuffer silences the channel on non-finite samples", "[sanitis
         std::vector<std::vector<float>> data = {{0.5f, -inf, 0.5f}};
         auto buffer = makeBuffer(data);
 
-        utils::sanitiseBuffer(buffer);
+        buffer.sanitise();
 
         for (float s : buffer.channelBuffer(0))
             REQUIRE(s == 0.0f);
@@ -238,7 +237,7 @@ TEST_CASE("sanitiseBuffer silences the channel on non-finite samples", "[sanitis
 
 // ─── Multi-channel independence ──────────────────────────────────────────────
 
-TEST_CASE("sanitiseBuffer processes each channel independently", "[sanitise][multichannel]")
+TEST_CASE("sanitise processes each channel independently", "[sanitise][multichannel]")
 {
     SECTION("a corrupted channel is silenced without disturbing a clean channel")
     {
@@ -248,7 +247,7 @@ TEST_CASE("sanitiseBuffer processes each channel independently", "[sanitise][mul
         };
         auto buffer = makeBuffer(data);
 
-        utils::sanitiseBuffer(buffer);
+        buffer.sanitise();
 
         for (float s : buffer.channelBuffer(0))
             REQUIRE(s == 0.0f);
@@ -267,7 +266,7 @@ TEST_CASE("sanitiseBuffer processes each channel independently", "[sanitise][mul
         };
         auto buffer = makeBuffer(data);
 
-        utils::sanitiseBuffer(buffer);
+        buffer.sanitise();
 
         auto ch0 = buffer.channelBuffer(0);
         REQUIRE(ch0[0] == 0.3f);
@@ -287,7 +286,7 @@ TEST_CASE("sanitiseBuffer processes each channel independently", "[sanitise][mul
         };
         auto buffer = makeBuffer(data);
 
-        utils::sanitiseBuffer(buffer);
+        buffer.sanitise();
 
         for (float s : buffer.channelBuffer(0))
             REQUIRE(s == 0.0f);
@@ -298,14 +297,14 @@ TEST_CASE("sanitiseBuffer processes each channel independently", "[sanitise][mul
 
 // ─── Edge cases ──────────────────────────────────────────────────────────────
 
-TEST_CASE("sanitiseBuffer handles edge cases safely", "[sanitise][edge]")
+TEST_CASE("sanitise handles edge cases safely", "[sanitise][edge]")
 {
     SECTION("empty buffer with no channels does not throw")
     {
         std::vector<std::vector<float>> data;
         auto buffer = makeBuffer(data);
 
-        REQUIRE_NOTHROW(utils::sanitiseBuffer(buffer));
+        REQUIRE_NOTHROW(buffer.sanitise());
     }
 
     SECTION("single-sample buffer with a clean value is unmodified")
@@ -313,7 +312,7 @@ TEST_CASE("sanitiseBuffer handles edge cases safely", "[sanitise][edge]")
         std::vector<std::vector<float>> data = {{0.5f}};
         auto buffer = makeBuffer(data);
 
-        utils::sanitiseBuffer(buffer);
+        buffer.sanitise();
 
         REQUIRE(buffer.channelBuffer(0)[0] == 0.5f);
     }
@@ -323,7 +322,7 @@ TEST_CASE("sanitiseBuffer handles edge cases safely", "[sanitise][edge]")
         std::vector<std::vector<float>> data = {{3.0f}};
         auto buffer = makeBuffer(data);
 
-        utils::sanitiseBuffer(buffer);
+        buffer.sanitise();
 
         REQUIRE(buffer.channelBuffer(0)[0] == 0.0f);
     }
