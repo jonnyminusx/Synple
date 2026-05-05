@@ -28,6 +28,8 @@ include("${CPM_DOWNLOAD_LOCATION}")
 find_program(CLANG_FORMAT clang-format)
 if (CLANG_FORMAT)
     file(GLOB_RECURSE FORMAT_SOURCE_FILES
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/dsp/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/dsp/*.h"
         "${CMAKE_CURRENT_SOURCE_DIR}/source/juce/*.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/source/juce/*.h"
         "${CMAKE_CURRENT_SOURCE_DIR}/source/midi/*.cpp"
@@ -58,6 +60,7 @@ endif()
 # Requires a full build (BUILD_PLUGIN=ON) so that compile_commands.json
 # contains entries for all files, including those that depend on juce_audio_basics.
 file(GLOB_RECURSE ANALYSIS_SOURCE_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/source/dsp/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/source/midi/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/source/synth/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/source/utils/*.cpp"
@@ -117,10 +120,10 @@ add_executable(SynthTests
     tests/OscillatorTest.cpp
     tests/MidiProcessorTest.cpp
     tests/SanitiseBufferTest.cpp
+    source/dsp/AudioBuffer.cpp
+    source/dsp/NoiseGenerator.cpp
     source/midi/MidiProcessor.cpp
-    source/synth/AudioBuffer.cpp
     source/synth/Oscillator.cpp
-    source/utils/sanitiseBuffer.cpp
 )
 
 target_include_directories(SynthTests PRIVATE source)
@@ -169,6 +172,10 @@ CPMAddPackage(
 )
 
 set(SourceFiles
+    source/dsp/AudioBuffer.cpp
+    source/dsp/AudioBuffer.h
+    source/dsp/NoiseGenerator.cpp
+    source/dsp/NoiseGenerator.h
     source/juce/Parameters.cpp
     source/juce/Parameters.h
     source/juce/PluginEditor.cpp
@@ -181,15 +188,11 @@ set(SourceFiles
     source/midi/MidiState.h
     source/midi/NoteHandler.h
     source/synth/ADSR.h
-    source/synth/AudioBuffer.cpp
-    source/synth/AudioBuffer.h
     source/synth/Envelope.cpp
     source/synth/Envelope.h
     source/synth/Filter.cpp
     source/synth/Filter.h
     source/synth/GlideMode.h
-    source/synth/NoiseGenerator.cpp
-    source/synth/NoiseGenerator.h
     source/synth/Oscillator.cpp
     source/synth/Oscillator.h
     source/synth/Output.cpp
@@ -205,8 +208,6 @@ set(SourceFiles
     source/synth/Voice.cpp
     source/synth/Voice.h
     source/utils/constants.h
-    source/utils/sanitiseBuffer.cpp
-    source/utils/sanitiseBuffer.h
 )
 
 juce_add_plugin(${PROJECT_NAME}

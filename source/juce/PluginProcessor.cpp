@@ -1,7 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-#include "synth/AudioBuffer.h"
-#include "synth/NoiseGenerator.h"
+#include "dsp/AudioBuffer.h"
 #include <span>
 #include <vector>
 
@@ -343,7 +342,7 @@ void SynpleAudioProcessor::render(juce::AudioBuffer<float>& buffer, const int sa
         auto ptr = buffer.getWritePointer(ch, bufferOffset);
         channels.emplace_back(ptr, sampleCount);
     }
-    synth::AudioBuffer audioBuffer{channels};
+    dsp::AudioBuffer audioBuffer{channels};
     synth_.render(audioBuffer);
 }
 

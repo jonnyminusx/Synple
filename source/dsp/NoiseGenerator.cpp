@@ -3,7 +3,7 @@
 #include <chrono>
 #include <cstdint>
 
-namespace synth
+namespace dsp
 {
 
 void NoiseGenerator::reset()
@@ -16,4 +16,4 @@ float NoiseGenerator::nextValue()
     return dist_(rng_);
 }
 
-} // namespace synth
+} // namespace dsp

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "NoiseGenerator.h"
 #include "Parameters.h"
 #include "Voice.h"
+#include "dsp/NoiseGenerator.h"
 #include "midi/MidiProcessor.h"
 #include "midi/NoteHandler.h"
 
@@ -10,10 +10,13 @@
 #include <cstddef>
 #include <juce_audio_basics/juce_audio_basics.h>
 
+namespace dsp
+{
+class AudioBuffer;
+} // namespace dsp
+
 namespace synth
 {
-
-class AudioBuffer;
 
 class Synth : public midi::NoteHandler
 {
@@ -23,7 +26,7 @@ class Synth : public midi::NoteHandler
     void allocateResources(const float sampleRate, const int samplesPerBlock);
     void deallocateResources() const;
     void reset();
-    void render(AudioBuffer& audioBuffer);
+    void render(dsp::AudioBuffer& audioBuffer);
 
     // midi::NoteHandler interface
     void noteOn(int note, int velocity) override;
@@ -57,7 +60,7 @@ class Synth : public midi::NoteHandler
 
     midi::MidiProcessor midiProcessor_;
 
-    NoiseGenerator noiseGenerator_;
+    dsp::NoiseGenerator noiseGenerator_;
 
     juce::LinearSmoothedValue<float> outputLevelSmoother_{0.0f};
 
