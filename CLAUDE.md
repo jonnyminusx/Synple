@@ -70,21 +70,13 @@ cmake --build build --target format
 cmake --build build --target tidy
 cmake --build build --target iwyu
 ```
-<<<<<<< HEAD
-Both targets operate on `source/midi/`, `source/synth/`, and `source/math/` only — `source/juce/` is excluded because JUCE macros produce false positives.
-=======
-Both targets operate on `source/dsp/`, `source/midi/`, `source/synth/`, and `source/utils/` only — `source/juce/` is excluded because JUCE macros produce false positives.
->>>>>>> origin/main
+Both targets operate on `source/dsp/`, `source/midi/`, `source/synth/`, and `source/math/` only — `source/juce/` is excluded because JUCE macros produce false positives.
 
 **Adding a test file** — two steps:
 1. Create `tests/FooTest.cpp` (use `#include <catch2/catch_test_macros.hpp>` and `#include <catch2/catch_approx.hpp>`).
 2. In `CMakeLists.txt`, add `tests/FooTest.cpp` and any new `.cpp` sources to the `add_executable(SynthTests ...)` block.
 
-<<<<<<< HEAD
-Sources from `source/synth/`, `source/midi/`, and `source/math/` are eligible — they are JUCE-free. Never add `source/juce/` files to `SynthTests`.
-=======
-Sources from `source/dsp/`, `source/synth/`, `source/midi/`, and `source/utils/` are eligible — they are JUCE-free. Never add `source/juce/` files to `SynthTests`.
->>>>>>> origin/main
+Sources from `source/dsp/`, `source/synth/`, `source/midi/`, and `source/math/` are eligible — they are JUCE-free. Never add `source/juce/` files to `SynthTests`.
 
 ### WebView UI development
 
@@ -178,11 +170,7 @@ Enforce this order inside every class/struct:
 Avoid unless the type is verbose and unambiguous from context (e.g. `auto buffer = audioBuffer.channelBuffer(0)`). Spell out types in arithmetic, DSP, and MIDI code.
 
 ### Namespaces
-<<<<<<< HEAD
-- All source-layer code belongs in a named namespace matching its layer: `synth::`, `midi::`, `math::`, `parameter_id::`.
-=======
-- All source-layer code belongs in a named namespace matching its layer: `synth::`, `midi::`, `dsp::`, `parameter_id::`.
->>>>>>> origin/main
+- All source-layer code belongs in a named namespace matching its layer: `synth::`, `midi::`, `dsp::`, `math::`, `parameter_id::`.
 - File-local helpers and constants go in an anonymous `namespace { }` block (see `Voice.cpp`).
 - No `using namespace` directives anywhere.
 
