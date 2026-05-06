@@ -1,42 +1,18 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
+#include "dsp/Goertzel.h"
 #include "synth/Oscillator.h"
 
 #include <cmath>
-#include <numbers>
 #include <numeric>
 #include <vector>
 
 namespace
 {
 
-constexpr float pi = std::numbers::pi_v<float>;
 constexpr float sampleRate = 44100.0f;
 constexpr int warmup = 4096;
-
-// Evaluates the energy at a specific frequency using the Goertzel algorithm
-// with a Hann window to suppress spectral leakage.
-float goertzel(const std::vector<float>& samples, float targetFreq, float fs)
-{
-    const int N = static_cast<int>(samples.size());
-    const float omega = 2.0f * pi * targetFreq / fs;
-    const float coeff = 2.0f * std::cos(omega);
-    float s1 = 0.0f;
-    float s2 = 0.0f;
-
-    for (int i = 0; i < N; ++i)
-    {
-        const float w = 0.5f - 0.5f * std::cos(2.0f * pi * static_cast<float>(i) / static_cast<float>(N - 1));
-        const float s0 = samples[i] * w + coeff * s1 - s2;
-        s2 = s1;
-        s1 = s0;
-    }
-
-    const float real = s1 - s2 * std::cos(omega);
-    const float imag = s2 * std::sin(omega);
-    return std::sqrt(real * real + imag * imag);
-}
 
 // Renders raw oscillator output (no leaky integrator — directly tests the
 // oscillator's own DC compensation).
@@ -171,9 +147,9 @@ TEST_CASE("Oscillator fundamental energy is concentrated at the set frequency", 
     {
         constexpr float f0 = 440.0f;
         const auto sig = renderRaw(f0, sampleRate, N);
-        const float atF0 = goertzel(sig, f0, sampleRate);
-        const float atLow = goertzel(sig, f0 - 100.0f, sampleRate);
-        const float atHigh = goertzel(sig, f0 + 100.0f, sampleRate);
+        const float atF0 = dsp::goertzel(sig, f0, sampleRate);
+        const float atLow = dsp::goertzel(sig, f0 - 100.0f, sampleRate);
+        const float atHigh = dsp::goertzel(sig, f0 + 100.0f, sampleRate);
         INFO("energy at f0=" << atF0 << " at f0-100=" << atLow << " at f0+100=" << atHigh);
         REQUIRE(atF0 > 10.0f * atLow);
         REQUIRE(atF0 > 10.0f * atHigh);
@@ -183,9 +159,9 @@ TEST_CASE("Oscillator fundamental energy is concentrated at the set frequency", 
     {
         constexpr float f0 = 1000.0f;
         const auto sig = renderRaw(f0, sampleRate, N);
-        const float atF0 = goertzel(sig, f0, sampleRate);
-        const float atLow = goertzel(sig, f0 - 100.0f, sampleRate);
-        const float atHigh = goertzel(sig, f0 + 100.0f, sampleRate);
+        const float atF0 = dsp::goertzel(sig, f0, sampleRate);
+        const float atLow = dsp::goertzel(sig, f0 - 100.0f, sampleRate);
+        const float atHigh = dsp::goertzel(sig, f0 + 100.0f, sampleRate);
         INFO("energy at f0=" << atF0 << " at f0-100=" << atLow << " at f0+100=" << atHigh);
         REQUIRE(atF0 > 10.0f * atLow);
         REQUIRE(atF0 > 10.0f * atHigh);
@@ -253,9 +229,9 @@ TEST_CASE("Square wave from squareWave() has odd-harmonic dominance at 50% duty 
 
     const auto sig = renderSawtooth(osc1, osc2, N);
 
-    const float fund = goertzel(sig, f0, sampleRate);
-    const float harm2 = goertzel(sig, 2.0f * f0, sampleRate);
-    const float harm3 = goertzel(sig, 3.0f * f0, sampleRate);
+    const float fund = dsp::goertzel(sig, f0, sampleRate);
+    const float harm2 = dsp::goertzel(sig, 2.0f * f0, sampleRate);
+    const float harm3 = dsp::goertzel(sig, 3.0f * f0, sampleRate);
 
     INFO("fundamental=" << fund << " 2nd=" << harm2 << " 3rd=" << harm3);
 
