@@ -1,7 +1,8 @@
 #include "Voice.h"
 
+#include "dsp/Filter.h"
+
 #include "Envelope.h"
-#include "Filter.h"
 #include "GlideMode.h"
 #include "Oscillator.h"
 #include "Output.h"
@@ -237,12 +238,12 @@ Envelope& Voice::filterEnvelope()
     return filterEnvelope_;
 }
 
-const Filter& Voice::filter() const
+const dsp::Filter& Voice::filter() const
 {
     return filter_;
 }
 
-Filter& Voice::filter()
+dsp::Filter& Voice::filter()
 {
     return filter_;
 }

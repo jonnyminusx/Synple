@@ -1,13 +1,16 @@
 #pragma once
 
+namespace dsp
+{
+class Filter;
+}
+
 namespace synth
 {
 
-class Filter;
-
 struct Output
 {
-    void filter(Filter& filter);
+    void filter(dsp::Filter& filter);
 
     Output& operator+=(const Output& rhs);
     Output& operator*=(const float scalar);
