@@ -45,12 +45,22 @@ cmake --build build
 
 ### Testing
 
-Tests use Catch2 v3 and live in `tests/`. The `SynthTests` binary links only pure-C++ sources — no JUCE, GTK, or WebKit required.
+Tests use Catch2 v3 and live in `tests/`. There are three per-layer test binaries, all linking only pure-C++ sources — no JUCE, GTK, or WebKit required:
+
+| Binary | Links | Tests |
+|--------|-------|-------|
+| `MidiTests` | `synple_midi` | `midi::MidiProcessor` |
+| `DspTests` | `synple_dsp` (+ math) | `dsp::AudioBuffer`, `dsp::Filter` |
+| `SynthTests` | `synple_synth` (+ dsp, midi, math) | `synth::Oscillator` |
+
+The per-layer split enforces dependencies at link time: if midi code calls a dsp function, `MidiTests` fails to link.
 
 **Build and run tests** (no system dependencies needed):
 ```bash
 cmake -B build -DBUILD_PLUGIN=OFF
-cmake --build build --target SynthTests
+cmake --build build
+# All three binaries run automatically post-build; or run via CTest:
+ctest --test-dir build
 ```
 
 **Run tests with AddressSanitizer + UBSan** (catches memory errors and undefined behaviour):
@@ -74,18 +84,18 @@ Both targets operate on `source/dsp/`, `source/midi/`, `source/synth/`, and `sou
 
 **Test file conventions** — one test file per class or free function, named `<ClassName>Test.cpp` or `<functionName>Test.cpp`. Current test files:
 
-| File | Tests |
-|------|-------|
-| `tests/AudioBufferTest.cpp` | `dsp::AudioBuffer` (including `sanitise()`) |
-| `tests/FilterTest.cpp` | `dsp::Filter` |
-| `tests/MidiProcessorTest.cpp` | `midi::MidiProcessor` |
-| `tests/OscillatorTest.cpp` | `synth::Oscillator` (waveform, aliasing, modulation) |
+| File | Binary | Tests |
+|------|--------|-------|
+| `tests/MidiProcessorTest.cpp` | `MidiTests` | `midi::MidiProcessor` |
+| `tests/AudioBufferTest.cpp` | `DspTests` | `dsp::AudioBuffer` (including `sanitise()`) |
+| `tests/FilterTest.cpp` | `DspTests` | `dsp::Filter` |
+| `tests/OscillatorTest.cpp` | `SynthTests` | `synth::Oscillator` (waveform, aliasing, modulation) |
 
 **Adding a test file** — two steps:
 1. Create `tests/FooTest.cpp` (use `#include <catch2/catch_test_macros.hpp>` and `#include <catch2/catch_approx.hpp>`).
-2. In `CMakeLists.txt`, add `tests/FooTest.cpp` and any new `.cpp` sources to the `add_executable(SynthTests ...)` block.
+2. In `CMakeLists.txt`, add `tests/FooTest.cpp` to the `add_executable(...)` block that matches the layer under test (`MidiTests`, `DspTests`, or `SynthTests`).
 
-Sources from `source/dsp/`, `source/synth/`, `source/midi/`, and `source/math/` are eligible — they are JUCE-free. Never add `source/juce/` files to `SynthTests`.
+Sources from `source/dsp/`, `source/synth/`, `source/midi/`, and `source/math/` are eligible — they are JUCE-free. Never add `source/juce/` files to any test target.
 
 ### WebView UI development
 
@@ -110,9 +120,9 @@ CMake runs `npm run build` automatically as part of the plugin build. The JUCE J
 | Job | Steps |
 |-----|-------|
 | `build` | Install system deps → cache JUCE + CPM → `npm ci` → clang-format check (dry-run, error on violation) → Configure → clang-tidy → IWYU → Build |
-| `sanitizers` | Cache CPM + Catch2 → Configure (`-DBUILD_PLUGIN=OFF -DENABLE_SANITIZERS=ON`) → Build and run `SynthTests` under ASan + UBSan |
+| `sanitizers` | Cache CPM + Catch2 → Configure (`-DBUILD_PLUGIN=OFF -DENABLE_SANITIZERS=ON`) → Build and run `MidiTests`, `DspTests`, `SynthTests` under ASan + UBSan |
 
-The `sanitizers` job does not need system libraries (no GTK, WebKit, JUCE) — it only builds the pure-C++ test binary.
+The `sanitizers` job does not need system libraries (no GTK, WebKit, JUCE) — it only builds the pure-C++ test binaries.
 
 ## Architecture
 
