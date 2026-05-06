@@ -134,6 +134,8 @@ add_library(synple_synth STATIC
 target_include_directories(synple_synth PUBLIC source)
 target_link_libraries(synple_synth PUBLIC synple_dsp synple_midi synple_math)
 
+set_target_properties(synple_midi synple_dsp synple_synth PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
 # ─── Tests ────────────────────────────────────────────────────────────────────
 # Test binaries link only pure-C++ layer libraries; no JUCE or GTK needed.
 enable_testing()
