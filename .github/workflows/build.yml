@@ -22,6 +22,8 @@ jobs:
             libgtk-3-dev \
             libxrandr-dev \
             libwebkit2gtk-4.1-dev \
+            clang-format \
+            clang-tidy \
             iwyu
 
       - name: Cache CPM and JUCE
