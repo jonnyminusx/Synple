@@ -40,8 +40,8 @@ class Parameters
     float filterVelocitySensitivity() const;
     float filterLfoDepth() const;
     float filterEnvelopeDepth() const;
-    synth::ADSR envelope(float inverseSampleRate) const;
-    synth::ADSR filterEnvelope(float inverseUpdateRate) const;
+    synth::Parameters::ADSR envelope(float inverseSampleRate) const;
+    synth::Parameters::ADSR filterEnvelope(float inverseUpdateRate) const;
     float noiseMix() const;
     float volumeTrim() const;
     bool isPolyphonic() const;

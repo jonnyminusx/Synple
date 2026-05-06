@@ -334,25 +334,25 @@ float Parameters::filterLfoDepth() const
     return 2.5f * depth * depth;
 }
 
-synth::ADSR Parameters::envelope(const float inverseSampleRate) const
+synth::Parameters::ADSR Parameters::envelope(const float inverseSampleRate) const
 {
     const float releaseParamValue{envReleaseParam_->get()};
     const float release = releaseParamValue < 1.0f ? 0.75f : multiplierFromParam(inverseSampleRate, releaseParamValue);
 
-    return synth::ADSR{multiplierFromParam(inverseSampleRate, envAttackParam_->get()),
-                       multiplierFromParam(inverseSampleRate, envDecayParam_->get()),
-                       envSustainParam_->get() / 100.0f,
-                       release};
+    return synth::Parameters::ADSR{multiplierFromParam(inverseSampleRate, envAttackParam_->get()),
+                                   multiplierFromParam(inverseSampleRate, envDecayParam_->get()),
+                                   envSustainParam_->get() / 100.0f,
+                                   release};
 }
 
-synth::ADSR Parameters::filterEnvelope(const float inverseUpdateRate) const
+synth::Parameters::ADSR Parameters::filterEnvelope(const float inverseUpdateRate) const
 {
     const float sustain{filterSustainParam_->get() / 100.0f};
 
-    return synth::ADSR{multiplierFromParam(inverseUpdateRate, filterAttackParam_->get()),
-                       multiplierFromParam(inverseUpdateRate, filterDecayParam_->get()),
-                       sustain * sustain,
-                       multiplierFromParam(inverseUpdateRate, filterReleaseParam_->get())};
+    return synth::Parameters::ADSR{multiplierFromParam(inverseUpdateRate, filterAttackParam_->get()),
+                                   multiplierFromParam(inverseUpdateRate, filterDecayParam_->get()),
+                                   sustain * sustain,
+                                   multiplierFromParam(inverseUpdateRate, filterReleaseParam_->get())};
 }
 
 float Parameters::noiseMix() const
