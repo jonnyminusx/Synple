@@ -6,7 +6,7 @@
 namespace synth
 {
 
-inline constexpr std::size_t NUM_PARAMS = 26;
+inline constexpr std::size_t kNumParams = 26;
 
 class Preset
 {
@@ -76,7 +76,7 @@ class Preset
 
   private:
     char name_[40];
-    float parameters_[NUM_PARAMS];
+    float parameters_[kNumParams];
 };
 
 } // namespace synth

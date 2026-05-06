@@ -65,7 +65,7 @@ std::vector<std::byte> getWebViewFileAsBytes(const juce::String& filepath)
     return {};
 }
 
-constexpr auto localDevServerAddress{"http://localhost:8080"};
+constexpr auto kLocalDevServerAddress{"http://localhost:8080"};
 
 } // namespace
 
@@ -75,7 +75,7 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
       processorRef(p),
       webView_(juce::WebBrowserComponent::Options()
                    .withResourceProvider([this](const auto& url) { return getResource(url); },
-                                         juce::URL(localDevServerAddress).getOrigin())
+                                         juce::URL(kLocalDevServerAddress).getOrigin())
                    .withNativeIntegrationEnabled()
                    .withInitialisationData("vendor", JUCE_COMPANY_NAME)
                    .withInitialisationData("pluginName", JUCE_PRODUCT_NAME)
@@ -147,7 +147,7 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
       webPolyModeAttachment_(*p.getApvts().getParameter(parameter_id::polyMode.getParamID()), webPolyModeRelay_)
 {
     webView_.goToURL(webView_.getResourceProviderRoot());
-    // webView_.goToURL(localDevServerAddress);
+    // webView_.goToURL(kLocalDevServerAddress);
 
     addAndMakeVisible(webView_);
     setResizable(true, true);

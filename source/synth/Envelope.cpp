@@ -7,7 +7,7 @@ namespace synth
 
 namespace
 {
-constexpr float silence = 0.0001f;
+constexpr float kSilence = 0.0001f;
 }
 
 void Envelope::reset()
@@ -19,7 +19,7 @@ void Envelope::reset()
 
 void Envelope::attack()
 {
-    level_ += silence + silence;
+    level_ += kSilence + kSilence;
     target_ = 2.0f;
     multiplier_ = adsr_.attack;
 }
@@ -32,7 +32,7 @@ void Envelope::release()
 
 bool Envelope::isActive() const
 {
-    return level_ > silence;
+    return level_ > kSilence;
 }
 
 bool Envelope::isInAttack() const
@@ -42,7 +42,7 @@ bool Envelope::isInAttack() const
 
 void Envelope::nudgeLevelUp()
 {
-    level_ += silence + silence;
+    level_ += kSilence + kSilence;
 }
 
 void Envelope::setLevel(const float level)

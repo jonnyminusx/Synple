@@ -145,8 +145,9 @@ The editor uses JUCE's WebView integration:
 
 ### Naming
 - Classes/structs: PascalCase. Methods: camelCase.
-- Member variables (private/protected): trailing underscore (`period_`, `voices_`). This includes `static constexpr` class constants (`maxNumVoices_`, `lfoMaxSamplesPerUpdate_`).
-- File-scope or anonymous-namespace `constexpr` constants: no underscore (`analog`, `silence`).
+- Member variables (private/protected): trailing underscore (`period_`, `voices_`).
+- `constexpr` constants — all scopes except `source/math/` — use a `k` prefix in camelCase (`kMaxNumVoices`, `kSilence`, `kLocalDevServerAddress`). This applies to namespace-scope, anonymous-namespace, file-scope, static class members, and local `constexpr` variables. `static constexpr` class members use the `k` prefix and no trailing underscore (`kMaxNumVoices`, not `maxNumVoices_`).
+- Math constants in `source/math/` keep their plain lowercase names (`pi`, `tau`, `quarterPi`) to match the `std::numbers` style they wrap.
 - `#pragma once` in every header; never `#ifndef` include guards.
 
 ### Include order (within each group, alphabetical is fine)
