@@ -104,8 +104,38 @@ else()
     message(STATUS "iwyu_tool not found — skipping iwyu target")
 endif()
 
+# ─── Layer libraries ──────────────────────────────────────────────────────────
+
+add_library(synple_math INTERFACE)
+target_include_directories(synple_math INTERFACE source)
+
+add_library(synple_midi STATIC
+    source/midi/MidiProcessor.cpp
+)
+target_include_directories(synple_midi PUBLIC source)
+
+add_library(synple_dsp STATIC
+    source/dsp/AudioBuffer.cpp
+    source/dsp/Filter.cpp
+    source/dsp/NoiseGenerator.cpp
+)
+target_include_directories(synple_dsp PUBLIC source)
+target_link_libraries(synple_dsp PUBLIC synple_math)
+
+add_library(synple_synth STATIC
+    source/synth/Envelope.cpp
+    source/synth/Oscillator.cpp
+    source/synth/Output.cpp
+    source/synth/Presets.cpp
+    source/synth/SineOscillator.cpp
+    source/synth/Synth.cpp
+    source/synth/Voice.cpp
+)
+target_include_directories(synple_synth PUBLIC source)
+target_link_libraries(synple_synth PUBLIC synple_dsp synple_midi synple_math)
+
 # ─── Tests ────────────────────────────────────────────────────────────────────
-# The test binary depends only on pure-C++ synth sources; no JUCE or GTK needed.
+# Test binaries link only pure-C++ layer libraries; no JUCE or GTK needed.
 enable_testing()
 include(CTest)
 
@@ -115,41 +145,39 @@ CPMAddPackage(
     GITHUB_REPOSITORY catchorg/Catch2
 )
 
-add_executable(SynthTests
-    tests/AudioBufferTest.cpp
-    tests/FilterTest.cpp
-    tests/MidiProcessorTest.cpp
-    tests/OscillatorTest.cpp
-    source/dsp/AudioBuffer.cpp
-    source/dsp/Filter.cpp
-    source/dsp/NoiseGenerator.cpp
-    source/midi/MidiProcessor.cpp
-    source/synth/Oscillator.cpp
-)
+add_executable(MidiTests  tests/MidiProcessorTest.cpp)
+add_executable(DspTests   tests/AudioBufferTest.cpp tests/FilterTest.cpp)
+add_executable(SynthTests tests/OscillatorTest.cpp)
 
-target_include_directories(SynthTests PRIVATE source)
-target_link_libraries(SynthTests PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(MidiTests  PRIVATE synple_midi  Catch2::Catch2WithMain)
+target_link_libraries(DspTests   PRIVATE synple_dsp   Catch2::Catch2WithMain)
+target_link_libraries(SynthTests PRIVATE synple_synth Catch2::Catch2WithMain)
+
+set(kTestTargets MidiTests DspTests SynthTests)
 
 if (ENABLE_SANITIZERS)
-    target_compile_options(SynthTests PRIVATE
-        -fsanitize=address,undefined
-        -fno-omit-frame-pointer
-        -fno-sanitize-recover=all
-    )
-    target_link_options(SynthTests PRIVATE -fsanitize=address,undefined)
+    foreach(TARGET IN LISTS kTestTargets)
+        target_compile_options(${TARGET} PRIVATE
+            -fsanitize=address,undefined
+            -fno-omit-frame-pointer
+            -fno-sanitize-recover=all
+        )
+        target_link_options(${TARGET} PRIVATE -fsanitize=address,undefined)
+    endforeach()
 endif()
 
 include("${Catch2_SOURCE_DIR}/extras/Catch.cmake")
-catch_discover_tests(SynthTests)
 
-add_custom_command(
-    TARGET SynthTests
-    POST_BUILD
-    COMMAND "$<TARGET_FILE:SynthTests>"
-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-    COMMENT "Running unit tests..."
-    VERBATIM
-)
+foreach(TARGET IN LISTS kTestTargets)
+    catch_discover_tests(${TARGET})
+    add_custom_command(
+        TARGET ${TARGET} POST_BUILD
+        COMMAND "$<TARGET_FILE:${TARGET}>"
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+        COMMENT "Running ${TARGET}..."
+        VERBATIM
+    )
+endforeach()
 
 # ─── Plugin ───────────────────────────────────────────────────────────────────
 if (BUILD_PLUGIN)
@@ -173,9 +201,10 @@ CPMAddPackage(
 )
 
 set(SourceFiles
-    source/dsp/AudioBuffer.cpp
     source/dsp/AudioBuffer.h
-    source/dsp/NoiseGenerator.cpp
+    source/dsp/Filter.h
+    source/dsp/Goertzel.h
+    source/dsp/LinearSmoothedValue.h
     source/dsp/NoiseGenerator.h
     source/juce/Parameters.cpp
     source/juce/Parameters.h
@@ -183,33 +212,22 @@ set(SourceFiles
     source/juce/PluginEditor.h
     source/juce/PluginProcessor.cpp
     source/juce/PluginProcessor.h
+    source/math/constants.h
     source/midi/CC.h
-    source/midi/MidiProcessor.cpp
     source/midi/MidiProcessor.h
     source/midi/MidiState.h
     source/midi/NoteHandler.h
-    source/dsp/Filter.cpp
-    source/dsp/Filter.h
-    source/dsp/Goertzel.h
     source/synth/ADSR.h
-    source/synth/Envelope.cpp
     source/synth/Envelope.h
     source/synth/GlideMode.h
-    source/synth/Oscillator.cpp
     source/synth/Oscillator.h
-    source/synth/Output.cpp
     source/synth/Output.h
     source/synth/Parameters.h
     source/synth/Preset.h
-    source/synth/Presets.cpp
     source/synth/Presets.h
-    source/synth/SineOscillator.cpp
     source/synth/SineOscillator.h
-    source/synth/Synth.cpp
     source/synth/Synth.h
-    source/synth/Voice.cpp
     source/synth/Voice.h
-    source/math/constants.h
 )
 
 juce_add_plugin(${PROJECT_NAME}
@@ -262,6 +280,7 @@ target_link_libraries(${PROJECT_NAME}
         juce::juce_recommended_warning_flags
         PRIVATE
         WebViewFiles
+        synple_synth
 )
 
 file(COPY "${CMAKE_BINARY_DIR}/_deps/juce-src/modules/juce_gui_extra/native/javascript/"
