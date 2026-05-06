@@ -74,7 +74,7 @@ void Voice::noteOn(const int note,
                    const Parameters& parameters)
 {
     const float adjustedVelocity{(0.004f * static_cast<float>((velocity + 64) * (velocity + 64))) - 8.0f};
-    const float osciillator1Amplitude{parameters.output.volumeTrim * adjustedVelocity};
+    const float oscillator1Amplitude{parameters.output.volumeTrim * adjustedVelocity};
     const float period{calculatePeriod(note, parameters.oscillator.tune, parameters.oscillator.detune, voiceIdx)};
     const int noteDistance{calculateNoteDistance(note, lastNote, parameters.glide.mode, isPlayingLegatoStyle)};
 
@@ -89,8 +89,8 @@ void Voice::noteOn(const int note,
         period_ = 6.0f;
     }
 
-    oscillator1_.setAmplitude(osciillator1Amplitude);
-    oscillator2_.setAmplitude(osciillator1Amplitude * parameters.oscillator.mix);
+    oscillator1_.setAmplitude(oscillator1Amplitude);
+    oscillator2_.setAmplitude(oscillator1Amplitude * parameters.oscillator.mix);
 
     if (pwm)
     {

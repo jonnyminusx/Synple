@@ -3,23 +3,23 @@
 namespace synth
 {
 
-class Oscillator
+class SineOscillator
 {
   public:
     void reset();
     void setAmplitude(const float amplitude);
-    void setIncrement(const float increment);
+    void setNormalizedFreq(const float normalizedFreq);
 
     float nextSample();
 
   private:
     float amplitude_{0.0f};
-    float increment_{0.0f};
+    float normalizedFreq_{0.0f};
     float phase_{0.0f};
 
-    float sin0{0.0f};
-    float sin1{0.0f};
-    float dsin{0.0f};
+    float sinCurrent_{0.0f};
+    float sinPrevious_{0.0f};
+    float sinRecurrenceCoeff_{0.0f};
 };
 
 } // namespace synth
