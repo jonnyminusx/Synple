@@ -120,7 +120,7 @@ The `sanitizers` job does not need system libraries (no GTK, WebKit, JUCE) — i
 
 ```
 source/juce/   — JUCE plugin layer (AudioProcessor, AudioProcessorEditor, Parameters)
-source/synth/  — Pure synth engine (no JUCE dependencies except juce_audio_basics)
+source/synth/  — Pure synth engine (no JUCE dependencies)
 source/midi/   — MIDI message processing (MidiProcessor, MidiState, NoteHandler, CC type alias)
 source/dsp/    — DSP primitives (Filter, frequency-analysis utilities); JUCE-free, eligible for SynthTests
 source/math/   — Math constants
@@ -132,7 +132,7 @@ source/ui/     — WebView frontend (HTML/JS)
 1. `PluginProcessor` receives audio/MIDI from the host, splits the buffer by MIDI events, calls `Synth::render()`, and routes MIDI via `Synth::midiProcessor().process()`.
 2. `Synth` manages up to 8 `Voice` instances (1 active in mono mode). Each voice contains two `Oscillator`s, a `Filter`, and two `Envelope`s (amplitude + filter). A shared `NoiseGenerator` feeds noise into the mix.
 3. `Synth::updateLfo()` runs every 32 samples and drives vibrato, PWM depth, and filter modulation across all voices.
-4. Output level is smoothed via `juce::LinearSmoothedValue` and monitored with a JUCE `BallisticsFilter` envelope follower.
+4. Output level is smoothed via `dsp::LinearSmoothedValue` and monitored with a JUCE `BallisticsFilter` envelope follower.
 
 ### Parameter system
 
