@@ -145,7 +145,7 @@ void Synth::updateLfo()
 {
     if (--lfoStep_ < 0)
     {
-        lfoStep_ = lfoMaxSamplesPerUpdate_;
+        lfoStep_ = kLfoMaxSamplesPerUpdate;
 
         lfo_ += parameters_.lfo.increment;
         if (lfo_ > math::pi)
@@ -177,7 +177,7 @@ void Synth::updateLfo()
 
 void Synth::shiftQueuedNotes()
 {
-    for (size_t voiceIdx = maxNumVoices_ - 1; voiceIdx > 0; --voiceIdx)
+    for (size_t voiceIdx = kMaxNumVoices - 1; voiceIdx > 0; --voiceIdx)
     {
         voices_[voiceIdx].note() = voices_[voiceIdx - 1].note();
         voices_[voiceIdx].release();
@@ -187,7 +187,7 @@ void Synth::shiftQueuedNotes()
 int Synth::nextQueuedNote()
 {
     int note{0};
-    for (size_t voiceIdx = 1; voiceIdx < maxNumVoices_; ++voiceIdx)
+    for (size_t voiceIdx = 1; voiceIdx < kMaxNumVoices; ++voiceIdx)
     {
         const int voiceNote{voices_[voiceIdx].note()};
         if (voiceNote > 0)
@@ -296,7 +296,7 @@ void Synth::setParameters(const Parameters& params)
         voice.filterEnvelope().setADSR(params.filter.envelope);
     }
     outputLevelSmoother_.setTargetValue(params.output.gain);
-    numVoices_ = params.output.polyphonic ? maxNumVoices_ : 1;
+    numVoices_ = params.output.polyphonic ? kMaxNumVoices : 1;
     parameters_ = params;
 }
 

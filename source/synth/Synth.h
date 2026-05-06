@@ -51,9 +51,9 @@ class Synth : public midi::NoteHandler
     void processLastNotePriority(const int note);
     void updateLfo();
 
-    static constexpr int maxNumVoices_{8};
+    static constexpr int kMaxNumVoices{8};
     int numVoices_{1};
-    std::array<Voice, maxNumVoices_> voices_;
+    std::array<Voice, kMaxNumVoices> voices_;
     int lastNote_{0};
 
     Parameters parameters_{};
@@ -66,7 +66,7 @@ class Synth : public midi::NoteHandler
 
     float sampleRate_{44100.0f};
 
-    static constexpr int lfoMaxSamplesPerUpdate_{32};
+    static constexpr int kLfoMaxSamplesPerUpdate{32};
     float lfo_{0.0f};
     int lfoStep_{0};
 

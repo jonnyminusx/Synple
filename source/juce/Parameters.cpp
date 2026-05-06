@@ -507,9 +507,9 @@ float Parameters::glideRateCoefficient(const float inverseSampleRate, const floa
 
 synth::Parameters Parameters::createSnapshot(const float sampleRate) const
 {
-    constexpr float modulationUpdateInterval{32.0f};
+    constexpr float kModulationUpdateInterval{32.0f};
     const float inverseSampleRate{1.0f / sampleRate};
-    const float inverseUpdateRate{inverseSampleRate * modulationUpdateInterval};
+    const float inverseUpdateRate{inverseSampleRate * kModulationUpdateInterval};
 
     synth::Parameters p;
 
@@ -525,12 +525,12 @@ synth::Parameters Parameters::createSnapshot(const float sampleRate) const
     p.filter.velocitySensitivity = filterVelocitySensitivity();
     p.filter.envelope = filterEnvelope(inverseUpdateRate);
 
-    p.lfo.increment = lfoIncrement(inverseSampleRate, modulationUpdateInterval);
+    p.lfo.increment = lfoIncrement(inverseSampleRate, kModulationUpdateInterval);
     p.lfo.vibratoAmount = vibratoAmount();
     p.lfo.pwmDepth = pwmDepth();
 
     p.glide.mode = static_cast<synth::GlideMode>(glideModeIndex());
-    p.glide.rateCoefficient = glideRateCoefficient(inverseSampleRate, modulationUpdateInterval);
+    p.glide.rateCoefficient = glideRateCoefficient(inverseSampleRate, kModulationUpdateInterval);
     p.glide.bendSemitones = glideBendSemitones();
 
     p.output.gain = outputGain();
