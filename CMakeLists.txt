@@ -219,6 +219,7 @@ set(SourceFiles
     source/midi/MidiProcessor.h
     source/midi/MidiState.h
     source/midi/NoteHandler.h
+    source/synth/ADSR.h
     source/synth/Envelope.h
     source/synth/GlideMode.h
     source/synth/Oscillator.h

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ADSR.h"
 #include "GlideMode.h"
 
 namespace synth
@@ -7,14 +8,6 @@ namespace synth
 
 struct Parameters
 {
-    struct ADSR
-    {
-        float attack{0.0f};
-        float decay{0.0f};
-        float sustain{1.0f};
-        float release{0.0f};
-    };
-
     struct Oscillator
     {
         float mix{0.0f};      // normalised 0-1 osc1/osc2 balance

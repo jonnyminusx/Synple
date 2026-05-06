@@ -1,5 +1,7 @@
 #include "Envelope.h"
 
+#include "ADSR.h"
+
 namespace synth
 {
 
@@ -58,7 +60,7 @@ void Envelope::setMultiplier(const float multiplier)
     multiplier_ = multiplier;
 }
 
-void Envelope::setADSR(const Parameters::ADSR& adsr)
+void Envelope::setADSR(const ADSR& adsr)
 {
     adsr_ = adsr;
 }
