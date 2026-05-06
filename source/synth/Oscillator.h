@@ -23,8 +23,8 @@ class Oscillator
     float phase_{0.0f};
     float halfPhase_{0.0f};
 
-    float sinN_{0.0f};
-    float sinNm1_{0.0f};
+    float sinCurrent_{0.0f};
+    float sinPrevious_{0.0f};
     float sinRecurrenceCoeff_{0.0f};
 
     float dcOffset_{0.0f};

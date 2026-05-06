@@ -56,8 +56,8 @@ void Oscillator::squareWave(const Oscillator& other, const float newPeriod)
 
     // Initialise sine recurrence state so the first nextSample() call
     // produces correct output without a silent half-period transient.
-    sinN_ = amplitude_ * std::sin(phase_);
-    sinNm1_ = amplitude_ * std::sin(phase_ - increment_);
+    sinCurrent_ = amplitude_ * std::sin(phase_);
+    sinPrevious_ = amplitude_ * std::sin(phase_ - increment_);
     sinRecurrenceCoeff_ = 2.0f * std::cos(increment_);
 }
 
@@ -77,13 +77,13 @@ float Oscillator::nextSample()
         increment_ = halfPhase_ / halfPeriod;
         phase_ = -phase_;
 
-        sinN_ = amplitude_ * std::sin(phase_);
-        sinNm1_ = amplitude_ * std::sin(phase_ - increment_);
+        sinCurrent_ = amplitude_ * std::sin(phase_);
+        sinPrevious_ = amplitude_ * std::sin(phase_ - increment_);
         sinRecurrenceCoeff_ = 2.0f * std::cos(increment_);
 
         if (phase_ * phase_ > 1e-9)
         {
-            output = sinN_ / phase_;
+            output = sinCurrent_ / phase_;
         }
         else
         {
@@ -98,11 +98,11 @@ float Oscillator::nextSample()
             increment_ = -increment_;
         }
 
-        const float sinp{(sinRecurrenceCoeff_ * sinN_) - sinNm1_};
-        sinNm1_ = sinN_;
-        sinN_ = sinp;
+        const float sinp{(sinRecurrenceCoeff_ * sinCurrent_) - sinPrevious_};
+        sinPrevious_ = sinCurrent_;
+        sinCurrent_ = sinp;
 
-        output = sinN_ / phase_;
+        output = sinCurrent_ / phase_;
     }
 
     return output - dcOffset_;

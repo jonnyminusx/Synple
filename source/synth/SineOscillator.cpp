@@ -10,11 +10,11 @@ void SineOscillator::reset()
 {
     phase_ = 0.0f;
 
-    sinN_ = amplitude_ * std::sin(constants::tau * phase_);
-    // sinNm1_ represents sin(phase - normalizedFreq_), i.e. one step back.
+    sinCurrent_ = amplitude_ * std::sin(constants::tau * phase_);
+    // sinPrevious_ represents sin(phase - normalizedFreq_), i.e. one step back.
     // Using -normalizedFreq_ here so the first nextSample() returns sin(+freq),
     // giving a sine that rises from zero rather than one that dips negative.
-    sinNm1_ = amplitude_ * std::sin(-constants::tau * normalizedFreq_);
+    sinPrevious_ = amplitude_ * std::sin(-constants::tau * normalizedFreq_);
     sinRecurrenceCoeff_ = 2.0f * std::cos(normalizedFreq_ * constants::tau);
 }
 
@@ -30,9 +30,9 @@ void SineOscillator::setNormalizedFreq(const float normalizedFreq)
 
 float SineOscillator::nextSample()
 {
-    const float sinx = (sinRecurrenceCoeff_ * sinN_) - sinNm1_;
-    sinNm1_ = sinN_;
-    sinN_ = sinx;
+    const float sinx = (sinRecurrenceCoeff_ * sinCurrent_) - sinPrevious_;
+    sinPrevious_ = sinCurrent_;
+    sinCurrent_ = sinx;
     return sinx;
 }
 
