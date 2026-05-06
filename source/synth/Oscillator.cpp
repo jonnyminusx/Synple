@@ -1,6 +1,6 @@
 #include "Oscillator.h"
 
-#include "utils/constants.h"
+#include "math/constants.h"
 #include <cmath>
 
 namespace synth
@@ -44,11 +44,11 @@ void Oscillator::squareWave(const Oscillator& other, const float newPeriod)
     }
     else
     {
-        phase_ = -constants::pi;
-        increment_ = constants::pi;
+        phase_ = -math::pi;
+        increment_ = math::pi;
     }
 
-    phase_ += constants::pi * newPeriod / 2.0f;
+    phase_ += math::pi * newPeriod / 2.0f;
     phaseMax_ = phase_;
 }
 
@@ -58,12 +58,12 @@ float Oscillator::nextSample()
 
     phase_ += increment_;
 
-    if (phase_ <= constants::quarterPi)
+    if (phase_ <= math::quarterPi)
     {
         const float halfPeriod{(period_ / 2.0f) * modulation_};
         phaseMax_ = std::floor(0.5f + halfPeriod) - 0.5f;
         dc_ = 0.5f * amplitude_ / phaseMax_;
-        phaseMax_ *= constants::pi;
+        phaseMax_ *= math::pi;
 
         increment_ = phaseMax_ / halfPeriod;
         phase_ = -phase_;

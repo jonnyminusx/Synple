@@ -6,11 +6,10 @@
 #include "Oscillator.h"
 #include "Output.h"
 #include "Parameters.h"
-#include "utils/constants.h"
+#include "math/constants.h"
 
 #include <algorithm>
 #include <cmath>
-#include <numbers>
 
 namespace synth
 {
@@ -18,7 +17,6 @@ namespace synth
 namespace
 {
 
-constexpr float piOver4{std::numbers::pi_v<float> / 4.0f};
 constexpr float analog{0.002f};
 
 float calculatePeriod(const int note, const float tune, const float detune, const size_t voiceIdx)
@@ -78,7 +76,7 @@ void Voice::noteOn(const int note,
     const int noteDistance{calculateNoteDistance(note, lastNote, parameters.glide.mode, isPlayingLegatoStyle)};
 
     note_ = note;
-    cutoff_ = sampleRate / (period * constants::pi);
+    cutoff_ = sampleRate / (period * math::pi);
     cutoff_ *= std::exp(parameters.filter.velocitySensitivity * static_cast<float>(velocity - 64));
     targetPeriod_ = period;
     period_ = period * std::pow(1.059463094359f, static_cast<float>(noteDistance) - parameters.glide.bendSemitones);
@@ -105,7 +103,7 @@ void Voice::noteOnRestart(
     const float period{calculatePeriod(note, parameters.oscillator.tune, parameters.oscillator.detune, voiceIdx)};
 
     note_ = note;
-    cutoff_ = sampleRate / (period * constants::pi);
+    cutoff_ = sampleRate / (period * math::pi);
     cutoff_ *= std::exp(parameters.filter.velocitySensitivity * static_cast<float>(velocity - 64));
 
     targetPeriod_ = period;
@@ -144,8 +142,8 @@ void Voice::release()
 void Voice::updatePanning()
 {
     const float panning{std::clamp(static_cast<float>(note_ - 60) / 24.0f, -1.0f, 1.0f)};
-    panLeft_ = std::sin(piOver4 * (1.0f - panning));
-    panRight_ = std::sin(piOver4 * (1.0f + panning));
+    panLeft_ = std::sin(math::quarterPi * (1.0f - panning));
+    panRight_ = std::sin(math::quarterPi * (1.0f + panning));
 }
 
 void Voice::updateLfo(const float glideRate,

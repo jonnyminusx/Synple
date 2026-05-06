@@ -5,7 +5,7 @@
 #include "Output.h"
 #include "dsp/AudioBuffer.h"
 #include "midi/MidiState.h"
-#include "utils/constants.h"
+#include "math/constants.h"
 
 #include <algorithm>
 #include <cmath>
@@ -148,9 +148,9 @@ void Synth::updateLfo()
         lfoStep_ = lfoMaxSamplesPerUpdate_;
 
         lfo_ += parameters_.lfo.increment;
-        if (lfo_ > constants::pi)
+        if (lfo_ > math::pi)
         {
-            lfo_ -= constants::tau;
+            lfo_ -= math::tau;
         }
 
         const midi::MidiState& midi{midiProcessor_.state()};
