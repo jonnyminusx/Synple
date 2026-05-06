@@ -49,7 +49,8 @@ class SynpleAudioProcessor final : public juce::AudioProcessor, private juce::Va
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
 
-    juce::AudioProcessorValueTreeState& getApvts();
+    using AudioProcessor::getParameter;
+    juce::RangedAudioParameter& getParameter(const juce::ParameterID& id);
 
     std::atomic<bool> midiLearn;
     std::atomic<float> outputLevelLeft;

@@ -30,13 +30,13 @@ SynpleAudioProcessor::SynpleAudioProcessor()
                          ),
       parameters_(*this)
 {
-    parameters_.getApvts().state.addListener(this);
+    parameters_.addStateListener(this);
     setCurrentProgram(0);
 }
 
 SynpleAudioProcessor::~SynpleAudioProcessor()
 {
-    parameters_.getApvts().state.removeListener(this);
+    parameters_.removeStateListener(this);
 }
 
 //==============================================================================
@@ -155,7 +155,7 @@ bool SynpleAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) co
         layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
         return false;
 
-        // This checks if the input layout matches the output layout
+    // This checks if the input layout matches the output layout
 #if !JucePlugin_IsSynth
     if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
         return false;
@@ -220,8 +220,7 @@ juce::AudioProcessorEditor* SynpleAudioProcessor::createEditor()
 void SynpleAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
     auto xml = std::make_unique<juce::XmlElement>(pluginTag);
-    std::unique_ptr<juce::XmlElement> parametersXML(parameters_.getApvts().copyState().createXml());
-    xml->addChildElement(parametersXML.release());
+    xml->addChildElement(parameters_.copyStateToXml().release());
 
     auto extraXML = std::make_unique<juce::XmlElement>(extraTag);
     extraXML->setAttribute(midiCCAttribute, midiLearnCC_.load());
@@ -235,11 +234,8 @@ void SynpleAudioProcessor::setStateInformation(const void* data, int sizeInBytes
     std::unique_ptr<juce::XmlElement> xml{getXmlFromBinary(data, sizeInBytes)};
     if (xml && xml->hasTagName(pluginTag))
     {
-        if (auto* parametersXML = xml->getChildByName(parameters_.getApvts().state.getType()))
-        {
-            parameters_.getApvts().replaceState(juce::ValueTree::fromXml(*parametersXML));
+        if (parameters_.restoreStateFromXml(*xml))
             parametersChanged_.store(true);
-        }
 
         if (auto* extraXML = xml->getChildByName(extraTag))
         {
@@ -252,9 +248,9 @@ void SynpleAudioProcessor::setStateInformation(const void* data, int sizeInBytes
     }
 }
 
-juce::AudioProcessorValueTreeState& SynpleAudioProcessor::getApvts()
+juce::RangedAudioParameter& SynpleAudioProcessor::getParameter(const juce::ParameterID& id)
 {
-    return parameters_.getApvts();
+    return parameters_.getParameter(id);
 }
 
 void SynpleAudioProcessor::valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier&)
