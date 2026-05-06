@@ -4,8 +4,8 @@
 #include "GlideMode.h"
 #include "Output.h"
 #include "dsp/AudioBuffer.h"
-#include "midi/MidiState.h"
 #include "math/constants.h"
+#include "midi/MidiState.h"
 
 #include <algorithm>
 #include <cmath>
