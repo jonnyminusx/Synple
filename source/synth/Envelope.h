@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ADSR.h"
+#include "Parameters.h"
 
 namespace synth
 {
@@ -22,13 +22,13 @@ class Envelope
     void setLevel(const float level);
     void setTarget(const float target);
     void setMultiplier(const float multiplier);
-    void setADSR(const ADSR& adsr);
+    void setADSR(const Parameters::ADSR& adsr);
 
   private:
     float level_{0.0f};
     float target_{0.0f};
     float multiplier_{0.0f};
-    ADSR adsr_{};
+    Parameters::ADSR adsr_{};
 };
 
 } // namespace synth
