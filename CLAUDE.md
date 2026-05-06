@@ -72,6 +72,15 @@ cmake --build build --target iwyu
 ```
 Both targets operate on `source/dsp/`, `source/midi/`, `source/synth/`, and `source/math/` only — `source/juce/` is excluded because JUCE macros produce false positives.
 
+**Test file conventions** — one test file per class or free function, named `<ClassName>Test.cpp` or `<functionName>Test.cpp`. Current test files:
+
+| File | Tests |
+|------|-------|
+| `tests/AudioBufferTest.cpp` | `dsp::AudioBuffer` (including `sanitise()`) |
+| `tests/FilterTest.cpp` | `dsp::Filter` |
+| `tests/MidiProcessorTest.cpp` | `midi::MidiProcessor` |
+| `tests/OscillatorTest.cpp` | `synth::Oscillator` (waveform, aliasing, modulation) |
+
 **Adding a test file** — two steps:
 1. Create `tests/FooTest.cpp` (use `#include <catch2/catch_test_macros.hpp>` and `#include <catch2/catch_approx.hpp>`).
 2. In `CMakeLists.txt`, add `tests/FooTest.cpp` and any new `.cpp` sources to the `add_executable(SynthTests ...)` block.
