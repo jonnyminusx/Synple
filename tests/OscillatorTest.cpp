@@ -303,8 +303,7 @@ TEST_CASE("Oscillator produces identical output after reset", "[oscillator][rese
 
 // ─── PWM: odd-harmonic dominance ─────────────────────────────────────────────
 
-TEST_CASE("Square wave from squareWave() has odd-harmonic dominance at 50% duty cycle",
-          "[oscillator][pwm]")
+TEST_CASE("Square wave from squareWave() has odd-harmonic dominance at 50% duty cycle", "[oscillator][pwm]")
 {
     // At 50% duty cycle (modulation=1.0) the square wave has only odd harmonics.
     // squareWave() initialises osc2's phase; period must still be set explicitly
@@ -322,7 +321,7 @@ TEST_CASE("Square wave from squareWave() has odd-harmonic dominance at 50% duty 
 
     osc2.setAmplitude(1.0f);
     osc2.squareWave(osc1, period);
-    osc2.setPeriod(period);   // required — squareWave sets phase, not period
+    osc2.setPeriod(period); // required — squareWave sets phase, not period
     osc2.setModulation(1.0f);
 
     const auto sig = renderSawtooth(osc1, osc2, N);
@@ -357,8 +356,7 @@ TEST_CASE("Modulation parameter changes oscillator output", "[oscillator][modula
     constexpr int N = 4096;
     const float period = sampleRate / 440.0f;
 
-    auto renderWithMod = [&](float mod) -> std::vector<float>
-    {
+    auto renderWithMod = [&](float mod) -> std::vector<float> {
         synth::Oscillator osc;
         osc.setAmplitude(1.0f);
         osc.setPeriod(period);
@@ -377,8 +375,7 @@ TEST_CASE("Modulation parameter changes oscillator output", "[oscillator][modula
     REQUIRE(std::abs(rms1 - rmsHalf) > 0.01f);
 }
 
-TEST_CASE("setModulation clamps near-zero and negative values to prevent NaN",
-          "[oscillator][modulation]")
+TEST_CASE("setModulation clamps near-zero and negative values to prevent NaN", "[oscillator][modulation]")
 {
     // Without the clamp in setModulation(), modulation=0 causes
     // increment_ = halfPhase_ / 0 → ±inf, producing NaN output.
