@@ -10,28 +10,7 @@ class Parameters
 
     juce::AudioProcessorValueTreeState& getApvts();
 
-    float oscillatorMix() const;
-    float detune() const;
-    float tune(float sampleRate) const;
-    float filterResonance() const;
-    float filterQ() const;
-    float filterKeyTracking() const;
-    bool shouldIgnoreVelocity() const;
-    float filterVelocitySensitivity() const;
-    float filterLfoDepth() const;
-    float filterEnvelopeDepth() const;
-    synth::ADSR envelope(float inverseSampleRate) const;
-    synth::ADSR filterEnvelope(float inverseUpdateRate) const;
-    float noiseMix() const;
-    float volumeTrim() const;
     float outputGain() const;
-    bool isPolyphonic() const;
-    float lfoIncrement(float inverseSampleRate, float updateInterval) const;
-    float vibratoAmount() const;
-    float pwmDepth() const;
-    int glideModeIndex() const;
-    float glideBendSemitones() const;
-    float glideRateCoefficient(float inverseSampleRate, float updateInterval) const;
 
     // Build an engine-ready snapshot of all parameters at the given sample rate.
     // All raw-to-engine-value transformations occur here; the returned struct is
@@ -47,33 +26,27 @@ class Parameters
   private:
     static float multiplierFromParam(float rateScale, float paramValue);
 
-    // Raw parameter accessors for internal mapping only
-    float oscMix() const;
-    float oscTune() const;
-    float oscFine() const;
-    int glideMode() const;
-    float glideRate() const;
-    float glideBend() const;
-    float filterFreq() const;
-    float filterReso() const;
-    float filterEnv() const;
-    float filterLFO() const;
-    float filterVelocity() const;
-    float filterAttack() const;
-    float filterDecay() const;
-    float filterSustain() const;
-    float filterRelease() const;
-    float envAttack() const;
-    float envDecay() const;
-    float envSustain() const;
-    float envRelease() const;
-    float lfoRate() const;
-    float vibrato() const;
-    float noise() const;
-    float octave() const;
-    float tuning() const;
-    float outputLevel() const;
-    int polyMode() const;
+    float oscillatorMix() const;
+    float detune() const;
+    float tune(float sampleRate) const;
+    float filterResonance() const;
+    float filterQ() const;
+    float filterKeyTracking() const;
+    bool shouldIgnoreVelocity() const;
+    float filterVelocitySensitivity() const;
+    float filterLfoDepth() const;
+    float filterEnvelopeDepth() const;
+    synth::ADSR envelope(float inverseSampleRate) const;
+    synth::ADSR filterEnvelope(float inverseUpdateRate) const;
+    float noiseMix() const;
+    float volumeTrim() const;
+    bool isPolyphonic() const;
+    float lfoIncrement(float inverseSampleRate, float updateInterval) const;
+    float vibratoAmount() const;
+    float pwmDepth() const;
+    int glideModeIndex() const;
+    float glideBendSemitones() const;
+    float glideRateCoefficient(float inverseSampleRate, float updateInterval) const;
 
     // apvts_ must be declared first so it is constructed before the raw pointers
     juce::AudioProcessorValueTreeState apvts_;
