@@ -2,13 +2,13 @@
 
 #include "Parameters.h"
 #include "Voice.h"
+#include "dsp/LinearSmoothedValue.h"
 #include "dsp/NoiseGenerator.h"
 #include "midi/MidiProcessor.h"
 #include "midi/NoteHandler.h"
 
 #include <array>
 #include <cstddef>
-#include <juce_audio_basics/juce_audio_basics.h>
 
 namespace dsp
 {
@@ -62,7 +62,7 @@ class Synth : public midi::NoteHandler
 
     dsp::NoiseGenerator noiseGenerator_;
 
-    juce::LinearSmoothedValue<float> outputLevelSmoother_{0.0f};
+    dsp::LinearSmoothedValue<float> outputLevelSmoother_{};
 
     float sampleRate_{44100.0f};
 
