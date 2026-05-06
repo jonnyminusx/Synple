@@ -3,8 +3,7 @@
 namespace dsp
 {
 
-template <typename FloatType>
-class LinearSmoothedValue
+template <typename FloatType> class LinearSmoothedValue
 {
   public:
     LinearSmoothedValue() = default;
