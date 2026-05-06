@@ -242,8 +242,8 @@ TEST_CASE("sanitise processes each channel independently", "[sanitise][multichan
     SECTION("a corrupted channel is silenced without disturbing a clean channel")
     {
         std::vector<std::vector<float>> data = {
-            {0.5f, 3.0f, 0.5f},   // channel 0: out-of-range → silenced
-            {0.3f, 0.4f, 0.5f}    // channel 1: clean → unchanged
+            {0.5f, 3.0f, 0.5f}, // channel 0: out-of-range → silenced
+            {0.3f, 0.4f, 0.5f}  // channel 1: clean → unchanged
         };
         auto buffer = makeBuffer(data);
 
@@ -261,8 +261,8 @@ TEST_CASE("sanitise processes each channel independently", "[sanitise][multichan
     SECTION("a clean channel is unaffected when the other channel is corrupted")
     {
         std::vector<std::vector<float>> data = {
-            {0.3f, 0.4f, 0.5f},   // channel 0: clean → unchanged
-            {0.5f, 3.0f, 0.5f}    // channel 1: out-of-range → silenced
+            {0.3f, 0.4f, 0.5f}, // channel 0: clean → unchanged
+            {0.5f, 3.0f, 0.5f}  // channel 1: out-of-range → silenced
         };
         auto buffer = makeBuffer(data);
 
@@ -280,10 +280,7 @@ TEST_CASE("sanitise processes each channel independently", "[sanitise][multichan
     SECTION("both channels are silenced independently when both are corrupted")
     {
         const float nan = std::numeric_limits<float>::quiet_NaN();
-        std::vector<std::vector<float>> data = {
-            {0.5f, 3.0f, 0.5f},
-            {0.5f, nan,  0.5f}
-        };
+        std::vector<std::vector<float>> data = {{0.5f, 3.0f, 0.5f}, {0.5f, nan, 0.5f}};
         auto buffer = makeBuffer(data);
 
         buffer.sanitise();

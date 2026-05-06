@@ -22,7 +22,8 @@ constexpr float kAnalog{0.002f};
 
 float calculatePeriod(const int note, const float tune, const float detune, const size_t voiceIdx)
 {
-    float period{tune * std::exp(-0.05776226505f * (static_cast<float>(note) + kAnalog * static_cast<float>(voiceIdx)))};
+    float period{tune *
+                 std::exp(-0.05776226505f * (static_cast<float>(note) + kAnalog * static_cast<float>(voiceIdx)))};
 
     while (period < 6.0f || (period * detune) < 6.0f)
     {

@@ -116,11 +116,10 @@ CPMAddPackage(
 )
 
 add_executable(SynthTests
+    tests/AudioBufferTest.cpp
     tests/FilterTest.cpp
-    tests/OscillatorAliasingTest.cpp
-    tests/OscillatorTest.cpp
     tests/MidiProcessorTest.cpp
-    tests/SanitiseBufferTest.cpp
+    tests/OscillatorTest.cpp
     source/dsp/AudioBuffer.cpp
     source/dsp/Filter.cpp
     source/dsp/NoiseGenerator.cpp
