@@ -225,9 +225,36 @@ Parameters::Parameters(juce::AudioProcessor& processor) : apvts_(processor, null
     castParameter(apvts_, parameter_id::polyMode, polyModeParam_);
 }
 
-juce::AudioProcessorValueTreeState& Parameters::getApvts()
+juce::RangedAudioParameter& Parameters::getParameter(const juce::ParameterID& id)
 {
-    return apvts_;
+    auto* param = apvts_.getParameter(id.getParamID());
+    jassert(param != nullptr);
+    return *param;
+}
+
+void Parameters::addStateListener(juce::ValueTree::Listener* listener)
+{
+    apvts_.state.addListener(listener);
+}
+
+void Parameters::removeStateListener(juce::ValueTree::Listener* listener)
+{
+    apvts_.state.removeListener(listener);
+}
+
+std::unique_ptr<juce::XmlElement> Parameters::copyStateToXml()
+{
+    return apvts_.copyState().createXml();
+}
+
+bool Parameters::restoreStateFromXml(const juce::XmlElement& parentXml)
+{
+    if (auto* child = parentXml.getChildByName(apvts_.state.getType()))
+    {
+        apvts_.replaceState(juce::ValueTree::fromXml(*child));
+        return true;
+    }
+    return false;
 }
 
 float Parameters::oscillatorMix() const

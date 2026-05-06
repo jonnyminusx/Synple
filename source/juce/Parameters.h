@@ -8,7 +8,11 @@ class Parameters
   public:
     explicit Parameters(juce::AudioProcessor& processor);
 
-    juce::AudioProcessorValueTreeState& getApvts();
+    juce::RangedAudioParameter& getParameter(const juce::ParameterID& id);
+    void addStateListener(juce::ValueTree::Listener* listener);
+    void removeStateListener(juce::ValueTree::Listener* listener);
+    std::unique_ptr<juce::XmlElement> copyStateToXml();
+    bool restoreStateFromXml(const juce::XmlElement& parentXml);
 
     float outputGain() const;
 
