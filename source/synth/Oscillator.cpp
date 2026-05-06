@@ -1,6 +1,6 @@
 #include "Oscillator.h"
 
-#include "utils/constants.h"
+#include "math/constants.h"
 #include <algorithm>
 #include <cmath>
 
@@ -47,11 +47,11 @@ void Oscillator::squareWave(const Oscillator& other, const float newPeriod)
     }
     else
     {
-        phase_ = -constants::pi;
-        increment_ = constants::pi;
+        phase_ = -math::pi;
+        increment_ = math::pi;
     }
 
-    phase_ += constants::pi * newPeriod / 2.0f;
+    phase_ += math::pi * newPeriod / 2.0f;
     halfPhase_ = phase_;
 
     // Initialise sine recurrence state so the first nextSample() call
@@ -67,12 +67,12 @@ float Oscillator::nextSample()
 
     phase_ += increment_;
 
-    if (phase_ <= constants::quarterPi)
+    if (phase_ <= math::quarterPi)
     {
         const float halfPeriod{(period_ / 2.0f) * modulation_};
         halfPhase_ = std::floor(0.5f + halfPeriod) - 0.5f;
         dcOffset_ = 0.5f * amplitude_ / halfPhase_;
-        halfPhase_ *= constants::pi;
+        halfPhase_ *= math::pi;
 
         increment_ = halfPhase_ / halfPeriod;
         phase_ = -phase_;

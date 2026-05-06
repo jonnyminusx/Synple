@@ -1,6 +1,6 @@
 #include "Filter.h"
 
-#include "utils/constants.h"
+#include "math/constants.h"
 
 #include <cmath>
 
@@ -28,7 +28,7 @@ namespace dsp
 
 void Filter::updateCoefficients(const float cutoff, const float Q)
 {
-    g_ = std::tan(constants::pi * cutoff / sampleRate_);
+    g_ = std::tan(math::pi * cutoff / sampleRate_);
     damping_ = 1.0f / Q;
     a1_ = 1.0f / (1.0f + g_ * (g_ + damping_));
     a2_ = g_ * a1_;

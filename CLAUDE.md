@@ -70,13 +70,13 @@ cmake --build build --target format
 cmake --build build --target tidy
 cmake --build build --target iwyu
 ```
-Both targets operate on `source/dsp/`, `source/midi/`, `source/synth/`, and `source/utils/` only — `source/juce/` is excluded because JUCE macros produce false positives.
+Both targets operate on `source/dsp/`, `source/midi/`, `source/synth/`, and `source/math/` only — `source/juce/` is excluded because JUCE macros produce false positives.
 
 **Adding a test file** — two steps:
 1. Create `tests/FooTest.cpp` (use `#include <catch2/catch_test_macros.hpp>` and `#include <catch2/catch_approx.hpp>`).
 2. In `CMakeLists.txt`, add `tests/FooTest.cpp` and any new `.cpp` sources to the `add_executable(SynthTests ...)` block.
 
-Sources from `source/dsp/`, `source/synth/`, `source/midi/`, and `source/utils/` are eligible — they are JUCE-free. Never add `source/juce/` files to `SynthTests`.
+Sources from `source/dsp/`, `source/synth/`, `source/midi/`, and `source/math/` are eligible — they are JUCE-free. Never add `source/juce/` files to `SynthTests`.
 
 ### WebView UI development
 
@@ -114,7 +114,7 @@ source/juce/   — JUCE plugin layer (AudioProcessor, AudioProcessorEditor, Para
 source/synth/  — Pure synth engine (no JUCE dependencies except juce_audio_basics)
 source/midi/   — MIDI message processing (MidiProcessor, MidiState, NoteHandler, CC type alias)
 source/dsp/    — DSP primitives (Filter, frequency-analysis utilities); JUCE-free, eligible for SynthTests
-source/utils/  — Constants, ear protection utility
+source/math/   — Math constants
 source/ui/     — WebView frontend (HTML/JS)
 ```
 
@@ -146,7 +146,7 @@ The editor uses JUCE's WebView integration:
 ### Naming
 - Classes/structs: PascalCase. Methods: camelCase.
 - Member variables (private/protected): trailing underscore (`period_`, `voices_`). This includes `static constexpr` class constants (`maxNumVoices_`, `lfoMaxSamplesPerUpdate_`).
-- File-scope or anonymous-namespace `constexpr` constants: no underscore (`piOver4`, `analog`, `silence`).
+- File-scope or anonymous-namespace `constexpr` constants: no underscore (`analog`, `silence`).
 - `#pragma once` in every header; never `#ifndef` include guards.
 
 ### Include order (within each group, alphabetical is fine)
@@ -170,7 +170,7 @@ Enforce this order inside every class/struct:
 Avoid unless the type is verbose and unambiguous from context (e.g. `auto buffer = audioBuffer.channelBuffer(0)`). Spell out types in arithmetic, DSP, and MIDI code.
 
 ### Namespaces
-- All source-layer code belongs in a named namespace matching its layer: `synth::`, `midi::`, `dsp::`, `parameter_id::`.
+- All source-layer code belongs in a named namespace matching its layer: `synth::`, `midi::`, `dsp::`, `math::`, `parameter_id::`.
 - File-local helpers and constants go in an anonymous `namespace { }` block (see `Voice.cpp`).
 - No `using namespace` directives anywhere.
 

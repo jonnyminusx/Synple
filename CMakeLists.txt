@@ -36,8 +36,8 @@ if (CLANG_FORMAT)
         "${CMAKE_CURRENT_SOURCE_DIR}/source/midi/*.h"
         "${CMAKE_CURRENT_SOURCE_DIR}/source/synth/*.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/source/synth/*.h"
-        "${CMAKE_CURRENT_SOURCE_DIR}/source/utils/*.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/source/utils/*.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/math/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/math/*.h"
     )
 
     set(FORMAT_STAMP "${CMAKE_BINARY_DIR}/clang-format.stamp")
@@ -63,7 +63,7 @@ file(GLOB_RECURSE ANALYSIS_SOURCE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/source/dsp/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/source/midi/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/source/synth/*.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/source/utils/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/source/math/*.cpp"
 )
 
 # ─── clang-tidy ───────────────────────────────────────────────────────────────
@@ -210,7 +210,7 @@ set(SourceFiles
     source/synth/Synth.h
     source/synth/Voice.cpp
     source/synth/Voice.h
-    source/utils/constants.h
+    source/math/constants.h
 )
 
 juce_add_plugin(${PROJECT_NAME}

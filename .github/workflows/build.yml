@@ -40,7 +40,7 @@ jobs:
       - name: Check formatting
         run: |
           clang-format --dry-run --Werror \
-            $(find source/juce source/midi source/synth source/utils -name '*.cpp' -o -name '*.h')
+            $(find source/juce source/midi source/synth source/math -name '*.cpp' -o -name '*.h')
 
       - name: Configure
         run: cmake -B build
@@ -48,12 +48,12 @@ jobs:
       - name: Check tidy
         run: |
           clang-tidy -p build \
-            $(find source/midi source/synth source/utils -name '*.cpp')
+            $(find source/midi source/synth source/math -name '*.cpp')
 
       - name: Check IWYU
         run: |
           iwyu_tool -p build \
-            $(find source/midi source/synth source/utils -name '*.cpp')
+            $(find source/midi source/synth source/math -name '*.cpp')
 
       - name: Build
         run: cmake --build build --parallel
