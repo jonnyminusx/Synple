@@ -116,10 +116,13 @@ CPMAddPackage(
 )
 
 add_executable(SynthTests
+    tests/FilterTest.cpp
     tests/OscillatorAliasingTest.cpp
+    tests/OscillatorTest.cpp
     tests/MidiProcessorTest.cpp
     tests/SanitiseBufferTest.cpp
     source/dsp/AudioBuffer.cpp
+    source/dsp/Filter.cpp
     source/dsp/NoiseGenerator.cpp
     source/midi/MidiProcessor.cpp
     source/synth/Oscillator.cpp
@@ -186,11 +189,12 @@ set(SourceFiles
     source/midi/MidiProcessor.h
     source/midi/MidiState.h
     source/midi/NoteHandler.h
+    source/dsp/Filter.cpp
+    source/dsp/Filter.h
+    source/dsp/Goertzel.h
     source/synth/ADSR.h
     source/synth/Envelope.cpp
     source/synth/Envelope.h
-    source/synth/Filter.cpp
-    source/synth/Filter.h
     source/synth/GlideMode.h
     source/synth/Oscillator.cpp
     source/synth/Oscillator.h

@@ -70,13 +70,21 @@ cmake --build build --target format
 cmake --build build --target tidy
 cmake --build build --target iwyu
 ```
+<<<<<<< HEAD
 Both targets operate on `source/midi/`, `source/synth/`, and `source/math/` only — `source/juce/` is excluded because JUCE macros produce false positives.
+=======
+Both targets operate on `source/dsp/`, `source/midi/`, `source/synth/`, and `source/utils/` only — `source/juce/` is excluded because JUCE macros produce false positives.
+>>>>>>> origin/main
 
 **Adding a test file** — two steps:
 1. Create `tests/FooTest.cpp` (use `#include <catch2/catch_test_macros.hpp>` and `#include <catch2/catch_approx.hpp>`).
 2. In `CMakeLists.txt`, add `tests/FooTest.cpp` and any new `.cpp` sources to the `add_executable(SynthTests ...)` block.
 
+<<<<<<< HEAD
 Sources from `source/synth/`, `source/midi/`, and `source/math/` are eligible — they are JUCE-free. Never add `source/juce/` files to `SynthTests`.
+=======
+Sources from `source/dsp/`, `source/synth/`, `source/midi/`, and `source/utils/` are eligible — they are JUCE-free. Never add `source/juce/` files to `SynthTests`.
+>>>>>>> origin/main
 
 ### WebView UI development
 
@@ -113,7 +121,8 @@ The `sanitizers` job does not need system libraries (no GTK, WebKit, JUCE) — i
 source/juce/   — JUCE plugin layer (AudioProcessor, AudioProcessorEditor, Parameters)
 source/synth/  — Pure synth engine (no JUCE dependencies except juce_audio_basics)
 source/midi/   — MIDI message processing (MidiProcessor, MidiState, NoteHandler, CC type alias)
-source/math/  — Constants, ear protection utility
+source/dsp/    — DSP primitives (Filter, frequency-analysis utilities); JUCE-free, eligible for SynthTests
+source/math/   — Math constants
 source/ui/     — WebView frontend (HTML/JS)
 ```
 
@@ -169,7 +178,11 @@ Enforce this order inside every class/struct:
 Avoid unless the type is verbose and unambiguous from context (e.g. `auto buffer = audioBuffer.channelBuffer(0)`). Spell out types in arithmetic, DSP, and MIDI code.
 
 ### Namespaces
+<<<<<<< HEAD
 - All source-layer code belongs in a named namespace matching its layer: `synth::`, `midi::`, `math::`, `parameter_id::`.
+=======
+- All source-layer code belongs in a named namespace matching its layer: `synth::`, `midi::`, `dsp::`, `parameter_id::`.
+>>>>>>> origin/main
 - File-local helpers and constants go in an anonymous `namespace { }` block (see `Voice.cpp`).
 - No `using namespace` directives anywhere.
 
@@ -190,6 +203,6 @@ Avoid unless the type is verbose and unambiguous from context (e.g. `auto buffer
 - No Doxygen/docstring blocks.
 
 ### Layer discipline
-- `source/synth/` and `source/midi/` must stay JUCE-free (eligible for `SynthTests`). Never add a JUCE include to these layers.
+- `source/dsp/`, `source/synth/`, and `source/midi/` must stay JUCE-free (eligible for `SynthTests`). Never add a JUCE include to these layers.
 - Parameter IDs must come from `parameter_id::` constants in `ParameterIDs.h` — never raw string literals.
 - The synth engine reads parameters via `synth::Parameters` (a plain struct); do not reach from the synth layer back into `source/juce/`.

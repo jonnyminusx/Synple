@@ -1,7 +1,8 @@
 #pragma once
 
+#include "dsp/Filter.h"
+
 #include "Envelope.h"
-#include "Filter.h"
 #include "Oscillator.h"
 
 #include <cstddef>
@@ -51,8 +52,8 @@ class Voice
     const Envelope& filterEnvelope() const;
     Envelope& filterEnvelope();
 
-    const Filter& filter() const;
-    Filter& filter();
+    const dsp::Filter& filter() const;
+    dsp::Filter& filter();
 
   private:
     int note_{0};
@@ -68,7 +69,7 @@ class Voice
     Oscillator oscillator2_;
     Envelope envelope_;
     Envelope filterEnvelope_;
-    Filter filter_;
+    dsp::Filter filter_;
 };
 
 } // namespace synth

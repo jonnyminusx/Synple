@@ -1,7 +1,8 @@
 #include "Voice.h"
 
+#include "dsp/Filter.h"
+
 #include "Envelope.h"
-#include "Filter.h"
 #include "GlideMode.h"
 #include "Oscillator.h"
 #include "Output.h"
@@ -71,7 +72,7 @@ void Voice::noteOn(const int note,
                    const Parameters& parameters)
 {
     const float adjustedVelocity{(0.004f * static_cast<float>((velocity + 64) * (velocity + 64))) - 8.0f};
-    const float osciillator1Amplitude{parameters.output.volumeTrim * adjustedVelocity};
+    const float oscillator1Amplitude{parameters.output.volumeTrim * adjustedVelocity};
     const float period{calculatePeriod(note, parameters.oscillator.tune, parameters.oscillator.detune, voiceIdx)};
     const int noteDistance{calculateNoteDistance(note, lastNote, parameters.glide.mode, isPlayingLegatoStyle)};
 
@@ -86,8 +87,8 @@ void Voice::noteOn(const int note,
         period_ = 6.0f;
     }
 
-    oscillator1_.setAmplitude(osciillator1Amplitude);
-    oscillator2_.setAmplitude(osciillator1Amplitude * parameters.oscillator.mix);
+    oscillator1_.setAmplitude(oscillator1Amplitude);
+    oscillator2_.setAmplitude(oscillator1Amplitude * parameters.oscillator.mix);
 
     if (pwm)
     {
@@ -235,12 +236,12 @@ Envelope& Voice::filterEnvelope()
     return filterEnvelope_;
 }
 
-const Filter& Voice::filter() const
+const dsp::Filter& Voice::filter() const
 {
     return filter_;
 }
 
-Filter& Voice::filter()
+dsp::Filter& Voice::filter()
 {
     return filter_;
 }

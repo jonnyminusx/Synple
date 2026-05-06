@@ -1,5 +1,6 @@
 #include "Output.h"
-#include "Filter.h"
+
+#include "dsp/Filter.h"
 
 namespace synth
 {
@@ -18,7 +19,7 @@ Output& Output::operator*=(const float scalar)
     return *this;
 }
 
-void Output::filter(Filter& filter)
+void Output::filter(dsp::Filter& filter)
 {
     left = filter.render(left);
     right = filter.render(right);
