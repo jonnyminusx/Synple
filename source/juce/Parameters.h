@@ -52,9 +52,8 @@ class Parameters
     float glideBendSemitones() const;
     float glideRateCoefficient(float inverseSampleRate, float updateInterval) const;
 
-    // apvts_ must be declared first so it is constructed before the raw pointers
-    juce::AudioProcessorValueTreeState apvts_;
-
+    // Raw pointers must be declared before apvts_ so buildLayout() can populate
+    // them during apvts_ construction (members initialise in declaration order).
     juce::AudioParameterFloat* oscMixParam_{};
     juce::AudioParameterFloat* oscTuneParam_{};
     juce::AudioParameterFloat* oscFineParam_{};
@@ -81,4 +80,7 @@ class Parameters
     juce::AudioParameterFloat* tuningParam_{};
     juce::AudioParameterFloat* outputLevelParam_{};
     juce::AudioParameterChoice* polyModeParam_{};
+
+    juce::AudioProcessorValueTreeState::ParameterLayout buildLayout();
+    juce::AudioProcessorValueTreeState apvts_;
 };

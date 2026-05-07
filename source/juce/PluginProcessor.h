@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ParameterIDs.h"
+#include "ParameterIds.h"
 #include "Parameters.h"
 #include "synth/Presets.h"
 #include "synth/Synth.h"
