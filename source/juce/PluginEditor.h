@@ -50,6 +50,7 @@ class SynpleAudioProcessorEditor final : public juce::AudioProcessorEditor
     juce::WebSliderRelay webTuningRelay_{ParameterIds::tuning.getParamID()};
     juce::WebSliderRelay webOutputLevelRelay_{ParameterIds::outputLevel.getParamID()};
     juce::WebComboBoxRelay webPolyModeRelay_{ParameterIds::polyMode.getParamID()};
+    juce::WebComboBoxRelay webOscWaveformRelay_{ParameterIds::oscWaveform.getParamID()};
 
     juce::WebBrowserComponent webView_;
 
@@ -80,6 +81,7 @@ class SynpleAudioProcessorEditor final : public juce::AudioProcessorEditor
     juce::WebSliderParameterAttachment webTuningAttachment_;
     juce::WebSliderParameterAttachment webOutputLevelAttachment_;
     juce::WebComboBoxParameterAttachment webPolyModeAttachment_;
+    juce::WebComboBoxParameterAttachment webOscWaveformAttachment_;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynpleAudioProcessorEditor)
 };

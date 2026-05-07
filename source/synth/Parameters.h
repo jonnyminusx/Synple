@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GlideMode.h"
+#include "WaveformType.h"
 
 namespace synth
 {
@@ -21,6 +22,7 @@ struct Parameters
         float tune{0.0f};     // period multiplier from octave + cent tuning
         float detune{0.0f};   // frequency ratio from semitone + fine tune
         float noiseMix{0.0f}; // normalised 0-1
+        WaveformType waveform{WaveformType::Sawtooth};
     } oscillator;
 
     struct Filter

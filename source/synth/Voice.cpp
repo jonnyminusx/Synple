@@ -4,7 +4,6 @@
 
 #include "Envelope.h"
 #include "GlideMode.h"
-#include "Oscillator.h"
 #include "Output.h"
 #include "Parameters.h"
 #include "math/constants.h"
@@ -54,13 +53,37 @@ void Voice::reset()
 {
     note_ = 0;
     saw_ = 0.0f;
-    oscillator1_.reset();
-    oscillator2_.reset();
+    sawOsc1_.reset();
+    sawOsc2_.reset();
+    sineOsc1_.reset();
+    sineOsc2_.reset();
     envelope_.reset();
     filterEnvelope_.reset();
     filter_.reset();
     panLeft_ = 0.707f;
     panRight_ = 0.707f;
+}
+
+void Voice::setWaveform(const WaveformType waveform)
+{
+    if (waveform_ == waveform)
+    {
+        return;
+    }
+
+    waveform_ = waveform;
+    saw_ = 0.0f; // prevent DC pop when switching mid-note
+
+    if (waveform == WaveformType::Sawtooth || waveform == WaveformType::Square)
+    {
+        oscillator1_ = &sawOsc1_;
+        oscillator2_ = &sawOsc2_;
+    }
+    else
+    {
+        oscillator1_ = &sineOsc1_;
+        oscillator2_ = &sineOsc2_;
+    }
 }
 
 void Voice::noteOn(const int note,
@@ -88,12 +111,22 @@ void Voice::noteOn(const int note,
         period_ = 6.0f;
     }
 
-    oscillator1_.setAmplitude(oscillator1Amplitude);
-    oscillator2_.setAmplitude(oscillator1Amplitude * parameters.oscillator.mix);
+    oscillator1_->setAmplitude(oscillator1Amplitude);
+    oscillator2_->setAmplitude(oscillator1Amplitude * parameters.oscillator.mix);
 
-    if (pwm)
+    const bool useSquare{waveform_ == WaveformType::Square || (waveform_ == WaveformType::Sawtooth && pwm)};
+    if (useSquare)
     {
-        oscillator2_.squareWave(oscillator1_, period_);
+        sawOsc2_.squareWave(sawOsc1_, period_);
+    }
+
+    if (waveform_ == WaveformType::Sine)
+    {
+        saw_ = 0.0f;
+        sineOsc1_.setPeriod(period_);
+        sineOsc2_.setPeriod(period_ * parameters.oscillator.detune);
+        sineOsc1_.reset();
+        sineOsc2_.reset();
     }
 
     updatePanning();
@@ -165,16 +198,16 @@ void Voice::updateLfo(const float glideRate,
 
 void Voice::updatePeriod(const float pitchBend, const float detune)
 {
-    oscillator1_.setPeriod(period_ * pitchBend);
-    oscillator2_.setPeriod(period_ * detune * pitchBend);
+    oscillator1_->setPeriod(period_ * pitchBend);
+    oscillator2_->setPeriod(period_ * detune * pitchBend);
 }
 
 void Voice::setModulation(const float modulationOsc1, const float modulationOsc2)
 {
     if (envelope_.isActive())
     {
-        oscillator1_.setModulation(modulationOsc1);
-        oscillator2_.setModulation(modulationOsc2);
+        oscillator1_->setModulation(modulationOsc1);
+        oscillator2_->setModulation(modulationOsc2);
     }
 }
 
@@ -191,12 +224,21 @@ Output Voice::render(const float input, const float pitchBend, const float detun
         return output;
     }
 
-    const float sample1{oscillator1_.nextSample()};
-    const float sample2{oscillator2_.nextSample()};
+    const float sample1{oscillator1_->nextSample()};
+    const float sample2{oscillator2_->nextSample()};
 
-    saw_ = saw_ * 0.997f + sample1 - sample2;
+    float oscillatorOutput{};
+    if (waveform_ == WaveformType::Sawtooth || waveform_ == WaveformType::Square)
+    {
+        saw_ = saw_ * 0.997f + sample1 - sample2;
+        oscillatorOutput = saw_;
+    }
+    else
+    {
+        oscillatorOutput = sample1 + sample2;
+    }
 
-    output.left = (saw_ + input);
+    output.left = oscillatorOutput + input;
     output.right = output.left;
     output.filter(filter_);
     output *= envelope_.nextValue();

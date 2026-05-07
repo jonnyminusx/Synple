@@ -200,6 +200,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout Parameters::buildLayout()
 
     addParam(polyModeParam_, ParameterIds::polyMode, "Polyphony", juce::StringArray{"Mono", "Poly"}, 1);
 
+    addParam(
+        oscWaveformParam_, ParameterIds::oscWaveform, "Waveform", juce::StringArray{"Sawtooth", "Square", "Sine"}, 0);
+
     return layout;
 }
 
@@ -394,6 +397,7 @@ synth::Parameters Parameters::createSnapshot(const float sampleRate) const
     p.oscillator.tune = tune(sampleRate);
     p.oscillator.detune = detune();
     p.oscillator.noiseMix = noiseMix();
+    p.oscillator.waveform = static_cast<synth::WaveformType>(oscWaveformParam_->getIndex());
 
     p.filter.keyTracking = filterKeyTracking();
     p.filter.q = filterQ();
@@ -448,6 +452,7 @@ void Parameters::fillParameterArray(juce::RangedAudioParameter** params) const
     params[23] = tuningParam_;
     params[24] = outputLevelParam_;
     params[25] = polyModeParam_;
+    params[26] = oscWaveformParam_;
 }
 
 void Parameters::setOutputLevelFromMidi(float normalised0to1)

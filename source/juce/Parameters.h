@@ -21,7 +21,7 @@ class Parameters
     // directly usable by the synth with no further conversion.
     synth::Parameters createSnapshot(float sampleRate) const;
 
-    // Fills a 26-element array with all parameters in canonical preset order
+    // Fills a 27-element array with all parameters in canonical preset order
     void fillParameterArray(juce::RangedAudioParameter** params) const;
 
     // Apply a normalised [0,1] volume CC to the output level parameter
@@ -80,6 +80,7 @@ class Parameters
     juce::AudioParameterFloat* tuningParam_{};
     juce::AudioParameterFloat* outputLevelParam_{};
     juce::AudioParameterChoice* polyModeParam_{};
+    juce::AudioParameterChoice* oscWaveformParam_{};
 
     juce::AudioProcessorValueTreeState::ParameterLayout buildLayout();
     juce::AudioProcessorValueTreeState apvts_;

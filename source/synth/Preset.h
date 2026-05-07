@@ -6,7 +6,7 @@
 namespace synth
 {
 
-inline constexpr std::size_t kNumParams = 26;
+inline constexpr std::size_t kNumParams = 27;
 
 class Preset
 {
@@ -37,7 +37,8 @@ class Preset
            const float p22,
            const float p23,
            const float p24,
-           const float p25)
+           const float p25,
+           const float p26)
     {
         std::strncpy(this->name_, name, sizeof(name_) - 1);
         name_[sizeof(name_) - 1] = '\0';
@@ -68,6 +69,7 @@ class Preset
         parameters_[23] = p23; // Tuning
         parameters_[24] = p24; // Output Level
         parameters_[25] = p25; // Polyphony
+        parameters_[26] = p26; // Waveform
     }
 
     const char* name() const { return name_; }

@@ -106,6 +106,7 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
                    .withOptionsFrom(webTuningRelay_)
                    .withOptionsFrom(webOutputLevelRelay_)
                    .withOptionsFrom(webPolyModeRelay_)
+                   .withOptionsFrom(webOscWaveformRelay_)
                    .withNativeFunction("setWindowSize",
                                        [this](const juce::Array<juce::var>& args, auto complete) {
                                            if (args.size() >= 2)
@@ -138,7 +139,8 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
       webOctaveAttachment_(p.getParameter(ParameterIds::octave), webOctaveRelay_),
       webTuningAttachment_(p.getParameter(ParameterIds::tuning), webTuningRelay_),
       webOutputLevelAttachment_(p.getParameter(ParameterIds::outputLevel), webOutputLevelRelay_),
-      webPolyModeAttachment_(p.getParameter(ParameterIds::polyMode), webPolyModeRelay_)
+      webPolyModeAttachment_(p.getParameter(ParameterIds::polyMode), webPolyModeRelay_),
+      webOscWaveformAttachment_(p.getParameter(ParameterIds::oscWaveform), webOscWaveformRelay_)
 {
     webView_.goToURL(webView_.getResourceProviderRoot());
     // webView_.goToURL(kLocalDevServerAddress);
