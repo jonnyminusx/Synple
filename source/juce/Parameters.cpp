@@ -13,77 +13,71 @@ juce::AudioProcessorValueTreeState::ParameterLayout Parameters::buildLayout()
         return juce::String(s);
     };
 
-    auto addFloat = [&]<typename... Args>(juce::AudioParameterFloat*& dest, Args&&... args) {
-        auto p = std::make_unique<juce::AudioParameterFloat>(std::forward<Args>(args)...);
+    auto addParam = [&]<typename T, typename... Args>(T*& dest, Args&&... args) {
+        auto p = std::make_unique<T>(std::forward<Args>(args)...);
         dest = p.get();
         layout.add(std::move(p));
     };
 
-    auto addChoice = [&]<typename... Args>(juce::AudioParameterChoice*& dest, Args&&... args) {
-        auto p = std::make_unique<juce::AudioParameterChoice>(std::forward<Args>(args)...);
-        dest = p.get();
-        layout.add(std::move(p));
-    };
-
-    addFloat(oscMixParam_,
+    addParam(oscMixParam_,
              ParameterIds::oscMix,
              "Osc Mix",
              juce::NormalisableRange<float>(0.0f, 100.0f),
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("%").withStringFromValueFunction(oscMixStringFromValue));
 
-    addFloat(oscTuneParam_,
+    addParam(oscTuneParam_,
              ParameterIds::oscTune,
              "Osc Tune",
              juce::NormalisableRange<float>(-24.0f, 24.0f, 1.0f),
              -12.0f,
              juce::AudioParameterFloatAttributes().withLabel("semi"));
 
-    addFloat(oscFineParam_,
+    addParam(oscFineParam_,
              ParameterIds::oscFine,
              "Osc Fine",
              juce::NormalisableRange<float>(-50.0f, 50.0f, 0.1f, 0.3f, true),
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("cent"));
 
-    addChoice(glideModeParam_, ParameterIds::glideMode, "Glide Mode", juce::StringArray{"Off", "Legato", "Always"}, 0);
+    addParam(glideModeParam_, ParameterIds::glideMode, "Glide Mode", juce::StringArray{"Off", "Legato", "Always"}, 0);
 
-    addFloat(glideRateParam_,
+    addParam(glideRateParam_,
              ParameterIds::glideRate,
              "Glide Rate",
              juce::NormalisableRange<float>(0.0f, 100.f, 1.0f),
              35.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
-    addFloat(glideBendParam_,
+    addParam(glideBendParam_,
              ParameterIds::glideBend,
              "Glide Bend",
              juce::NormalisableRange<float>(-36.0f, 36.0f, 0.01f, 0.4f, true),
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("semi"));
 
-    addFloat(filterFreqParam_,
+    addParam(filterFreqParam_,
              ParameterIds::filterFreq,
              "Filter Freq",
              juce::NormalisableRange<float>(0.0f, 100.0f, 0.1f),
              100.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
-    addFloat(filterResoParam_,
+    addParam(filterResoParam_,
              ParameterIds::filterReso,
              "Filter Reso",
              juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
              15.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
-    addFloat(filterEnvParam_,
+    addParam(filterEnvParam_,
              ParameterIds::filterEnv,
              "Filter Env",
              juce::NormalisableRange<float>(-100.0f, 100.0f, 0.1f),
              50.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
-    addFloat(filterLFOParam_,
+    addParam(filterLFOParam_,
              ParameterIds::filterLFO,
              "Filter LFO",
              juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
@@ -94,7 +88,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Parameters::buildLayout()
         return value < -90.0f ? juce::String("OFF") : juce::String(value);
     };
 
-    addFloat(filterVelocityParam_,
+    addParam(filterVelocityParam_,
              ParameterIds::filterVelocity,
              "Velocity",
              juce::NormalisableRange<float>(-100.0f, 100.0f, 1.0f),
@@ -102,56 +96,56 @@ juce::AudioProcessorValueTreeState::ParameterLayout Parameters::buildLayout()
              juce::AudioParameterFloatAttributes().withLabel("%").withStringFromValueFunction(
                  filterVelocityStringFromValue));
 
-    addFloat(filterAttackParam_,
+    addParam(filterAttackParam_,
              ParameterIds::filterAttack,
              "Filter Attack",
              juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
-    addFloat(filterDecayParam_,
+    addParam(filterDecayParam_,
              ParameterIds::filterDecay,
              "Filter Decay",
              juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
              30.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
-    addFloat(filterSustainParam_,
+    addParam(filterSustainParam_,
              ParameterIds::filterSustain,
              "Filter Sustain",
              juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
-    addFloat(filterReleaseParam_,
+    addParam(filterReleaseParam_,
              ParameterIds::filterRelease,
              "Filter Release",
              juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
              25.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
-    addFloat(envAttackParam_,
+    addParam(envAttackParam_,
              ParameterIds::envAttack,
              "Env Attack",
              juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
-    addFloat(envDecayParam_,
+    addParam(envDecayParam_,
              ParameterIds::envDecay,
              "Env Decay",
              juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
              50.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
-    addFloat(envSustainParam_,
+    addParam(envSustainParam_,
              ParameterIds::envSustain,
              "Env Sustain",
              juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
              100.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
-    addFloat(envReleaseParam_,
+    addParam(envReleaseParam_,
              ParameterIds::envRelease,
              "Env Release",
              juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
@@ -163,7 +157,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Parameters::buildLayout()
         return juce::String(lfoHz, 3);
     };
 
-    addFloat(lfoRateParam_,
+    addParam(lfoRateParam_,
              ParameterIds::lfoRate,
              "LFO Rate",
              juce::NormalisableRange<float>(),
@@ -174,37 +168,37 @@ juce::AudioProcessorValueTreeState::ParameterLayout Parameters::buildLayout()
         return value < 0.0f ? "PWM " + juce::String(-value, 1) : juce::String(value, 1);
     };
 
-    addFloat(vibratoParam_,
+    addParam(vibratoParam_,
              ParameterIds::vibrato,
              "Vibrato",
              juce::NormalisableRange<float>(-100.0f, 100.0f, 0.1f),
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("%").withStringFromValueFunction(vibratoStringFromValue));
 
-    addFloat(noiseParam_,
+    addParam(noiseParam_,
              ParameterIds::noise,
              "Noise",
              juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
-    addFloat(octaveParam_, ParameterIds::octave, "Octave", juce::NormalisableRange<float>(-2.0f, 2.0f, 1.0f), 0.0f);
+    addParam(octaveParam_, ParameterIds::octave, "Octave", juce::NormalisableRange<float>(-2.0f, 2.0f, 1.0f), 0.0f);
 
-    addFloat(tuningParam_,
+    addParam(tuningParam_,
              ParameterIds::tuning,
              "Tuning",
              juce::NormalisableRange<float>(-100.0f, 100.0f, 0.1f),
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("cent"));
 
-    addFloat(outputLevelParam_,
+    addParam(outputLevelParam_,
              ParameterIds::outputLevel,
              "Output Level",
              juce::NormalisableRange<float>(-24.0f, 6.0f, 0.1f),
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("dB"));
 
-    addChoice(polyModeParam_, ParameterIds::polyMode, "Polyphony", juce::StringArray{"Mono", "Poly"}, 1);
+    addParam(polyModeParam_, ParameterIds::polyMode, "Polyphony", juce::StringArray{"Mono", "Poly"}, 1);
 
     return layout;
 }
