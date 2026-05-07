@@ -3,7 +3,9 @@
 #include "dsp/Filter.h"
 
 #include "Envelope.h"
-#include "Oscillator.h"
+#include "SawtoothOscillator.h"
+#include "SineOscillator.h"
+#include "WaveformType.h"
 
 #include <cstddef>
 
@@ -19,6 +21,7 @@ class Voice
     const static int sustain{-1};
 
     void reset();
+    void setWaveform(WaveformType waveform);
     void noteOn(const int note,
                 const int lastNote,
                 const int velocity,
@@ -65,8 +68,17 @@ class Voice
     float panRight_{0.0f};
     float cutoff_{0.0f};
 
-    Oscillator oscillator1_;
-    Oscillator oscillator2_;
+    WaveformType waveform_{WaveformType::Sawtooth};
+
+    SawtoothOscillator sawOsc1_;
+    SawtoothOscillator sawOsc2_;
+    SineOscillator sineOsc1_;
+    SineOscillator sineOsc2_;
+
+    // Non-owning pointers into the concrete members above; re-seated by setWaveform().
+    Oscillator* oscillator1_{&sawOsc1_};
+    Oscillator* oscillator2_{&sawOsc2_};
+
     Envelope envelope_;
     Envelope filterEnvelope_;
     dsp::Filter filter_;

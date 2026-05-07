@@ -1,4 +1,4 @@
-#include "Oscillator.h"
+#include "SawtoothOscillator.h"
 
 #include "math/constants.h"
 #include <algorithm>
@@ -7,31 +7,31 @@
 namespace synth
 {
 
-void Oscillator::reset()
+void SawtoothOscillator::reset()
 {
     increment_ = 0.0f;
     phase_ = 0.0f;
     dcOffset_ = 0.0f;
 }
 
-void Oscillator::setAmplitude(const float amplitude)
+void SawtoothOscillator::setAmplitude(const float amplitude)
 {
     amplitude_ = amplitude;
 }
 
-void Oscillator::setPeriod(const float period)
+void SawtoothOscillator::setPeriod(const float period)
 {
     period_ = period;
 }
 
-void Oscillator::setModulation(const float modulation)
+void SawtoothOscillator::setModulation(const float modulation)
 {
     // Clamp away from zero: halfPeriod = (period/2) * modulation_ feeds a
     // divisor below; zero or negative values would produce ±inf increment_.
     modulation_ = std::max(modulation, 0.01f);
 }
 
-void Oscillator::squareWave(const Oscillator& other, const float newPeriod)
+void SawtoothOscillator::squareWave(const SawtoothOscillator& other, const float newPeriod)
 {
     reset();
 
@@ -61,7 +61,7 @@ void Oscillator::squareWave(const Oscillator& other, const float newPeriod)
     sinRecurrenceCoeff_ = 2.0f * std::cos(increment_);
 }
 
-float Oscillator::nextSample()
+float SawtoothOscillator::nextSample()
 {
     float output{0.0f};
 

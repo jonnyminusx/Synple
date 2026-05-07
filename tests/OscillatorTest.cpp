@@ -2,7 +2,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "dsp/Goertzel.h"
-#include "synth/Oscillator.h"
+#include "synth/SawtoothOscillator.h"
 
 #include <cmath>
 #include <numeric>
@@ -18,7 +18,7 @@ constexpr int warmup = 4096;
 // oscillator's own DC compensation).
 std::vector<float> renderRaw(float f0, float fs, int numSamples, float amplitude = 1.0f)
 {
-    synth::Oscillator osc;
+    synth::SawtoothOscillator osc;
     osc.setAmplitude(amplitude);
     osc.setPeriod(fs / f0);
     osc.setModulation(1.0f);
@@ -38,8 +38,8 @@ std::vector<float> renderRaw(float f0, float fs, int numSamples, float amplitude
 
 // Renders the sawtooth pipeline: saw = saw * 0.997 + osc1 - osc2.
 // osc2 amplitude is zero unless configured by the caller.
-std::vector<float> renderSawtooth(synth::Oscillator& osc1,
-                                  synth::Oscillator& osc2,
+std::vector<float> renderSawtooth(synth::SawtoothOscillator& osc1,
+                                  synth::SawtoothOscillator& osc2,
                                   int numSamples,
                                   int numWarmup = warmup)
 {
@@ -67,8 +67,8 @@ std::vector<float> renderAliasSawtooth(float f0, float fs, int numSamples, int n
 {
     const float period = fs / f0;
 
-    synth::Oscillator osc1;
-    synth::Oscillator osc2;
+    synth::SawtoothOscillator osc1;
+    synth::SawtoothOscillator osc2;
 
     osc1.setAmplitude(1.0f);
     osc1.setPeriod(period);
@@ -274,7 +274,7 @@ TEST_CASE("Oscillator produces identical output after reset", "[oscillator][rese
     constexpr float f0 = 440.0f;
     const float period = sampleRate / f0;
 
-    synth::Oscillator osc;
+    synth::SawtoothOscillator osc;
     osc.setAmplitude(1.0f);
     osc.setPeriod(period);
     osc.setModulation(1.0f);
@@ -312,8 +312,8 @@ TEST_CASE("Square wave from squareWave() has odd-harmonic dominance at 50% duty 
     constexpr int N = 32768;
     const float period = sampleRate / f0;
 
-    synth::Oscillator osc1;
-    synth::Oscillator osc2;
+    synth::SawtoothOscillator osc1;
+    synth::SawtoothOscillator osc2;
 
     osc1.setAmplitude(1.0f);
     osc1.setPeriod(period);
@@ -357,7 +357,7 @@ TEST_CASE("Modulation parameter changes oscillator output", "[oscillator][modula
     const float period = sampleRate / 440.0f;
 
     auto renderWithMod = [&](float mod) -> std::vector<float> {
-        synth::Oscillator osc;
+        synth::SawtoothOscillator osc;
         osc.setAmplitude(1.0f);
         osc.setPeriod(period);
         osc.setModulation(mod);
@@ -384,7 +384,7 @@ TEST_CASE("setModulation clamps near-zero and negative values to prevent NaN", "
 
     for (const float mod : {0.0f, -0.5f, -1.0f})
     {
-        synth::Oscillator osc;
+        synth::SawtoothOscillator osc;
         osc.setAmplitude(1.0f);
         osc.setPeriod(period);
         osc.setModulation(mod);

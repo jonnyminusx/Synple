@@ -32,4 +32,5 @@ struct ParameterIds
     static inline const juce::ParameterID tuning{"tuning", kVersion};
     static inline const juce::ParameterID outputLevel{"outputLevel", kVersion};
     static inline const juce::ParameterID polyMode{"polyMode", kVersion};
+    static inline const juce::ParameterID oscWaveform{"oscWaveform", kVersion};
 };

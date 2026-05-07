@@ -294,6 +294,7 @@ void Synth::setParameters(const Parameters& params)
     {
         voice.envelope().setADSR(params.envelope);
         voice.filterEnvelope().setADSR(params.filter.envelope);
+        voice.setWaveform(params.oscillator.waveform);
     }
     outputLevelSmoother_.setTargetValue(params.output.gain);
     numVoices_ = params.output.polyphonic ? kMaxNumVoices : 1;

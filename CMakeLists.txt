@@ -124,7 +124,7 @@ target_link_libraries(synple_dsp PUBLIC synple_math)
 
 add_library(synple_synth STATIC
     source/synth/Envelope.cpp
-    source/synth/Oscillator.cpp
+    source/synth/SawtoothOscillator.cpp
     source/synth/Output.cpp
     source/synth/Presets.cpp
     source/synth/SineOscillator.cpp
