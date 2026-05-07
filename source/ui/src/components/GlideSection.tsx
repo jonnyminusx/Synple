@@ -8,7 +8,7 @@ function fmtSemitones(v: number) { return (v >= 0 ? '+' : '') + v.toFixed(0) + '
 export function GlideSection() {
   return (
     <Section label="Glide" borderClass="border-blue-400" bgClass="bg-blue-200">
-      <Select parameterId="glideMode" label="Mode" />
+      <Select parameterId="glideMode" label="Mode" compact />
       <Knob parameterId="glideRate" label="Rate" formatValue={fmtPercent} />
       <Knob parameterId="glideBend" label="Bend" formatValue={fmtSemitones} />
     </Section>

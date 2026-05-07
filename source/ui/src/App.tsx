@@ -35,14 +35,14 @@ export default function App() {
           {/* Top row */}
           <div className="flex gap-2 justify-center">
             <OscSection />
-            <LfoSection />
             <FilterSection />
-            <EnvSection prefix="filter" label="Filter Env" borderClass="border-green-400" bgClass="bg-green-200" />
+            <EnvSection prefix="filter" label="Filter Env" borderClass="border-yellow-400" bgClass="bg-yellow-200" />
           </div>
 
           {/* Bottom row */}
           <div className="flex gap-2 justify-center">
             <GlobalSection />
+            <LfoSection />
             <GlideSection />
             <EnvSection prefix="env" label="Amp Env" borderClass="border-violet-400" bgClass="bg-violet-200" />
           </div>

@@ -7,7 +7,7 @@ function fmtVelocity(v: number) { return v < -90 ? 'OFF' : fmtSigned(v) }
 
 export function FilterSection() {
   return (
-    <Section label="Filter" borderClass="border-yellow-400" bgClass="bg-yellow-200">
+    <Section label="Filter" borderClass="border-orange-400" bgClass="bg-orange-200">
       <Knob parameterId="filterFreq" label="Freq" formatValue={fmtPercent} />
       <Knob parameterId="filterReso" label="Reso" formatValue={fmtPercent} />
       <Knob parameterId="filterEnv" label="Env" formatValue={fmtSigned} />

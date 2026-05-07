@@ -3,9 +3,10 @@ import { useJuceComboBox } from '../hooks/useJuceComboBox.js'
 interface SelectProps {
   parameterId: string
   label: string
+  compact?: boolean
 }
 
-export function Select({ parameterId, label }: SelectProps) {
+export function Select({ parameterId, label, compact = false }: SelectProps) {
   const { choiceIndex, choices, setChoiceIndex } = useJuceComboBox(parameterId)
 
   return (
@@ -13,7 +14,7 @@ export function Select({ parameterId, label }: SelectProps) {
       <select
         value={choiceIndex}
         onChange={(e) => setChoiceIndex(Number(e.target.value))}
-        className="bg-zinc-700 border border-zinc-600 text-zinc-200 text-[10px] font-mono rounded px-1 py-0.5 cursor-pointer focus:outline-none focus:border-amber-500 min-w-[80px]"
+        className={`bg-zinc-700 border border-zinc-600 text-zinc-200 text-[10px] font-mono rounded px-1 py-0.5 cursor-pointer focus:outline-none focus:border-amber-500${compact ? '' : ' min-w-[80px]'}`}
       >
         {choices.map((choice, i) => (
           <option key={i} value={i}>

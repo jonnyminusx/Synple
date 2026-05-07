@@ -14,7 +14,7 @@ export function Section({ label, children, className = '', borderClass = 'border
       <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-800 px-2 pt-1 leading-none">
         {label}
       </span>
-      <div className="flex gap-3 p-2 pt-1.5">{children}</div>
+      <div className="flex items-center gap-3 p-2 pt-1.5">{children}</div>
     </div>
   )
 }

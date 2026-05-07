@@ -13,7 +13,7 @@ function fmtVibrato(v: number) {
 
 export function LfoSection() {
   return (
-    <Section label="LFO" borderClass="border-orange-400" bgClass="bg-orange-200">
+    <Section label="LFO" borderClass="border-cyan-400" bgClass="bg-cyan-200">
       <Knob parameterId="lfoRate" label="Rate" formatValue={fmtLfoRate} />
       <Knob parameterId="vibrato" label="Vib/PWM" formatValue={fmtVibrato} />
     </Section>
