@@ -74,7 +74,7 @@ void Voice::setWaveform(const WaveformType waveform)
     waveform_ = waveform;
     saw_ = 0.0f; // prevent DC pop when switching mid-note
 
-    if (waveform == WaveformType::Sawtooth || waveform == WaveformType::Square)
+    if (waveform == WaveformType::Sawtooth)
     {
         oscillator1_ = &sawOsc1_;
         oscillator2_ = &sawOsc2_;
@@ -114,8 +114,7 @@ void Voice::noteOn(const int note,
     oscillator1_->setAmplitude(oscillator1Amplitude);
     oscillator2_->setAmplitude(oscillator1Amplitude * parameters.oscillator.mix);
 
-    const bool useSquare{waveform_ == WaveformType::Square || (waveform_ == WaveformType::Sawtooth && pwm)};
-    if (useSquare)
+    if (waveform_ == WaveformType::Sawtooth && pwm)
     {
         sawOsc2_.squareWave(sawOsc1_, period_);
     }
@@ -228,7 +227,7 @@ Output Voice::render(const float input, const float pitchBend, const float detun
     const float sample2{oscillator2_->nextSample()};
 
     float oscillatorOutput{};
-    if (waveform_ == WaveformType::Sawtooth || waveform_ == WaveformType::Square)
+    if (waveform_ == WaveformType::Sawtooth)
     {
         saw_ = saw_ * 0.997f + sample1 - sample2;
         oscillatorOutput = saw_;

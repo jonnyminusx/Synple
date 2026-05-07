@@ -200,8 +200,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Parameters::buildLayout()
 
     addParam(polyModeParam_, ParameterIds::polyMode, "Polyphony", juce::StringArray{"Mono", "Poly"}, 1);
 
-    addParam(
-        oscWaveformParam_, ParameterIds::oscWaveform, "Waveform", juce::StringArray{"Sawtooth", "Square", "Sine"}, 0);
+    addParam(oscWaveformParam_, ParameterIds::oscWaveform, "Waveform", juce::StringArray{"Sawtooth", "Sine"}, 0);
 
     return layout;
 }
