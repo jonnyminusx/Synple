@@ -11,6 +11,7 @@ class SineOscillator : public Oscillator
     void reset() override;
     void setAmplitude(float amplitude) override;
     void setPeriod(float period) override;
+    void setModulation(float modulation) override {}
 
     float nextSample() override;
 
