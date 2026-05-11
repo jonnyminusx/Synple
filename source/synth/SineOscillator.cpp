@@ -30,6 +30,12 @@ void SineOscillator::setPeriod(const float period)
     sinRecurrenceCoeff_ = 2.0f * std::cos(normalizedFreq_ * math::tau);
 }
 
+void SineOscillator::noteOn(const float period)
+{
+    setPeriod(period);
+    reset();
+}
+
 float SineOscillator::nextSample()
 {
     const float sinx = (sinRecurrenceCoeff_ * sinCurrent_) - sinPrevious_;

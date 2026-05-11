@@ -1,111 +1,49 @@
 #include "SawtoothOscillator.h"
 
-#include "math/constants.h"
-#include <algorithm>
-#include <cmath>
-
 namespace synth
 {
 
 void SawtoothOscillator::reset()
 {
-    increment_ = 0.0f;
-    phase_ = 0.0f;
-    dcOffset_ = 0.0f;
+    primary_.reset();
+    secondary_.reset();
+    saw_ = 0.0f;
 }
 
 void SawtoothOscillator::setAmplitude(const float amplitude)
 {
-    amplitude_ = amplitude;
+    primary_.setAmplitude(amplitude);
 }
 
 void SawtoothOscillator::setPeriod(const float period)
 {
-    period_ = period;
+    primary_.setPeriod(period);
+    secondary_.setPeriod(period);
 }
 
 void SawtoothOscillator::setModulation(const float modulation)
 {
-    // Clamp away from zero: halfPeriod = (period/2) * modulation_ feeds a
-    // divisor below; zero or negative values would produce ±inf increment_.
-    modulation_ = std::max(modulation, 0.01f);
+    primary_.setModulation(modulation);
+    secondary_.setModulation(modulation);
 }
 
-void SawtoothOscillator::squareWave(const SawtoothOscillator& other, const float newPeriod)
+void SawtoothOscillator::noteOn(const float period)
 {
-    reset();
+    primary_.setPeriod(period);
+    secondary_.setPeriod(period);
+}
 
-    if (other.increment_ > 0.0f)
-    {
-        phase_ = other.halfPhase_ + other.halfPhase_ - other.phase_;
-        increment_ = -other.increment_;
-    }
-    else if (other.increment_ < 0.0f)
-    {
-        phase_ = other.phase_;
-        increment_ = other.increment_;
-    }
-    else
-    {
-        phase_ = -math::pi;
-        increment_ = math::pi;
-    }
-
-    phase_ += math::pi * newPeriod / 2.0f;
-    halfPhase_ = phase_;
-
-    // Initialise sine recurrence state so the first nextSample() call
-    // produces correct output without a silent half-period transient.
-    sinCurrent_ = amplitude_ * std::sin(phase_);
-    sinPrevious_ = amplitude_ * std::sin(phase_ - increment_);
-    sinRecurrenceCoeff_ = 2.0f * std::cos(increment_);
+void SawtoothOscillator::setSquareWave(const float secondaryAmplitude, const float period)
+{
+    secondary_.setAmplitude(secondaryAmplitude);
+    if (secondaryAmplitude > 0.0f)
+        secondary_.squareWave(primary_, period);
 }
 
 float SawtoothOscillator::nextSample()
 {
-    float output{0.0f};
-
-    phase_ += increment_;
-
-    if (phase_ <= math::quarterPi)
-    {
-        const float halfPeriod{(period_ / 2.0f) * modulation_};
-        halfPhase_ = std::floor(0.5f + halfPeriod) - 0.5f;
-        dcOffset_ = 0.5f * amplitude_ / halfPhase_;
-        halfPhase_ *= math::pi;
-
-        increment_ = halfPhase_ / halfPeriod;
-        phase_ = -phase_;
-
-        sinCurrent_ = amplitude_ * std::sin(phase_);
-        sinPrevious_ = amplitude_ * std::sin(phase_ - increment_);
-        sinRecurrenceCoeff_ = 2.0f * std::cos(increment_);
-
-        if (phase_ * phase_ > 1e-9)
-        {
-            output = sinCurrent_ / phase_;
-        }
-        else
-        {
-            output = amplitude_;
-        }
-    }
-    else
-    {
-        if (phase_ > halfPhase_)
-        {
-            phase_ = (2 * halfPhase_) - phase_;
-            increment_ = -increment_;
-        }
-
-        const float sinp{(sinRecurrenceCoeff_ * sinCurrent_) - sinPrevious_};
-        sinPrevious_ = sinCurrent_;
-        sinCurrent_ = sinp;
-
-        output = sinCurrent_ / phase_;
-    }
-
-    return output - dcOffset_;
+    saw_ = saw_ * 0.997f + primary_.nextSample() - secondary_.nextSample();
+    return saw_;
 }
 
 } // namespace synth

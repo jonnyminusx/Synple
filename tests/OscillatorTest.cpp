@@ -2,6 +2,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "dsp/Goertzel.h"
+#include "synth/PolyBlepOscillator.h"
 #include "synth/SawtoothOscillator.h"
 
 #include <cmath>
@@ -14,8 +15,29 @@ namespace
 constexpr float sampleRate = 44100.0f;
 constexpr int warmup = 4096;
 
-// Renders raw oscillator output (no leaky integrator — directly tests the
-// oscillator's own DC compensation).
+// Renders raw BLEP output (no leaky integrator) — tests DC compensation and
+// modulation effects directly on the PolyBlepOscillator layer.
+std::vector<float> renderBlep(float f0, float fs, int numSamples, float amplitude = 1.0f)
+{
+    synth::PolyBlepOscillator osc;
+    osc.setAmplitude(amplitude);
+    osc.setPeriod(fs / f0);
+    osc.setModulation(1.0f);
+
+    std::vector<float> output;
+    output.reserve(numSamples);
+
+    for (int i = 0; i < warmup + numSamples; ++i)
+    {
+        const float s = osc.nextSample();
+        if (i >= warmup)
+            output.push_back(s);
+    }
+
+    return output;
+}
+
+// Renders the integrated sawtooth output from a single SawtoothOscillator.
 std::vector<float> renderRaw(float f0, float fs, int numSamples, float amplitude = 1.0f)
 {
     synth::SawtoothOscillator osc;
@@ -36,60 +58,24 @@ std::vector<float> renderRaw(float f0, float fs, int numSamples, float amplitude
     return output;
 }
 
-// Renders the sawtooth pipeline: saw = saw * 0.997 + osc1 - osc2.
-// osc2 amplitude is zero unless configured by the caller.
-std::vector<float> renderSawtooth(synth::SawtoothOscillator& osc1,
-                                  synth::SawtoothOscillator& osc2,
-                                  int numSamples,
-                                  int numWarmup = warmup)
-{
-    float saw = 0.0f;
-    std::vector<float> output;
-    output.reserve(numSamples);
-
-    for (int i = 0; i < numWarmup + numSamples; ++i)
-    {
-        const float s1 = osc1.nextSample();
-        const float s2 = osc2.nextSample();
-        saw = saw * 0.997f + s1 - s2;
-
-        if (i >= numWarmup)
-            output.push_back(saw);
-    }
-
-    return output;
-}
-
-// Renders the sawtooth pipeline from Voice::render() using a single active
-// oscillator at the given frequency and sample rate. osc2 has zero amplitude
-// so it contributes nothing, matching: saw = saw * 0.997 + osc1 - osc2.
+// Renders the integrated sawtooth at the given frequency and sample rate.
 std::vector<float> renderAliasSawtooth(float f0, float fs, int numSamples, int numWarmup = warmup)
 {
     const float period = fs / f0;
 
-    synth::SawtoothOscillator osc1;
-    synth::SawtoothOscillator osc2;
+    synth::SawtoothOscillator osc;
+    osc.setAmplitude(1.0f);
+    osc.setPeriod(period);
+    osc.setModulation(1.0f);
 
-    osc1.setAmplitude(1.0f);
-    osc1.setPeriod(period);
-    osc1.setModulation(1.0f);
-
-    osc2.setAmplitude(0.0f);
-    osc2.setPeriod(period);
-    osc2.setModulation(1.0f);
-
-    float saw = 0.0f;
     std::vector<float> output;
     output.reserve(numSamples);
 
     for (int i = 0; i < numWarmup + numSamples; ++i)
     {
-        const float s1 = osc1.nextSample();
-        const float s2 = osc2.nextSample();
-        saw = saw * 0.997f + s1 - s2;
-
+        const float s = osc.nextSample();
         if (i >= numWarmup)
-            output.push_back(saw);
+            output.push_back(s);
     }
 
     return output;
@@ -175,32 +161,32 @@ float mean(const std::vector<float>& v)
 
 // ─── DC offset ───────────────────────────────────────────────────────────────
 
-// Tests the oscillator's own DC compensation (raw output, no leaky integrator).
+// Tests the BLEP generator's own DC compensation (raw output, no leaky integrator).
 // The leaky integrator's DC gain is 1/(1-0.997) ≈ 333×, so even a tiny
 // residual DC in the raw output would read as a large mean in the integrated
-// signal — testing raw output isolates the oscillator's compensation directly.
-TEST_CASE("Raw oscillator output has near-zero DC after warmup", "[oscillator][dc]")
+// signal — testing PolyBlepOscillator directly isolates the compensation logic.
+TEST_CASE("Raw BLEP output has near-zero DC after warmup", "[oscillator][dc]")
 {
     constexpr int N = 16384;
     constexpr float tolerance = 0.01f;
 
     SECTION("440 Hz")
     {
-        auto sig = renderRaw(440.0f, sampleRate, N);
+        auto sig = renderBlep(440.0f, sampleRate, N);
         INFO("mean = " << mean(sig));
         REQUIRE(std::abs(mean(sig)) < tolerance);
     }
 
     SECTION("1000 Hz")
     {
-        auto sig = renderRaw(1000.0f, sampleRate, N);
+        auto sig = renderBlep(1000.0f, sampleRate, N);
         INFO("mean = " << mean(sig));
         REQUIRE(std::abs(mean(sig)) < tolerance);
     }
 
     SECTION("5000 Hz")
     {
-        auto sig = renderRaw(5000.0f, sampleRate, N);
+        auto sig = renderBlep(5000.0f, sampleRate, N);
         INFO("mean = " << mean(sig));
         REQUIRE(std::abs(mean(sig)) < tolerance);
     }
@@ -303,28 +289,29 @@ TEST_CASE("Oscillator produces identical output after reset", "[oscillator][rese
 
 // ─── PWM: odd-harmonic dominance ─────────────────────────────────────────────
 
-TEST_CASE("Square wave from squareWave() has odd-harmonic dominance at 50% duty cycle", "[oscillator][pwm]")
+TEST_CASE("Square wave from setSquareWave() has odd-harmonic dominance at 50% duty cycle",
+          "[oscillator][pwm]")
 {
     // At 50% duty cycle (modulation=1.0) the square wave has only odd harmonics.
-    // squareWave() initialises osc2's phase; period must still be set explicitly
-    // (as Voice::updatePeriod() does before each render block).
+    // setSquareWave() positions the internal secondary BLEP at anti-phase.
     constexpr float f0 = 440.0f;
     constexpr int N = 32768;
     const float period = sampleRate / f0;
 
-    synth::SawtoothOscillator osc1;
-    synth::SawtoothOscillator osc2;
+    synth::SawtoothOscillator osc;
+    osc.setAmplitude(1.0f);
+    osc.setPeriod(period);
+    osc.setModulation(1.0f);
+    osc.setSquareWave(1.0f, period); // secondary amplitude = 1.0 → 50% duty cycle
 
-    osc1.setAmplitude(1.0f);
-    osc1.setPeriod(period);
-    osc1.setModulation(1.0f);
+    // Warmup to let the integrator settle
+    for (int i = 0; i < warmup; ++i)
+        osc.nextSample();
 
-    osc2.setAmplitude(1.0f);
-    osc2.squareWave(osc1, period);
-    osc2.setPeriod(period); // required — squareWave sets phase, not period
-    osc2.setModulation(1.0f);
-
-    const auto sig = renderSawtooth(osc1, osc2, N);
+    std::vector<float> sig;
+    sig.reserve(N);
+    for (int i = 0; i < N; ++i)
+        sig.push_back(osc.nextSample());
 
     const float fund = dsp::goertzel(sig, f0, sampleRate);
     const float harm2 = dsp::goertzel(sig, 2.0f * f0, sampleRate);
@@ -352,12 +339,14 @@ TEST_CASE("Square wave from squareWave() has odd-harmonic dominance at 50% duty 
 TEST_CASE("Modulation parameter changes oscillator output", "[oscillator][modulation]")
 {
     // setModulation() scales halfPeriod, which changes halfPhase_ and increment_.
-    // Two different modulation values must produce measurably different RMS.
+    // Tested on PolyBlepOscillator directly: the leaky integrator in
+    // SawtoothOscillator smooths the waveform and makes the RMS difference
+    // between modulation values too small to assert reliably.
     constexpr int N = 4096;
     const float period = sampleRate / 440.0f;
 
     auto renderWithMod = [&](float mod) -> std::vector<float> {
-        synth::SawtoothOscillator osc;
+        synth::PolyBlepOscillator osc;
         osc.setAmplitude(1.0f);
         osc.setPeriod(period);
         osc.setModulation(mod);
@@ -379,12 +368,13 @@ TEST_CASE("setModulation clamps near-zero and negative values to prevent NaN", "
 {
     // Without the clamp in setModulation(), modulation=0 causes
     // increment_ = halfPhase_ / 0 → ±inf, producing NaN output.
+    // Tested on PolyBlepOscillator where the clamp logic lives.
     constexpr int N = 2048;
     const float period = sampleRate / 440.0f;
 
     for (const float mod : {0.0f, -0.5f, -1.0f})
     {
-        synth::SawtoothOscillator osc;
+        synth::PolyBlepOscillator osc;
         osc.setAmplitude(1.0f);
         osc.setPeriod(period);
         osc.setModulation(mod);

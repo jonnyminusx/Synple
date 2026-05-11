@@ -7,7 +7,9 @@
 #include "SineOscillator.h"
 #include "WaveformType.h"
 
+#include <array>
 #include <cstddef>
+#include <memory>
 
 namespace synth
 {
@@ -61,7 +63,6 @@ class Voice
   private:
     int note_{0};
 
-    float saw_{0.0f};
     float period_{0.0f};
     float targetPeriod_{0.0f};
     float panLeft_{0.0f};
@@ -70,14 +71,8 @@ class Voice
 
     WaveformType waveform_{WaveformType::Sawtooth};
 
-    SawtoothOscillator sawOsc1_;
-    SawtoothOscillator sawOsc2_;
-    SineOscillator sineOsc1_;
-    SineOscillator sineOsc2_;
-
-    // Non-owning pointers into the concrete members above; re-seated by setWaveform().
-    Oscillator* oscillator1_{&sawOsc1_};
-    Oscillator* oscillator2_{&sawOsc2_};
+    std::array<std::unique_ptr<Oscillator>, 2> oscillators_{std::make_unique<SawtoothOscillator>(),
+                                                            std::make_unique<SawtoothOscillator>()};
 
     Envelope envelope_;
     Envelope filterEnvelope_;
