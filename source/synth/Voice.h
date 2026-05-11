@@ -22,6 +22,7 @@ class Voice
   public:
     const static int sustain{-1};
 
+    Voice();
     void reset();
     void setWaveform(WaveformType waveform);
     void noteOn(const int note,
@@ -71,8 +72,13 @@ class Voice
 
     WaveformType waveform_{WaveformType::Sawtooth};
 
-    std::array<std::unique_ptr<Oscillator>, 2> oscillators_{std::make_unique<SawtoothOscillator>(),
-                                                            std::make_unique<SawtoothOscillator>()};
+    // Number of waveform types; must match the WaveformType enum size.
+    static constexpr size_t kNumOscillatorTypes{2};
+
+    // Per-slot array indexed by waveform type: oscillators_[slot][waveformIndex].
+    // All instances are constructed at Voice initialisation — no audio-thread allocation.
+    // setWaveform() only updates waveform_; it never allocates or deallocates.
+    std::array<std::array<std::unique_ptr<Oscillator>, kNumOscillatorTypes>, 2> oscillators_;
 
     Envelope envelope_;
     Envelope filterEnvelope_;

@@ -49,11 +49,21 @@ int calculateNoteDistance(const int note, const int lastNote, const GlideMode gl
 
 } // namespace
 
+Voice::Voice()
+{
+    for (auto& slot : oscillators_)
+    {
+        slot[static_cast<size_t>(WaveformType::Sawtooth)] = std::make_unique<SawtoothOscillator>();
+        slot[static_cast<size_t>(WaveformType::Sine)]     = std::make_unique<SineOscillator>();
+    }
+}
+
 void Voice::reset()
 {
     note_ = 0;
-    for (auto& osc : oscillators_)
-        osc->reset();
+    for (auto& slot : oscillators_)
+        for (auto& osc : slot)
+            osc->reset();
     envelope_.reset();
     filterEnvelope_.reset();
     filter_.reset();
@@ -65,19 +75,12 @@ void Voice::setWaveform(const WaveformType waveform)
 {
     if (waveform_ == waveform)
         return;
-
     waveform_ = waveform;
-
-    if (waveform == WaveformType::Sawtooth)
-    {
-        oscillators_[0] = std::make_unique<SawtoothOscillator>();
-        oscillators_[1] = std::make_unique<SawtoothOscillator>();
-    }
-    else
-    {
-        oscillators_[0] = std::make_unique<SineOscillator>();
-        oscillators_[1] = std::make_unique<SineOscillator>();
-    }
+    // No allocation — just change the active index; reset newly-active oscillators
+    // to prevent stale integrator state causing a DC pop on waveform switch.
+    const size_t wt{static_cast<size_t>(waveform_)};
+    for (auto& slot : oscillators_)
+        slot[wt]->reset();
 }
 
 void Voice::noteOn(const int note,
@@ -105,21 +108,25 @@ void Voice::noteOn(const int note,
         period_ = 6.0f;
     }
 
-    oscillators_[0]->setAmplitude(oscillator1Amplitude);
+    const size_t wt{static_cast<size_t>(waveform_)};
+    Oscillator& osc0{*oscillators_[0][wt]};
+    Oscillator& osc1{*oscillators_[1][wt]};
+
+    osc0.setAmplitude(oscillator1Amplitude);
 
     if (pwm)
     {
-        oscillators_[0]->setSquareWave(oscillator1Amplitude * parameters.oscillator.mix, period_);
-        oscillators_[1]->setAmplitude(0.0f);
+        osc0.setSquareWave(oscillator1Amplitude * parameters.oscillator.mix, period_);
+        osc1.setAmplitude(0.0f);
     }
     else
     {
-        oscillators_[0]->setSquareWave(0.0f, period_);
-        oscillators_[1]->setAmplitude(oscillator1Amplitude * parameters.oscillator.mix);
+        osc0.setSquareWave(0.0f, period_);
+        osc1.setAmplitude(oscillator1Amplitude * parameters.oscillator.mix);
     }
 
-    oscillators_[0]->noteOn(period_);
-    oscillators_[1]->noteOn(period_ * parameters.oscillator.detune);
+    osc0.noteOn(period_);
+    osc1.noteOn(period_ * parameters.oscillator.detune);
 
     updatePanning();
 }
@@ -190,16 +197,18 @@ void Voice::updateLfo(const float glideRate,
 
 void Voice::updatePeriod(const float pitchBend, const float detune)
 {
-    oscillators_[0]->setPeriod(period_ * pitchBend);
-    oscillators_[1]->setPeriod(period_ * detune * pitchBend);
+    const size_t wt{static_cast<size_t>(waveform_)};
+    oscillators_[0][wt]->setPeriod(period_ * pitchBend);
+    oscillators_[1][wt]->setPeriod(period_ * detune * pitchBend);
 }
 
 void Voice::setModulation(const float modulationOsc1, const float modulationOsc2)
 {
     if (envelope_.isActive())
     {
-        oscillators_[0]->setModulation(modulationOsc1);
-        oscillators_[1]->setModulation(modulationOsc2);
+        const size_t wt{static_cast<size_t>(waveform_)};
+        oscillators_[0][wt]->setModulation(modulationOsc1);
+        oscillators_[1][wt]->setModulation(modulationOsc2);
     }
 }
 
@@ -216,7 +225,8 @@ Output Voice::render(const float input, const float pitchBend, const float detun
         return output;
     }
 
-    const float oscillatorOutput{oscillators_[0]->nextSample() + oscillators_[1]->nextSample()};
+    const size_t wt{static_cast<size_t>(waveform_)};
+    const float oscillatorOutput{oscillators_[0][wt]->nextSample() + oscillators_[1][wt]->nextSample()};
 
     output.left = oscillatorOutput + input;
     output.right = output.left;
