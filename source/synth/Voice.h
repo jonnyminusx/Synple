@@ -76,7 +76,8 @@ class Voice
     // All instances are constructed at Voice initialisation — no audio-thread allocation.
     // setWaveform() only updates waveform_; it never allocates or deallocates.
     static constexpr size_t kWaveformCount{static_cast<size_t>(WaveformType::Count)};
-    std::array<std::array<std::unique_ptr<Oscillator>, kWaveformCount>, 2> oscillators_;
+    static constexpr size_t kOscillatorCount{2};
+    std::array<std::array<std::unique_ptr<Oscillator>, kWaveformCount>, kOscillatorCount> oscillators_;
 
     Envelope envelope_;
     Envelope filterEnvelope_;
