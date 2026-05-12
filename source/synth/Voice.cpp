@@ -54,7 +54,7 @@ Voice::Voice()
     for (auto& slot : oscillators_)
     {
         slot[static_cast<size_t>(WaveformType::Sawtooth)] = std::make_unique<SawtoothOscillator>();
-        slot[static_cast<size_t>(WaveformType::Sine)]     = std::make_unique<SineOscillator>();
+        slot[static_cast<size_t>(WaveformType::Sine)] = std::make_unique<SineOscillator>();
     }
 }
 
