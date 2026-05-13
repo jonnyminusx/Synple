@@ -24,9 +24,16 @@ class SynpleAudioProcessorEditor final : public juce::AudioProcessorEditor
     SynpleAudioProcessor& processorRef;
 
     // Relays must be declared before webView_
-    juce::WebSliderRelay webOscMixRelay_{ParameterIds::oscMix.getParamID()};
-    juce::WebSliderRelay webOscTuneRelay_{ParameterIds::oscTune.getParamID()};
-    juce::WebSliderRelay webOscFineRelay_{ParameterIds::oscFine.getParamID()};
+    juce::WebSliderRelay webOsc1VolumeRelay_{ParameterIds::osc1Volume.getParamID()};
+    juce::WebSliderRelay webOsc2VolumeRelay_{ParameterIds::osc2Volume.getParamID()};
+    juce::WebSliderRelay webOsc1TuneRelay_{ParameterIds::osc1Tune.getParamID()};
+    juce::WebSliderRelay webOsc2TuneRelay_{ParameterIds::osc2Tune.getParamID()};
+    juce::WebSliderRelay webOsc1FineRelay_{ParameterIds::osc1Fine.getParamID()};
+    juce::WebSliderRelay webOsc2FineRelay_{ParameterIds::osc2Fine.getParamID()};
+    juce::WebComboBoxRelay webOsc1WaveformRelay_{ParameterIds::osc1Waveform.getParamID()};
+    juce::WebComboBoxRelay webOsc2WaveformRelay_{ParameterIds::osc2Waveform.getParamID()};
+    juce::WebSliderRelay webOsc1PulseWidthRelay_{ParameterIds::osc1PulseWidth.getParamID()};
+    juce::WebSliderRelay webOsc2PulseWidthRelay_{ParameterIds::osc2PulseWidth.getParamID()};
     juce::WebComboBoxRelay webGlideModeRelay_{ParameterIds::glideMode.getParamID()};
     juce::WebSliderRelay webGlideRateRelay_{ParameterIds::glideRate.getParamID()};
     juce::WebSliderRelay webGlideBendRelay_{ParameterIds::glideBend.getParamID()};
@@ -50,14 +57,21 @@ class SynpleAudioProcessorEditor final : public juce::AudioProcessorEditor
     juce::WebSliderRelay webTuningRelay_{ParameterIds::tuning.getParamID()};
     juce::WebSliderRelay webOutputLevelRelay_{ParameterIds::outputLevel.getParamID()};
     juce::WebComboBoxRelay webPolyModeRelay_{ParameterIds::polyMode.getParamID()};
-    juce::WebComboBoxRelay webOscWaveformRelay_{ParameterIds::oscWaveform.getParamID()};
+    juce::WebSliderRelay webPwmDepthRelay_{ParameterIds::pwmDepth.getParamID()};
 
     juce::WebBrowserComponent webView_;
 
     // Attachments must be declared after webView_
-    juce::WebSliderParameterAttachment webOscMixAttachment_;
-    juce::WebSliderParameterAttachment webOscTuneAttachment_;
-    juce::WebSliderParameterAttachment webOscFineAttachment_;
+    juce::WebSliderParameterAttachment webOsc1VolumeAttachment_;
+    juce::WebSliderParameterAttachment webOsc2VolumeAttachment_;
+    juce::WebSliderParameterAttachment webOsc1TuneAttachment_;
+    juce::WebSliderParameterAttachment webOsc2TuneAttachment_;
+    juce::WebSliderParameterAttachment webOsc1FineAttachment_;
+    juce::WebSliderParameterAttachment webOsc2FineAttachment_;
+    juce::WebComboBoxParameterAttachment webOsc1WaveformAttachment_;
+    juce::WebComboBoxParameterAttachment webOsc2WaveformAttachment_;
+    juce::WebSliderParameterAttachment webOsc1PulseWidthAttachment_;
+    juce::WebSliderParameterAttachment webOsc2PulseWidthAttachment_;
     juce::WebComboBoxParameterAttachment webGlideModeAttachment_;
     juce::WebSliderParameterAttachment webGlideRateAttachment_;
     juce::WebSliderParameterAttachment webGlideBendAttachment_;
@@ -81,7 +95,7 @@ class SynpleAudioProcessorEditor final : public juce::AudioProcessorEditor
     juce::WebSliderParameterAttachment webTuningAttachment_;
     juce::WebSliderParameterAttachment webOutputLevelAttachment_;
     juce::WebComboBoxParameterAttachment webPolyModeAttachment_;
-    juce::WebComboBoxParameterAttachment webOscWaveformAttachment_;
+    juce::WebSliderParameterAttachment webPwmDepthAttachment_;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynpleAudioProcessorEditor)
 };

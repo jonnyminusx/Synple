@@ -25,7 +25,7 @@ class Voice
 
     Voice();
     void reset();
-    void setWaveform(WaveformType waveform);
+    void setWaveforms(WaveformType waveform0, WaveformType waveform1);
     void noteOn(const int note,
                 const int lastNote,
                 const int velocity,
@@ -46,9 +46,9 @@ class Voice
                    const float filterQ,
                    const float pitchBend,
                    const float filterEnvDepth);
-    void updatePeriod(const float pitchBend, const float detune);
-    void setModulation(const float vibratoMod, const float pwmMod);
-    Output render(const float input, const float pitchBend, const float detune);
+    void updatePeriod(const float pitchBend, const float osc1Tune, const float osc2Tune);
+    void setModulation(const float vibratoMod, const float pwmMod0, const float pwmMod1);
+    Output render(const float input, const float pitchBend, const float osc1Tune, const float osc2Tune);
 
     int note() const;
     int& note();
@@ -71,13 +71,12 @@ class Voice
     float cutoff_{0.0f};
     float vibratoMod_{1.0f};
 
-    WaveformType waveform_{WaveformType::Sawtooth};
-
     // Per-slot array indexed by waveform type: oscillators_[slot][waveformIndex].
     // All instances are constructed at Voice initialisation — no audio-thread allocation.
-    // setWaveform() only updates waveform_; it never allocates or deallocates.
+    // setWaveforms() only updates waveform_; it never allocates or deallocates.
     static constexpr size_t kWaveformCount{static_cast<size_t>(WaveformType::Count)};
     static constexpr size_t kOscillatorCount{2};
+    std::array<WaveformType, kOscillatorCount> waveform_{WaveformType::Sawtooth, WaveformType::Sawtooth};
     std::array<std::array<std::unique_ptr<Oscillator>, kWaveformCount>, kOscillatorCount> oscillators_;
 
     Envelope envelope_;

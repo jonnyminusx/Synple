@@ -19,12 +19,12 @@ namespace
 
 constexpr float kAnalog{0.002f};
 
-float calculatePeriod(const int note, const float tune, const float detune, const size_t voiceIdx)
+float calculatePeriod(const int note, const float tune, const float minOscFactor, const size_t voiceIdx)
 {
     float period{tune *
                  std::exp(-0.05776226505f * (static_cast<float>(note) + kAnalog * static_cast<float>(voiceIdx)))};
 
-    while (period < 6.0f || (period * detune) < 6.0f)
+    while (period < 6.0f || (period * minOscFactor) < 6.0f)
     {
         period += period;
     }
@@ -72,16 +72,18 @@ void Voice::reset()
     panRight_ = 0.707f;
 }
 
-void Voice::setWaveform(const WaveformType waveform)
+void Voice::setWaveforms(const WaveformType waveform0, const WaveformType waveform1)
 {
-    if (waveform_ == waveform)
-        return;
-    waveform_ = waveform;
-    // No allocation — just change the active index; reset newly-active oscillators
-    // to prevent stale integrator state causing a DC pop on waveform switch.
-    const size_t wt{static_cast<size_t>(waveform_)};
-    for (auto& slot : oscillators_)
-        slot[wt]->reset();
+    if (waveform_[0] != waveform0)
+    {
+        waveform_[0] = waveform0;
+        oscillators_[0][static_cast<size_t>(waveform_[0])]->reset();
+    }
+    if (waveform_[1] != waveform1)
+    {
+        waveform_[1] = waveform1;
+        oscillators_[1][static_cast<size_t>(waveform_[1])]->reset();
+    }
 }
 
 void Voice::noteOn(const int note,
@@ -93,30 +95,32 @@ void Voice::noteOn(const int note,
                    const Parameters& parameters)
 {
     const float adjustedVelocity{(0.004f * static_cast<float>((velocity + 64) * (velocity + 64))) - 8.0f};
-    const float oscillator1Amplitude{parameters.output.volumeTrim * adjustedVelocity};
-    const float period{calculatePeriod(note, parameters.oscillator.tune, parameters.oscillator.detune, voiceIdx)};
+    const float minFactor{std::min(parameters.oscillator.osc1.tune, parameters.oscillator.osc2.tune)};
+    const float refPeriod{calculatePeriod(note, parameters.oscillator.globalTune, minFactor, voiceIdx)};
     const int noteDistance{calculateNoteDistance(note, lastNote, parameters.glide.mode, isPlayingLegatoStyle)};
 
     note_ = note;
-    cutoff_ = sampleRate / (period * math::pi);
+    cutoff_ = sampleRate / (refPeriod * math::pi);
     cutoff_ *= std::exp(parameters.filter.velocitySensitivity * static_cast<float>(velocity - 64));
-    targetPeriod_ = period;
-    period_ = period * std::pow(1.059463094359f, static_cast<float>(noteDistance) - parameters.glide.bendSemitones);
+    targetPeriod_ = refPeriod;
+    period_ = refPeriod * std::pow(1.059463094359f, static_cast<float>(noteDistance) - parameters.glide.bendSemitones);
 
     if (period_ < 6.0f)
     {
         period_ = 6.0f;
     }
 
-    const size_t wt{static_cast<size_t>(waveform_)};
-    Oscillator& osc0{*oscillators_[0][wt]};
-    Oscillator& osc1{*oscillators_[1][wt]};
+    const size_t wt0{static_cast<size_t>(waveform_[0])};
+    const size_t wt1{static_cast<size_t>(waveform_[1])};
+    Oscillator& osc0{*oscillators_[0][wt0]};
+    Oscillator& osc1{*oscillators_[1][wt1]};
 
-    osc0.setAmplitude(oscillator1Amplitude);
-    osc1.setAmplitude(oscillator1Amplitude * parameters.oscillator.mix);
+    const float baseAmplitude{parameters.output.volumeTrim * adjustedVelocity};
+    osc0.setAmplitude(baseAmplitude * parameters.oscillator.osc1.volume);
+    osc1.setAmplitude(baseAmplitude * parameters.oscillator.osc2.volume);
 
-    osc0.noteOn(period_);
-    osc1.noteOn(period_ * parameters.oscillator.detune);
+    osc0.noteOn(period_ * parameters.oscillator.osc1.tune);
+    osc1.noteOn(period_ * parameters.oscillator.osc2.tune);
 
     updatePanning();
 }
@@ -124,17 +128,18 @@ void Voice::noteOn(const int note,
 void Voice::noteOnRestart(
     const int note, const int velocity, const float sampleRate, const size_t voiceIdx, const Parameters& parameters)
 {
-    const float period{calculatePeriod(note, parameters.oscillator.tune, parameters.oscillator.detune, voiceIdx)};
+    const float minFactor{std::min(parameters.oscillator.osc1.tune, parameters.oscillator.osc2.tune)};
+    const float refPeriod{calculatePeriod(note, parameters.oscillator.globalTune, minFactor, voiceIdx)};
 
     note_ = note;
-    cutoff_ = sampleRate / (period * math::pi);
+    cutoff_ = sampleRate / (refPeriod * math::pi);
     cutoff_ *= std::exp(parameters.filter.velocitySensitivity * static_cast<float>(velocity - 64));
 
-    targetPeriod_ = period;
+    targetPeriod_ = refPeriod;
 
     if (GlideMode::Off == parameters.glide.mode)
     {
-        period_ = period;
+        period_ = refPeriod;
     }
 
     envelope_.nudgeLevelUp();
@@ -185,28 +190,28 @@ void Voice::updateLfo(const float glideRate,
     filter_.updateCoefficients(modulatedCutoff, filterQ);
 }
 
-void Voice::updatePeriod(const float pitchBend, const float detune)
+void Voice::updatePeriod(const float pitchBend, const float osc1Tune, const float osc2Tune)
 {
-    const size_t wt{static_cast<size_t>(waveform_)};
-    oscillators_[0][wt]->setPeriod(period_ * pitchBend * vibratoMod_);
-    oscillators_[1][wt]->setPeriod(period_ * detune * pitchBend * vibratoMod_);
+    const size_t wt0{static_cast<size_t>(waveform_[0])};
+    const size_t wt1{static_cast<size_t>(waveform_[1])};
+    oscillators_[0][wt0]->setPeriod(period_ * osc1Tune * pitchBend * vibratoMod_);
+    oscillators_[1][wt1]->setPeriod(period_ * osc2Tune * pitchBend * vibratoMod_);
 }
 
-void Voice::setModulation(const float vibratoMod, const float pwmMod)
+void Voice::setModulation(const float vibratoMod, const float pwmMod0, const float pwmMod1)
 {
     if (!envelope_.isActive())
         return;
     vibratoMod_ = vibratoMod;
-    const size_t wt{static_cast<size_t>(waveform_)};
-    oscillators_[0][wt]->setModulation(pwmMod);
-    oscillators_[1][wt]->setModulation(pwmMod);
+    oscillators_[0][static_cast<size_t>(waveform_[0])]->setModulation(pwmMod0);
+    oscillators_[1][static_cast<size_t>(waveform_[1])]->setModulation(pwmMod1);
 }
 
-Output Voice::render(const float input, const float pitchBend, const float detune)
+Output Voice::render(const float input, const float pitchBend, const float osc1Tune, const float osc2Tune)
 {
     Output output;
 
-    updatePeriod(pitchBend, detune);
+    updatePeriod(pitchBend, osc1Tune, osc2Tune);
 
     if (!envelope_.isActive())
     {
@@ -215,8 +220,9 @@ Output Voice::render(const float input, const float pitchBend, const float detun
         return output;
     }
 
-    const size_t wt{static_cast<size_t>(waveform_)};
-    const float oscillatorOutput{oscillators_[0][wt]->nextSample() + oscillators_[1][wt]->nextSample()};
+    const size_t wt0{static_cast<size_t>(waveform_[0])};
+    const size_t wt1{static_cast<size_t>(waveform_[1])};
+    const float oscillatorOutput{oscillators_[0][wt0]->nextSample() + oscillators_[1][wt1]->nextSample()};
 
     output.left = oscillatorOutput + input;
     output.right = output.left;

@@ -21,7 +21,7 @@ class Parameters
     // directly usable by the synth with no further conversion.
     synth::Parameters createSnapshot(float sampleRate) const;
 
-    // Fills a 29-element array with all parameters in canonical preset order
+    // Fills a 34-element array with all parameters in canonical preset order
     void fillParameterArray(juce::RangedAudioParameter** params) const;
 
     // Apply a normalised [0,1] volume CC to the output level parameter
@@ -30,9 +30,13 @@ class Parameters
   private:
     static float multiplierFromParam(float rateScale, float paramValue);
 
-    float oscillatorMix() const;
-    float detune() const;
     float tune(float sampleRate) const;
+    float osc1TuneFactor() const;
+    float osc2TuneFactor() const;
+    float osc1Volume() const;
+    float osc2Volume() const;
+    float osc1PulseWidth() const;
+    float osc2PulseWidth() const;
     float filterResonance() const;
     float filterQ() const;
     float filterKeyTracking() const;
@@ -48,16 +52,12 @@ class Parameters
     float lfoIncrement(float inverseSampleRate, float updateInterval) const;
     float vibratoAmount() const;
     float pwmDepth() const;
-    float pulseWidth() const;
     int glideModeIndex() const;
     float glideBendSemitones() const;
     float glideRateCoefficient(float inverseSampleRate, float updateInterval) const;
 
     // Raw pointers must be declared before apvts_ so buildLayout() can populate
     // them during apvts_ construction (members initialise in declaration order).
-    juce::AudioParameterFloat* oscMixParam_{};
-    juce::AudioParameterFloat* oscTuneParam_{};
-    juce::AudioParameterFloat* oscFineParam_{};
     juce::AudioParameterChoice* glideModeParam_{};
     juce::AudioParameterFloat* glideRateParam_{};
     juce::AudioParameterFloat* glideBendParam_{};
@@ -76,14 +76,22 @@ class Parameters
     juce::AudioParameterFloat* envReleaseParam_{};
     juce::AudioParameterFloat* lfoRateParam_{};
     juce::AudioParameterFloat* vibratoParam_{};
-    juce::AudioParameterFloat* pwmDepthParam_{};
-    juce::AudioParameterFloat* pulseWidthParam_{};
     juce::AudioParameterFloat* noiseParam_{};
     juce::AudioParameterFloat* octaveParam_{};
     juce::AudioParameterFloat* tuningParam_{};
     juce::AudioParameterFloat* outputLevelParam_{};
     juce::AudioParameterChoice* polyModeParam_{};
-    juce::AudioParameterChoice* oscWaveformParam_{};
+    juce::AudioParameterFloat* pwmDepthParam_{};
+    juce::AudioParameterFloat* osc1VolumeParam_{};
+    juce::AudioParameterFloat* osc2VolumeParam_{};
+    juce::AudioParameterFloat* osc1TuneParam_{};
+    juce::AudioParameterFloat* osc2TuneParam_{};
+    juce::AudioParameterFloat* osc1FineParam_{};
+    juce::AudioParameterFloat* osc2FineParam_{};
+    juce::AudioParameterChoice* osc1WaveformParam_{};
+    juce::AudioParameterChoice* osc2WaveformParam_{};
+    juce::AudioParameterFloat* osc1PulseWidthParam_{};
+    juce::AudioParameterFloat* osc2PulseWidthParam_{};
 
     juce::AudioProcessorValueTreeState::ParameterLayout buildLayout();
     juce::AudioProcessorValueTreeState apvts_;
