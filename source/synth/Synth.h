@@ -44,7 +44,6 @@ class Synth : public midi::NoteHandler
     void restartMonoVoice(const int note, const int velocity);
     size_t selectVoiceIndexToUse() const;
     bool isPolyphonic() const;
-    bool isInPwmMode() const;
     bool isPlayingLegatoStyle() const;
     void shiftQueuedNotes();
     int nextQueuedNote();

@@ -55,6 +55,7 @@ Voice::Voice()
     {
         slot[static_cast<size_t>(WaveformType::Sawtooth)] = std::make_unique<SawtoothOscillator>();
         slot[static_cast<size_t>(WaveformType::Sine)] = std::make_unique<SineOscillator>();
+        slot[static_cast<size_t>(WaveformType::Pulse)] = std::make_unique<PulseOscillator>();
     }
 }
 
@@ -88,7 +89,6 @@ void Voice::noteOn(const int note,
                    const int velocity,
                    const float sampleRate,
                    const size_t voiceIdx,
-                   const bool pwm,
                    const bool isPlayingLegatoStyle,
                    const Parameters& parameters)
 {
@@ -113,17 +113,7 @@ void Voice::noteOn(const int note,
     Oscillator& osc1{*oscillators_[1][wt]};
 
     osc0.setAmplitude(oscillator1Amplitude);
-
-    if (pwm)
-    {
-        osc0.setSquareWave(oscillator1Amplitude * parameters.oscillator.mix, period_);
-        osc1.setAmplitude(0.0f);
-    }
-    else
-    {
-        osc0.setSquareWave(0.0f, period_);
-        osc1.setAmplitude(oscillator1Amplitude * parameters.oscillator.mix);
-    }
+    osc1.setAmplitude(oscillator1Amplitude * parameters.oscillator.mix);
 
     osc0.noteOn(period_);
     osc1.noteOn(period_ * parameters.oscillator.detune);
@@ -198,18 +188,18 @@ void Voice::updateLfo(const float glideRate,
 void Voice::updatePeriod(const float pitchBend, const float detune)
 {
     const size_t wt{static_cast<size_t>(waveform_)};
-    oscillators_[0][wt]->setPeriod(period_ * pitchBend);
-    oscillators_[1][wt]->setPeriod(period_ * detune * pitchBend);
+    oscillators_[0][wt]->setPeriod(period_ * pitchBend * vibratoMod_);
+    oscillators_[1][wt]->setPeriod(period_ * detune * pitchBend * vibratoMod_);
 }
 
-void Voice::setModulation(const float modulationOsc1, const float modulationOsc2)
+void Voice::setModulation(const float vibratoMod, const float pwmMod)
 {
-    if (envelope_.isActive())
-    {
-        const size_t wt{static_cast<size_t>(waveform_)};
-        oscillators_[0][wt]->setModulation(modulationOsc1);
-        oscillators_[1][wt]->setModulation(modulationOsc2);
-    }
+    if (!envelope_.isActive())
+        return;
+    vibratoMod_ = vibratoMod;
+    const size_t wt{static_cast<size_t>(waveform_)};
+    oscillators_[0][wt]->setModulation(pwmMod);
+    oscillators_[1][wt]->setModulation(pwmMod);
 }
 
 Output Voice::render(const float input, const float pitchBend, const float detune)

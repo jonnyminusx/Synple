@@ -11,6 +11,7 @@ export function OscSection() {
     <Section label="OSC" borderClass="border-red-400" bgClass="bg-red-200">
       <Select parameterId="oscWaveform" label="Wave" />
       <Knob parameterId="oscMix" label="Mix" formatValue={fmtPercent} />
+      <Knob parameterId="pulseWidth" label="PW" formatValue={fmtPercent} />
       <Knob parameterId="oscTune" label="Tune" formatValue={fmtSemitones} />
       <Knob parameterId="oscFine" label="Fine" formatValue={fmtCents} />
     </Section>

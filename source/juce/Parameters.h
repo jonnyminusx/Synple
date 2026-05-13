@@ -21,7 +21,7 @@ class Parameters
     // directly usable by the synth with no further conversion.
     synth::Parameters createSnapshot(float sampleRate) const;
 
-    // Fills a 27-element array with all parameters in canonical preset order
+    // Fills a 29-element array with all parameters in canonical preset order
     void fillParameterArray(juce::RangedAudioParameter** params) const;
 
     // Apply a normalised [0,1] volume CC to the output level parameter
@@ -48,6 +48,7 @@ class Parameters
     float lfoIncrement(float inverseSampleRate, float updateInterval) const;
     float vibratoAmount() const;
     float pwmDepth() const;
+    float pulseWidth() const;
     int glideModeIndex() const;
     float glideBendSemitones() const;
     float glideRateCoefficient(float inverseSampleRate, float updateInterval) const;
@@ -75,6 +76,8 @@ class Parameters
     juce::AudioParameterFloat* envReleaseParam_{};
     juce::AudioParameterFloat* lfoRateParam_{};
     juce::AudioParameterFloat* vibratoParam_{};
+    juce::AudioParameterFloat* pwmDepthParam_{};
+    juce::AudioParameterFloat* pulseWidthParam_{};
     juce::AudioParameterFloat* noiseParam_{};
     juce::AudioParameterFloat* octaveParam_{};
     juce::AudioParameterFloat* tuningParam_{};

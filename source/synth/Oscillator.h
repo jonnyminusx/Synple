@@ -12,7 +12,6 @@ class Oscillator
     virtual void setPeriod(float period) = 0;
     virtual void setModulation(float modulation) = 0;
     virtual void noteOn(float period) = 0;
-    virtual void setSquareWave(float secondaryAmplitude, float period) {}
     virtual float nextSample() = 0;
 };
 

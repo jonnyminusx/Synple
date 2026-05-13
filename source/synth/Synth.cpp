@@ -157,14 +157,15 @@ void Synth::updateLfo()
 
         const float sineValue{std::sin(lfo_)};
         const float vibratoModulation{1.0f + sineValue * (midi.modWheel + parameters_.lfo.vibratoAmount)};
-        const float pwm{1.0f + sineValue * (midi.modWheel + parameters_.lfo.pwmDepth)};
+        const float pwmMod{2.0f * parameters_.oscillator.pulseWidth +
+                           sineValue * (midi.modWheel + parameters_.lfo.pwmDepth)};
         const float filterMod{parameters_.filter.keyTracking + midi.filterControl +
                               (parameters_.filter.lfoDepth + midi.pressure) * sineValue};
         filterZip_ += 0.005f * (filterMod - filterZip_);
 
         for (Voice& voice : voices_)
         {
-            voice.setModulation(vibratoModulation, pwm);
+            voice.setModulation(vibratoModulation, pwmMod);
             voice.updateLfo(parameters_.glide.rateCoefficient,
                             filterZip_,
                             parameters_.filter.q * midi.resonanceCtl,
@@ -216,7 +217,7 @@ void Synth::startVoice(const size_t voiceIdx, const int note, const int velocity
     Envelope& filterEnvelope = voice.filterEnvelope();
     filterEnvelope.attack();
 
-    voice.noteOn(note, lastNote_, velocity, sampleRate_, voiceIdx, isInPwmMode(), isPlayingLegatoStyle(), parameters_);
+    voice.noteOn(note, lastNote_, velocity, sampleRate_, voiceIdx, isPlayingLegatoStyle(), parameters_);
     lastNote_ = note;
 }
 
@@ -256,11 +257,6 @@ size_t Synth::selectVoiceIndexToUse() const
 bool Synth::isPolyphonic() const
 {
     return numVoices_ > 1;
-}
-
-bool Synth::isInPwmMode() const
-{
-    return parameters_.lfo.vibratoAmount == 0.0f && parameters_.lfo.pwmDepth > 0.0f;
 }
 
 bool Synth::isPlayingLegatoStyle() const
