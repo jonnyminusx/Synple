@@ -7,7 +7,9 @@
 #include "SineOscillator.h"
 #include "WaveformType.h"
 
+#include <array>
 #include <cstddef>
+#include <memory>
 
 namespace synth
 {
@@ -20,6 +22,7 @@ class Voice
   public:
     const static int sustain{-1};
 
+    Voice();
     void reset();
     void setWaveform(WaveformType waveform);
     void noteOn(const int note,
@@ -61,7 +64,6 @@ class Voice
   private:
     int note_{0};
 
-    float saw_{0.0f};
     float period_{0.0f};
     float targetPeriod_{0.0f};
     float panLeft_{0.0f};
@@ -70,14 +72,12 @@ class Voice
 
     WaveformType waveform_{WaveformType::Sawtooth};
 
-    SawtoothOscillator sawOsc1_;
-    SawtoothOscillator sawOsc2_;
-    SineOscillator sineOsc1_;
-    SineOscillator sineOsc2_;
-
-    // Non-owning pointers into the concrete members above; re-seated by setWaveform().
-    Oscillator* oscillator1_{&sawOsc1_};
-    Oscillator* oscillator2_{&sawOsc2_};
+    // Per-slot array indexed by waveform type: oscillators_[slot][waveformIndex].
+    // All instances are constructed at Voice initialisation — no audio-thread allocation.
+    // setWaveform() only updates waveform_; it never allocates or deallocates.
+    static constexpr size_t kWaveformCount{static_cast<size_t>(WaveformType::Count)};
+    static constexpr size_t kOscillatorCount{2};
+    std::array<std::array<std::unique_ptr<Oscillator>, kWaveformCount>, kOscillatorCount> oscillators_;
 
     Envelope envelope_;
     Envelope filterEnvelope_;

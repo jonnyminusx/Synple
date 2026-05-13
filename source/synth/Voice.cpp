@@ -49,14 +49,21 @@ int calculateNoteDistance(const int note, const int lastNote, const GlideMode gl
 
 } // namespace
 
+Voice::Voice()
+{
+    for (auto& slot : oscillators_)
+    {
+        slot[static_cast<size_t>(WaveformType::Sawtooth)] = std::make_unique<SawtoothOscillator>();
+        slot[static_cast<size_t>(WaveformType::Sine)] = std::make_unique<SineOscillator>();
+    }
+}
+
 void Voice::reset()
 {
     note_ = 0;
-    saw_ = 0.0f;
-    sawOsc1_.reset();
-    sawOsc2_.reset();
-    sineOsc1_.reset();
-    sineOsc2_.reset();
+    for (auto& slot : oscillators_)
+        for (auto& osc : slot)
+            osc->reset();
     envelope_.reset();
     filterEnvelope_.reset();
     filter_.reset();
@@ -67,23 +74,13 @@ void Voice::reset()
 void Voice::setWaveform(const WaveformType waveform)
 {
     if (waveform_ == waveform)
-    {
         return;
-    }
-
     waveform_ = waveform;
-    saw_ = 0.0f; // prevent DC pop when switching mid-note
-
-    if (waveform == WaveformType::Sawtooth)
-    {
-        oscillator1_ = &sawOsc1_;
-        oscillator2_ = &sawOsc2_;
-    }
-    else
-    {
-        oscillator1_ = &sineOsc1_;
-        oscillator2_ = &sineOsc2_;
-    }
+    // No allocation — just change the active index; reset newly-active oscillators
+    // to prevent stale integrator state causing a DC pop on waveform switch.
+    const size_t wt{static_cast<size_t>(waveform_)};
+    for (auto& slot : oscillators_)
+        slot[wt]->reset();
 }
 
 void Voice::noteOn(const int note,
@@ -111,22 +108,25 @@ void Voice::noteOn(const int note,
         period_ = 6.0f;
     }
 
-    oscillator1_->setAmplitude(oscillator1Amplitude);
-    oscillator2_->setAmplitude(oscillator1Amplitude * parameters.oscillator.mix);
+    const size_t wt{static_cast<size_t>(waveform_)};
+    Oscillator& osc0{*oscillators_[0][wt]};
+    Oscillator& osc1{*oscillators_[1][wt]};
 
-    if (waveform_ == WaveformType::Sawtooth && pwm)
+    osc0.setAmplitude(oscillator1Amplitude);
+
+    if (pwm)
     {
-        sawOsc2_.squareWave(sawOsc1_, period_);
+        osc0.setSquareWave(oscillator1Amplitude * parameters.oscillator.mix, period_);
+        osc1.setAmplitude(0.0f);
+    }
+    else
+    {
+        osc0.setSquareWave(0.0f, period_);
+        osc1.setAmplitude(oscillator1Amplitude * parameters.oscillator.mix);
     }
 
-    if (waveform_ == WaveformType::Sine)
-    {
-        saw_ = 0.0f;
-        sineOsc1_.setPeriod(period_);
-        sineOsc2_.setPeriod(period_ * parameters.oscillator.detune);
-        sineOsc1_.reset();
-        sineOsc2_.reset();
-    }
+    osc0.noteOn(period_);
+    osc1.noteOn(period_ * parameters.oscillator.detune);
 
     updatePanning();
 }
@@ -197,16 +197,18 @@ void Voice::updateLfo(const float glideRate,
 
 void Voice::updatePeriod(const float pitchBend, const float detune)
 {
-    oscillator1_->setPeriod(period_ * pitchBend);
-    oscillator2_->setPeriod(period_ * detune * pitchBend);
+    const size_t wt{static_cast<size_t>(waveform_)};
+    oscillators_[0][wt]->setPeriod(period_ * pitchBend);
+    oscillators_[1][wt]->setPeriod(period_ * detune * pitchBend);
 }
 
 void Voice::setModulation(const float modulationOsc1, const float modulationOsc2)
 {
     if (envelope_.isActive())
     {
-        oscillator1_->setModulation(modulationOsc1);
-        oscillator2_->setModulation(modulationOsc2);
+        const size_t wt{static_cast<size_t>(waveform_)};
+        oscillators_[0][wt]->setModulation(modulationOsc1);
+        oscillators_[1][wt]->setModulation(modulationOsc2);
     }
 }
 
@@ -223,19 +225,8 @@ Output Voice::render(const float input, const float pitchBend, const float detun
         return output;
     }
 
-    const float sample1{oscillator1_->nextSample()};
-    const float sample2{oscillator2_->nextSample()};
-
-    float oscillatorOutput{};
-    if (waveform_ == WaveformType::Sawtooth)
-    {
-        saw_ = saw_ * 0.997f + sample1 - sample2;
-        oscillatorOutput = saw_;
-    }
-    else
-    {
-        oscillatorOutput = sample1 + sample2;
-    }
+    const size_t wt{static_cast<size_t>(waveform_)};
+    const float oscillatorOutput{oscillators_[0][wt]->nextSample() + oscillators_[1][wt]->nextSample()};
 
     output.left = oscillatorOutput + input;
     output.right = output.left;

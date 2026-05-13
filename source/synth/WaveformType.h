@@ -6,7 +6,8 @@ namespace synth
 enum class WaveformType
 {
     Sawtooth = 0,
-    Sine = 1
+    Sine = 1,
+    Count
 };
 
 } // namespace synth
