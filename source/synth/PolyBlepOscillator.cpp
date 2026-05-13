@@ -31,7 +31,7 @@ void PolyBlepOscillator::setModulation(const float modulation)
     modulation_ = std::max(modulation, 0.01f);
 }
 
-void PolyBlepOscillator::squareWave(const PolyBlepOscillator& other, const float newPeriod)
+void PolyBlepOscillator::squareWave(const PolyBlepOscillator& other, const float newPeriod, const float dutyCycle)
 {
     reset();
 
@@ -51,7 +51,7 @@ void PolyBlepOscillator::squareWave(const PolyBlepOscillator& other, const float
         increment_ = math::pi;
     }
 
-    phase_ += math::pi * newPeriod / 2.0f;
+    phase_ += math::pi * newPeriod * dutyCycle;
     halfPhase_ = phase_;
 
     // Initialise sine recurrence state so the first nextSample() call

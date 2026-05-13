@@ -3,6 +3,7 @@
 #include "dsp/Filter.h"
 
 #include "Envelope.h"
+#include "PulseOscillator.h"
 #include "SawtoothOscillator.h"
 #include "SineOscillator.h"
 #include "WaveformType.h"
@@ -30,7 +31,6 @@ class Voice
                 const int velocity,
                 const float sampleRate,
                 const size_t voiceIdx,
-                const bool pwm,
                 const bool isPlayingLegatoStyle,
                 const Parameters& parameters);
     void noteOnRestart(const int note,
@@ -47,7 +47,7 @@ class Voice
                    const float pitchBend,
                    const float filterEnvDepth);
     void updatePeriod(const float pitchBend, const float detune);
-    void setModulation(const float modulationOsc1, const float modulationOsc2);
+    void setModulation(const float vibratoMod, const float pwmMod);
     Output render(const float input, const float pitchBend, const float detune);
 
     int note() const;
@@ -69,6 +69,7 @@ class Voice
     float panLeft_{0.0f};
     float panRight_{0.0f};
     float cutoff_{0.0f};
+    float vibratoMod_{1.0f};
 
     WaveformType waveform_{WaveformType::Sawtooth};
 

@@ -11,7 +11,7 @@ class PolyBlepOscillator
     void setPeriod(float period);
     void setModulation(float modulation);
 
-    void squareWave(const PolyBlepOscillator& other, float newPeriod);
+    void squareWave(const PolyBlepOscillator& other, float newPeriod, float dutyCycle = 0.5f);
     float nextSample();
 
   private:

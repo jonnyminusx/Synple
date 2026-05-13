@@ -27,6 +27,8 @@ struct ParameterIds
     static inline const juce::ParameterID envRelease{"envRelease", kVersion};
     static inline const juce::ParameterID lfoRate{"lfoRate", kVersion};
     static inline const juce::ParameterID vibrato{"vibrato", kVersion};
+    static inline const juce::ParameterID pwmDepth{"pwmDepth", kVersion};
+    static inline const juce::ParameterID pulseWidth{"pulseWidth", kVersion};
     static inline const juce::ParameterID noise{"noise", kVersion};
     static inline const juce::ParameterID octave{"octave", kVersion};
     static inline const juce::ParameterID tuning{"tuning", kVersion};

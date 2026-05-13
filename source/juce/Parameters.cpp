@@ -164,16 +164,26 @@ juce::AudioProcessorValueTreeState::ParameterLayout Parameters::buildLayout()
              0.81f,
              juce::AudioParameterFloatAttributes().withLabel("Hz").withStringFromValueFunction(lfoRateStringFromValue));
 
-    auto vibratoStringFromValue = [](float value, int) {
-        return value < 0.0f ? "PWM " + juce::String(-value, 1) : juce::String(value, 1);
-    };
-
     addParam(vibratoParam_,
              ParameterIds::vibrato,
              "Vibrato",
-             juce::NormalisableRange<float>(-100.0f, 100.0f, 0.1f),
+             juce::NormalisableRange<float>(0.0f, 100.0f, 0.1f),
              0.0f,
-             juce::AudioParameterFloatAttributes().withLabel("%").withStringFromValueFunction(vibratoStringFromValue));
+             juce::AudioParameterFloatAttributes().withLabel("%"));
+
+    addParam(pwmDepthParam_,
+             ParameterIds::pwmDepth,
+             "PWM Depth",
+             juce::NormalisableRange<float>(0.0f, 100.0f, 0.1f),
+             0.0f,
+             juce::AudioParameterFloatAttributes().withLabel("%"));
+
+    addParam(pulseWidthParam_,
+             ParameterIds::pulseWidth,
+             "Pulse Width",
+             juce::NormalisableRange<float>(10.0f, 90.0f, 0.1f),
+             50.0f,
+             juce::AudioParameterFloatAttributes().withLabel("%"));
 
     addParam(noiseParam_,
              ParameterIds::noise,
@@ -200,7 +210,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout Parameters::buildLayout()
 
     addParam(polyModeParam_, ParameterIds::polyMode, "Polyphony", juce::StringArray{"Mono", "Poly"}, 1);
 
-    addParam(oscWaveformParam_, ParameterIds::oscWaveform, "Waveform", juce::StringArray{"Sawtooth", "Sine"}, 0);
+    addParam(
+        oscWaveformParam_, ParameterIds::oscWaveform, "Waveform", juce::StringArray{"Sawtooth", "Sine", "Pulse"}, 0);
 
     return layout;
 }
@@ -358,18 +369,17 @@ float Parameters::lfoIncrement(const float inverseSampleRate, const float update
 float Parameters::vibratoAmount() const
 {
     const float rawVibrato{vibratoParam_->get() / 200.0f};
-    if (rawVibrato < 0.0f)
-    {
-        return 0.0f;
-    }
-
     return 0.2f * rawVibrato * rawVibrato;
 }
 
 float Parameters::pwmDepth() const
 {
-    const float rawVibrato{vibratoParam_->get() / 200.0f};
-    return 0.2f * rawVibrato * rawVibrato;
+    return pwmDepthParam_->get() / 100.0f;
+}
+
+float Parameters::pulseWidth() const
+{
+    return pulseWidthParam_->get() / 100.0f;
 }
 
 float Parameters::glideRateCoefficient(const float inverseSampleRate, const float updateInterval) const
@@ -396,6 +406,7 @@ synth::Parameters Parameters::createSnapshot(const float sampleRate) const
     p.oscillator.tune = tune(sampleRate);
     p.oscillator.detune = detune();
     p.oscillator.noiseMix = noiseMix();
+    p.oscillator.pulseWidth = pulseWidth();
     p.oscillator.waveform = static_cast<synth::WaveformType>(oscWaveformParam_->getIndex());
 
     p.filter.keyTracking = filterKeyTracking();
@@ -452,6 +463,8 @@ void Parameters::fillParameterArray(juce::RangedAudioParameter** params) const
     params[24] = outputLevelParam_;
     params[25] = polyModeParam_;
     params[26] = oscWaveformParam_;
+    params[27] = pulseWidthParam_;
+    params[28] = pwmDepthParam_;
 }
 
 void Parameters::setOutputLevelFromMidi(float normalised0to1)
