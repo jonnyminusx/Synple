@@ -1,6 +1,7 @@
 import { useRef, useEffect } from 'react'
 import { getNativeFunction } from './lib/juce/index.js'
-import { OscSection } from './components/OscSection.js'
+import { Osc1Section } from './components/OscSection.js'
+import { Osc2Section } from './components/Osc2Section.js'
 import { GlideSection } from './components/GlideSection.js'
 import { FilterSection } from './components/FilterSection.js'
 import { EnvSection } from './components/EnvSection.js'
@@ -34,7 +35,8 @@ export default function App() {
         <div ref={contentRef} className="flex flex-col gap-2 w-fit">
           {/* Top row */}
           <div className="flex gap-2 justify-center">
-            <OscSection />
+            <Osc1Section />
+            <Osc2Section />
             <FilterSection />
             <EnvSection prefix="filter" label="Filter Env" borderClass="border-yellow-400" bgClass="bg-yellow-200" />
           </div>

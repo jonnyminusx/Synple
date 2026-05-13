@@ -7,38 +7,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout Parameters::buildLayout()
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
-    auto oscMixStringFromValue = [](const float value, int) {
-        char s[16] = {0};
-        snprintf(s, 16, "%4.0f:%2.0f", 100.0 - 0.5f * value, 0.5f * value);
-        return juce::String(s);
-    };
-
     auto addParam = [&]<typename T, typename... Args>(T*& dest, Args&&... args) {
         auto p = std::make_unique<T>(std::forward<Args>(args)...);
         dest = p.get();
         layout.add(std::move(p));
     };
-
-    addParam(oscMixParam_,
-             ParameterIds::oscMix,
-             "Osc Mix",
-             juce::NormalisableRange<float>(0.0f, 100.0f),
-             0.0f,
-             juce::AudioParameterFloatAttributes().withLabel("%").withStringFromValueFunction(oscMixStringFromValue));
-
-    addParam(oscTuneParam_,
-             ParameterIds::oscTune,
-             "Osc Tune",
-             juce::NormalisableRange<float>(-24.0f, 24.0f, 1.0f),
-             -12.0f,
-             juce::AudioParameterFloatAttributes().withLabel("semi"));
-
-    addParam(oscFineParam_,
-             ParameterIds::oscFine,
-             "Osc Fine",
-             juce::NormalisableRange<float>(-50.0f, 50.0f, 0.1f, 0.3f, true),
-             0.0f,
-             juce::AudioParameterFloatAttributes().withLabel("cent"));
 
     addParam(glideModeParam_, ParameterIds::glideMode, "Glide Mode", juce::StringArray{"Off", "Legato", "Always"}, 0);
 
@@ -171,20 +144,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout Parameters::buildLayout()
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
-    addParam(pwmDepthParam_,
-             ParameterIds::pwmDepth,
-             "PWM Depth",
-             juce::NormalisableRange<float>(0.0f, 100.0f, 0.1f),
-             0.0f,
-             juce::AudioParameterFloatAttributes().withLabel("%"));
-
-    addParam(pulseWidthParam_,
-             ParameterIds::pulseWidth,
-             "Pulse Width",
-             juce::NormalisableRange<float>(10.0f, 90.0f, 0.1f),
-             50.0f,
-             juce::AudioParameterFloatAttributes().withLabel("%"));
-
     addParam(noiseParam_,
              ParameterIds::noise,
              "Noise",
@@ -210,8 +169,80 @@ juce::AudioProcessorValueTreeState::ParameterLayout Parameters::buildLayout()
 
     addParam(polyModeParam_, ParameterIds::polyMode, "Polyphony", juce::StringArray{"Mono", "Poly"}, 1);
 
-    addParam(
-        oscWaveformParam_, ParameterIds::oscWaveform, "Waveform", juce::StringArray{"Sawtooth", "Sine", "Pulse"}, 0);
+    addParam(pwmDepthParam_,
+             ParameterIds::pwmDepth,
+             "PWM Depth",
+             juce::NormalisableRange<float>(0.0f, 100.0f, 0.1f),
+             0.0f,
+             juce::AudioParameterFloatAttributes().withLabel("%"));
+
+    addParam(osc1VolumeParam_,
+             ParameterIds::osc1Volume,
+             "Osc 1 Volume",
+             juce::NormalisableRange<float>(0.0f, 100.0f, 0.1f),
+             100.0f,
+             juce::AudioParameterFloatAttributes().withLabel("%"));
+
+    addParam(osc2VolumeParam_,
+             ParameterIds::osc2Volume,
+             "Osc 2 Volume",
+             juce::NormalisableRange<float>(0.0f, 100.0f, 0.1f),
+             0.0f,
+             juce::AudioParameterFloatAttributes().withLabel("%"));
+
+    addParam(osc1TuneParam_,
+             ParameterIds::osc1Tune,
+             "Osc 1 Tune",
+             juce::NormalisableRange<float>(-24.0f, 24.0f, 1.0f),
+             0.0f,
+             juce::AudioParameterFloatAttributes().withLabel("semi"));
+
+    addParam(osc2TuneParam_,
+             ParameterIds::osc2Tune,
+             "Osc 2 Tune",
+             juce::NormalisableRange<float>(-24.0f, 24.0f, 1.0f),
+             0.0f,
+             juce::AudioParameterFloatAttributes().withLabel("semi"));
+
+    addParam(osc1FineParam_,
+             ParameterIds::osc1Fine,
+             "Osc 1 Fine",
+             juce::NormalisableRange<float>(-50.0f, 50.0f, 0.1f, 0.3f, true),
+             0.0f,
+             juce::AudioParameterFloatAttributes().withLabel("cent"));
+
+    addParam(osc2FineParam_,
+             ParameterIds::osc2Fine,
+             "Osc 2 Fine",
+             juce::NormalisableRange<float>(-50.0f, 50.0f, 0.1f, 0.3f, true),
+             0.0f,
+             juce::AudioParameterFloatAttributes().withLabel("cent"));
+
+    addParam(osc1WaveformParam_,
+             ParameterIds::osc1Waveform,
+             "Osc 1 Waveform",
+             juce::StringArray{"Sawtooth", "Sine", "Pulse"},
+             0);
+
+    addParam(osc2WaveformParam_,
+             ParameterIds::osc2Waveform,
+             "Osc 2 Waveform",
+             juce::StringArray{"Sawtooth", "Sine", "Pulse"},
+             0);
+
+    addParam(osc1PulseWidthParam_,
+             ParameterIds::osc1PulseWidth,
+             "Osc 1 Pulse Width",
+             juce::NormalisableRange<float>(10.0f, 90.0f, 0.1f),
+             50.0f,
+             juce::AudioParameterFloatAttributes().withLabel("%"));
+
+    addParam(osc2PulseWidthParam_,
+             ParameterIds::osc2PulseWidth,
+             "Osc 2 Pulse Width",
+             juce::NormalisableRange<float>(10.0f, 90.0f, 0.1f),
+             50.0f,
+             juce::AudioParameterFloatAttributes().withLabel("%"));
 
     return layout;
 }
@@ -250,9 +281,34 @@ bool Parameters::restoreStateFromXml(const juce::XmlElement& parentXml)
     return false;
 }
 
-float Parameters::oscillatorMix() const
+float Parameters::osc1Volume() const
 {
-    return oscMixParam_->get() / 100.0f;
+    return osc1VolumeParam_->get() / 100.0f;
+}
+
+float Parameters::osc2Volume() const
+{
+    return osc2VolumeParam_->get() / 100.0f;
+}
+
+float Parameters::osc1TuneFactor() const
+{
+    return std::pow(1.059463094359f, -(osc1TuneParam_->get() + 0.01f * osc1FineParam_->get()));
+}
+
+float Parameters::osc2TuneFactor() const
+{
+    return std::pow(1.059463094359f, -(osc2TuneParam_->get() + 0.01f * osc2FineParam_->get()));
+}
+
+float Parameters::osc1PulseWidth() const
+{
+    return osc1PulseWidthParam_->get() / 100.0f;
+}
+
+float Parameters::osc2PulseWidth() const
+{
+    return osc2PulseWidthParam_->get() / 100.0f;
 }
 
 float Parameters::filterResonance() const
@@ -288,11 +344,6 @@ float Parameters::glideBendSemitones() const
 float Parameters::multiplierFromParam(const float rateScale, const float paramValue)
 {
     return std::exp(-rateScale * std::exp(5.5f - 0.075f * paramValue));
-}
-
-float Parameters::detune() const
-{
-    return std::pow(1.059463094359f, -oscTuneParam_->get() - 0.01f * oscFineParam_->get());
 }
 
 float Parameters::tune(const float sampleRate) const
@@ -356,7 +407,7 @@ float Parameters::noiseMix() const
 
 float Parameters::volumeTrim() const
 {
-    return 0.0008f * (3.2f - oscillatorMix() - 25.0f * noiseMix()) * (1.5f - 0.5f * filterResonance());
+    return 0.0008f * (3.2f - 25.0f * noiseMix()) * (1.5f - 0.5f * filterResonance());
 }
 
 float Parameters::lfoIncrement(const float inverseSampleRate, const float updateInterval) const
@@ -375,11 +426,6 @@ float Parameters::vibratoAmount() const
 float Parameters::pwmDepth() const
 {
     return pwmDepthParam_->get() / 100.0f;
-}
-
-float Parameters::pulseWidth() const
-{
-    return pulseWidthParam_->get() / 100.0f;
 }
 
 float Parameters::glideRateCoefficient(const float inverseSampleRate, const float updateInterval) const
@@ -402,12 +448,16 @@ synth::Parameters Parameters::createSnapshot(const float sampleRate) const
 
     synth::Parameters p;
 
-    p.oscillator.mix = oscillatorMix();
-    p.oscillator.tune = tune(sampleRate);
-    p.oscillator.detune = detune();
+    p.oscillator.globalTune = tune(sampleRate);
+    p.oscillator.osc1Tune = osc1TuneFactor();
+    p.oscillator.osc2Tune = osc2TuneFactor();
+    p.oscillator.osc1Volume = osc1Volume();
+    p.oscillator.osc2Volume = osc2Volume();
     p.oscillator.noiseMix = noiseMix();
-    p.oscillator.pulseWidth = pulseWidth();
-    p.oscillator.waveform = static_cast<synth::WaveformType>(oscWaveformParam_->getIndex());
+    p.oscillator.osc1PulseWidth = osc1PulseWidth();
+    p.oscillator.osc2PulseWidth = osc2PulseWidth();
+    p.oscillator.waveform0 = static_cast<synth::WaveformType>(osc1WaveformParam_->getIndex());
+    p.oscillator.waveform1 = static_cast<synth::WaveformType>(osc2WaveformParam_->getIndex());
 
     p.filter.keyTracking = filterKeyTracking();
     p.filter.q = filterQ();
@@ -436,35 +486,40 @@ synth::Parameters Parameters::createSnapshot(const float sampleRate) const
 
 void Parameters::fillParameterArray(juce::RangedAudioParameter** params) const
 {
-    params[0] = oscMixParam_;
-    params[1] = oscTuneParam_;
-    params[2] = oscFineParam_;
-    params[3] = glideModeParam_;
-    params[4] = glideRateParam_;
-    params[5] = glideBendParam_;
-    params[6] = filterFreqParam_;
-    params[7] = filterResoParam_;
-    params[8] = filterEnvParam_;
-    params[9] = filterLFOParam_;
-    params[10] = filterVelocityParam_;
-    params[11] = filterAttackParam_;
-    params[12] = filterDecayParam_;
-    params[13] = filterSustainParam_;
-    params[14] = filterReleaseParam_;
-    params[15] = envAttackParam_;
-    params[16] = envDecayParam_;
-    params[17] = envSustainParam_;
-    params[18] = envReleaseParam_;
-    params[19] = lfoRateParam_;
-    params[20] = vibratoParam_;
-    params[21] = noiseParam_;
-    params[22] = octaveParam_;
-    params[23] = tuningParam_;
-    params[24] = outputLevelParam_;
-    params[25] = polyModeParam_;
-    params[26] = oscWaveformParam_;
-    params[27] = pulseWidthParam_;
-    params[28] = pwmDepthParam_;
+    params[0] = glideModeParam_;
+    params[1] = glideRateParam_;
+    params[2] = glideBendParam_;
+    params[3] = filterFreqParam_;
+    params[4] = filterResoParam_;
+    params[5] = filterEnvParam_;
+    params[6] = filterLFOParam_;
+    params[7] = filterVelocityParam_;
+    params[8] = filterAttackParam_;
+    params[9] = filterDecayParam_;
+    params[10] = filterSustainParam_;
+    params[11] = filterReleaseParam_;
+    params[12] = envAttackParam_;
+    params[13] = envDecayParam_;
+    params[14] = envSustainParam_;
+    params[15] = envReleaseParam_;
+    params[16] = lfoRateParam_;
+    params[17] = vibratoParam_;
+    params[18] = noiseParam_;
+    params[19] = octaveParam_;
+    params[20] = tuningParam_;
+    params[21] = outputLevelParam_;
+    params[22] = polyModeParam_;
+    params[23] = pwmDepthParam_;
+    params[24] = osc1VolumeParam_;
+    params[25] = osc2VolumeParam_;
+    params[26] = osc1TuneParam_;
+    params[27] = osc2TuneParam_;
+    params[28] = osc1FineParam_;
+    params[29] = osc2FineParam_;
+    params[30] = osc1WaveformParam_;
+    params[31] = osc2WaveformParam_;
+    params[32] = osc1PulseWidthParam_;
+    params[33] = osc2PulseWidthParam_;
 }
 
 void Parameters::setOutputLevelFromMidi(float normalised0to1)

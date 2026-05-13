@@ -6,7 +6,7 @@
 namespace synth
 {
 
-inline constexpr std::size_t kNumParams = 29;
+inline constexpr std::size_t kNumParams = 34;
 
 class Preset
 {
@@ -40,40 +40,50 @@ class Preset
            const float p25,
            const float p26,
            const float p27,
-           const float p28)
+           const float p28,
+           const float p29,
+           const float p30,
+           const float p31,
+           const float p32,
+           const float p33)
     {
         std::strncpy(this->name_, name, sizeof(name_) - 1);
         name_[sizeof(name_) - 1] = '\0';
 
-        parameters_[0] = p0;   // Osc Mix
-        parameters_[1] = p1;   // Osc Tune
-        parameters_[2] = p2;   // Osc Fine
-        parameters_[3] = p3;   // Glide Mode
-        parameters_[4] = p4;   // Glide Rate
-        parameters_[5] = p5;   // Glide Bend
-        parameters_[6] = p6;   // Filter Freq
-        parameters_[7] = p7;   // Filter Reso
-        parameters_[8] = p8;   // Filter Env
-        parameters_[9] = p9;   // Filter LFO
-        parameters_[10] = p10; // Velocity
-        parameters_[11] = p11; // Filter Attack
-        parameters_[12] = p12; // Filter Decay
-        parameters_[13] = p13; // Filter Sustain
-        parameters_[14] = p14; // Filter Release
-        parameters_[15] = p15; // Env Attack
-        parameters_[16] = p16; // Env Decay
-        parameters_[17] = p17; // Env Sustain
-        parameters_[18] = p18; // Env Release
-        parameters_[19] = p19; // LFO Rate
-        parameters_[20] = p20; // Vibrato
-        parameters_[21] = p21; // Noise
-        parameters_[22] = p22; // Octave
-        parameters_[23] = p23; // Tuning
-        parameters_[24] = p24; // Output Level
-        parameters_[25] = p25; // Polyphony
-        parameters_[26] = p26; // Waveform
-        parameters_[27] = p27; // Pulse Width
-        parameters_[28] = p28; // PWM Depth
+        parameters_[0] = p0;   // Glide Mode
+        parameters_[1] = p1;   // Glide Rate
+        parameters_[2] = p2;   // Glide Bend
+        parameters_[3] = p3;   // Filter Freq
+        parameters_[4] = p4;   // Filter Reso
+        parameters_[5] = p5;   // Filter Env
+        parameters_[6] = p6;   // Filter LFO
+        parameters_[7] = p7;   // Velocity
+        parameters_[8] = p8;   // Filter Attack
+        parameters_[9] = p9;   // Filter Decay
+        parameters_[10] = p10; // Filter Sustain
+        parameters_[11] = p11; // Filter Release
+        parameters_[12] = p12; // Env Attack
+        parameters_[13] = p13; // Env Decay
+        parameters_[14] = p14; // Env Sustain
+        parameters_[15] = p15; // Env Release
+        parameters_[16] = p16; // LFO Rate
+        parameters_[17] = p17; // Vibrato
+        parameters_[18] = p18; // Noise
+        parameters_[19] = p19; // Octave
+        parameters_[20] = p20; // Tuning
+        parameters_[21] = p21; // Output Level
+        parameters_[22] = p22; // Polyphony
+        parameters_[23] = p23; // PWM Depth
+        parameters_[24] = p24; // Osc 1 Volume
+        parameters_[25] = p25; // Osc 2 Volume
+        parameters_[26] = p26; // Osc 1 Tune
+        parameters_[27] = p27; // Osc 2 Tune
+        parameters_[28] = p28; // Osc 1 Fine
+        parameters_[29] = p29; // Osc 2 Fine
+        parameters_[30] = p30; // Osc 1 Waveform
+        parameters_[31] = p31; // Osc 2 Waveform
+        parameters_[32] = p32; // Osc 1 Pulse Width
+        parameters_[33] = p33; // Osc 2 Pulse Width
     }
 
     const char* name() const { return name_; }

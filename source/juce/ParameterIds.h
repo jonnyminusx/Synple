@@ -6,9 +6,6 @@ struct ParameterIds
 {
     static constexpr int kVersion{1};
 
-    static inline const juce::ParameterID oscMix{"oscMix", kVersion};
-    static inline const juce::ParameterID oscTune{"oscTune", kVersion};
-    static inline const juce::ParameterID oscFine{"oscFine", kVersion};
     static inline const juce::ParameterID glideMode{"glideMode", kVersion};
     static inline const juce::ParameterID glideRate{"glideRate", kVersion};
     static inline const juce::ParameterID glideBend{"glideBend", kVersion};
@@ -27,12 +24,20 @@ struct ParameterIds
     static inline const juce::ParameterID envRelease{"envRelease", kVersion};
     static inline const juce::ParameterID lfoRate{"lfoRate", kVersion};
     static inline const juce::ParameterID vibrato{"vibrato", kVersion};
-    static inline const juce::ParameterID pwmDepth{"pwmDepth", kVersion};
-    static inline const juce::ParameterID pulseWidth{"pulseWidth", kVersion};
     static inline const juce::ParameterID noise{"noise", kVersion};
     static inline const juce::ParameterID octave{"octave", kVersion};
     static inline const juce::ParameterID tuning{"tuning", kVersion};
     static inline const juce::ParameterID outputLevel{"outputLevel", kVersion};
     static inline const juce::ParameterID polyMode{"polyMode", kVersion};
-    static inline const juce::ParameterID oscWaveform{"oscWaveform", kVersion};
+    static inline const juce::ParameterID pwmDepth{"pwmDepth", kVersion};
+    static inline const juce::ParameterID osc1Volume{"osc1Volume", kVersion};
+    static inline const juce::ParameterID osc2Volume{"osc2Volume", kVersion};
+    static inline const juce::ParameterID osc1Tune{"osc1Tune", kVersion};
+    static inline const juce::ParameterID osc2Tune{"osc2Tune", kVersion};
+    static inline const juce::ParameterID osc1Fine{"osc1Fine", kVersion};
+    static inline const juce::ParameterID osc2Fine{"osc2Fine", kVersion};
+    static inline const juce::ParameterID osc1Waveform{"osc1Waveform", kVersion};
+    static inline const juce::ParameterID osc2Waveform{"osc2Waveform", kVersion};
+    static inline const juce::ParameterID osc1PulseWidth{"osc1PulseWidth", kVersion};
+    static inline const juce::ParameterID osc2PulseWidth{"osc2PulseWidth", kVersion};
 };

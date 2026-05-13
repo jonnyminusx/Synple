@@ -59,7 +59,10 @@ void Synth::render(dsp::AudioBuffer& audioBuffer)
 
         for (Voice& voice : voices_)
         {
-            output += voice.render(noise, midiProcessor_.state().pitchBend, parameters_.oscillator.detune);
+            output += voice.render(noise,
+                                   midiProcessor_.state().pitchBend,
+                                   parameters_.oscillator.osc1Tune,
+                                   parameters_.oscillator.osc2Tune);
         }
 
         output *= outputLevelSmoother_.getNextValue();
@@ -157,21 +160,23 @@ void Synth::updateLfo()
 
         const float sineValue{std::sin(lfo_)};
         const float vibratoModulation{1.0f + sineValue * (midi.modWheel + parameters_.lfo.vibratoAmount)};
-        const float pwmMod{2.0f * parameters_.oscillator.pulseWidth +
-                           sineValue * (midi.modWheel + parameters_.lfo.pwmDepth)};
+        const float pwmMod0{2.0f * parameters_.oscillator.osc1PulseWidth +
+                            sineValue * (midi.modWheel + parameters_.lfo.pwmDepth)};
+        const float pwmMod1{2.0f * parameters_.oscillator.osc2PulseWidth +
+                            sineValue * (midi.modWheel + parameters_.lfo.pwmDepth)};
         const float filterMod{parameters_.filter.keyTracking + midi.filterControl +
                               (parameters_.filter.lfoDepth + midi.pressure) * sineValue};
         filterZip_ += 0.005f * (filterMod - filterZip_);
 
         for (Voice& voice : voices_)
         {
-            voice.setModulation(vibratoModulation, pwmMod);
+            voice.setModulation(vibratoModulation, pwmMod0, pwmMod1);
             voice.updateLfo(parameters_.glide.rateCoefficient,
                             filterZip_,
                             parameters_.filter.q * midi.resonanceCtl,
                             midi.pitchBend,
                             parameters_.filter.envelopeDepth);
-            voice.updatePeriod(midi.pitchBend, parameters_.oscillator.detune);
+            voice.updatePeriod(midi.pitchBend, parameters_.oscillator.osc1Tune, parameters_.oscillator.osc2Tune);
         }
     }
 }
@@ -290,7 +295,7 @@ void Synth::setParameters(const Parameters& params)
     {
         voice.envelope().setADSR(params.envelope);
         voice.filterEnvelope().setADSR(params.filter.envelope);
-        voice.setWaveform(params.oscillator.waveform);
+        voice.setWaveforms(params.oscillator.waveform0, params.oscillator.waveform1);
     }
     outputLevelSmoother_.setTargetValue(params.output.gain);
     numVoices_ = params.output.polyphonic ? kMaxNumVoices : 1;
