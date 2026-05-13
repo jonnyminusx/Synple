@@ -31,7 +31,7 @@
 *.out
 *.app
 
-build/
+build*/
 source/ui/public/
 source/ui/node_modules/
 source/ui/src/lib/juce/
