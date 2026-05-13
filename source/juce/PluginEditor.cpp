@@ -80,9 +80,16 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
                    .withInitialisationData("vendor", JUCE_COMPANY_NAME)
                    .withInitialisationData("pluginName", JUCE_PRODUCT_NAME)
                    .withInitialisationData("pluginVersion", JUCE_PRODUCT_VERSION)
-                   .withOptionsFrom(webOscMixRelay_)
-                   .withOptionsFrom(webOscTuneRelay_)
-                   .withOptionsFrom(webOscFineRelay_)
+                   .withOptionsFrom(webOsc1VolumeRelay_)
+                   .withOptionsFrom(webOsc2VolumeRelay_)
+                   .withOptionsFrom(webOsc1TuneRelay_)
+                   .withOptionsFrom(webOsc2TuneRelay_)
+                   .withOptionsFrom(webOsc1FineRelay_)
+                   .withOptionsFrom(webOsc2FineRelay_)
+                   .withOptionsFrom(webOsc1WaveformRelay_)
+                   .withOptionsFrom(webOsc2WaveformRelay_)
+                   .withOptionsFrom(webOsc1PulseWidthRelay_)
+                   .withOptionsFrom(webOsc2PulseWidthRelay_)
                    .withOptionsFrom(webGlideModeRelay_)
                    .withOptionsFrom(webGlideRateRelay_)
                    .withOptionsFrom(webGlideBendRelay_)
@@ -106,7 +113,6 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
                    .withOptionsFrom(webTuningRelay_)
                    .withOptionsFrom(webOutputLevelRelay_)
                    .withOptionsFrom(webPolyModeRelay_)
-                   .withOptionsFrom(webOscWaveformRelay_)
                    .withNativeFunction("setWindowSize",
                                        [this](const juce::Array<juce::var>& args, auto complete) {
                                            if (args.size() >= 2)
@@ -114,9 +120,16 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
                                                    [this, w = (int)args[0], h = (int)args[1]]() { setSize(w, h); });
                                            complete({});
                                        })),
-      webOscMixAttachment_(p.getParameter(ParameterIds::oscMix), webOscMixRelay_),
-      webOscTuneAttachment_(p.getParameter(ParameterIds::oscTune), webOscTuneRelay_),
-      webOscFineAttachment_(p.getParameter(ParameterIds::oscFine), webOscFineRelay_),
+      webOsc1VolumeAttachment_(p.getParameter(ParameterIds::osc1Volume), webOsc1VolumeRelay_),
+      webOsc2VolumeAttachment_(p.getParameter(ParameterIds::osc2Volume), webOsc2VolumeRelay_),
+      webOsc1TuneAttachment_(p.getParameter(ParameterIds::osc1Tune), webOsc1TuneRelay_),
+      webOsc2TuneAttachment_(p.getParameter(ParameterIds::osc2Tune), webOsc2TuneRelay_),
+      webOsc1FineAttachment_(p.getParameter(ParameterIds::osc1Fine), webOsc1FineRelay_),
+      webOsc2FineAttachment_(p.getParameter(ParameterIds::osc2Fine), webOsc2FineRelay_),
+      webOsc1WaveformAttachment_(p.getParameter(ParameterIds::osc1Waveform), webOsc1WaveformRelay_),
+      webOsc2WaveformAttachment_(p.getParameter(ParameterIds::osc2Waveform), webOsc2WaveformRelay_),
+      webOsc1PulseWidthAttachment_(p.getParameter(ParameterIds::osc1PulseWidth), webOsc1PulseWidthRelay_),
+      webOsc2PulseWidthAttachment_(p.getParameter(ParameterIds::osc2PulseWidth), webOsc2PulseWidthRelay_),
       webGlideModeAttachment_(p.getParameter(ParameterIds::glideMode), webGlideModeRelay_),
       webGlideRateAttachment_(p.getParameter(ParameterIds::glideRate), webGlideRateRelay_),
       webGlideBendAttachment_(p.getParameter(ParameterIds::glideBend), webGlideBendRelay_),
@@ -139,8 +152,7 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
       webOctaveAttachment_(p.getParameter(ParameterIds::octave), webOctaveRelay_),
       webTuningAttachment_(p.getParameter(ParameterIds::tuning), webTuningRelay_),
       webOutputLevelAttachment_(p.getParameter(ParameterIds::outputLevel), webOutputLevelRelay_),
-      webPolyModeAttachment_(p.getParameter(ParameterIds::polyMode), webPolyModeRelay_),
-      webOscWaveformAttachment_(p.getParameter(ParameterIds::oscWaveform), webOscWaveformRelay_)
+      webPolyModeAttachment_(p.getParameter(ParameterIds::polyMode), webPolyModeRelay_)
 {
     webView_.goToURL(webView_.getResourceProviderRoot());
     // webView_.goToURL(kLocalDevServerAddress);
