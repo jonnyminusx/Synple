@@ -95,7 +95,7 @@ void Voice::noteOn(const int note,
                    const Parameters& parameters)
 {
     const float adjustedVelocity{(0.004f * static_cast<float>((velocity + 64) * (velocity + 64))) - 8.0f};
-    const float minFactor{std::min(parameters.oscillator.osc1Tune, parameters.oscillator.osc2Tune)};
+    const float minFactor{std::min(parameters.oscillator.osc1.tune, parameters.oscillator.osc2.tune)};
     const float refPeriod{calculatePeriod(note, parameters.oscillator.globalTune, minFactor, voiceIdx)};
     const int noteDistance{calculateNoteDistance(note, lastNote, parameters.glide.mode, isPlayingLegatoStyle)};
 
@@ -116,11 +116,11 @@ void Voice::noteOn(const int note,
     Oscillator& osc1{*oscillators_[1][wt1]};
 
     const float baseAmplitude{parameters.output.volumeTrim * adjustedVelocity};
-    osc0.setAmplitude(baseAmplitude * parameters.oscillator.osc1Volume);
-    osc1.setAmplitude(baseAmplitude * parameters.oscillator.osc2Volume);
+    osc0.setAmplitude(baseAmplitude * parameters.oscillator.osc1.volume);
+    osc1.setAmplitude(baseAmplitude * parameters.oscillator.osc2.volume);
 
-    osc0.noteOn(period_ * parameters.oscillator.osc1Tune);
-    osc1.noteOn(period_ * parameters.oscillator.osc2Tune);
+    osc0.noteOn(period_ * parameters.oscillator.osc1.tune);
+    osc1.noteOn(period_ * parameters.oscillator.osc2.tune);
 
     updatePanning();
 }
@@ -128,7 +128,7 @@ void Voice::noteOn(const int note,
 void Voice::noteOnRestart(
     const int note, const int velocity, const float sampleRate, const size_t voiceIdx, const Parameters& parameters)
 {
-    const float minFactor{std::min(parameters.oscillator.osc1Tune, parameters.oscillator.osc2Tune)};
+    const float minFactor{std::min(parameters.oscillator.osc1.tune, parameters.oscillator.osc2.tune)};
     const float refPeriod{calculatePeriod(note, parameters.oscillator.globalTune, minFactor, voiceIdx)};
 
     note_ = note;

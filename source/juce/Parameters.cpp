@@ -449,15 +449,15 @@ synth::Parameters Parameters::createSnapshot(const float sampleRate) const
     synth::Parameters p;
 
     p.oscillator.globalTune = tune(sampleRate);
-    p.oscillator.osc1Tune = osc1TuneFactor();
-    p.oscillator.osc2Tune = osc2TuneFactor();
-    p.oscillator.osc1Volume = osc1Volume();
-    p.oscillator.osc2Volume = osc2Volume();
+    p.oscillator.osc1.tune = osc1TuneFactor();
+    p.oscillator.osc2.tune = osc2TuneFactor();
+    p.oscillator.osc1.volume = osc1Volume();
+    p.oscillator.osc2.volume = osc2Volume();
     p.oscillator.noiseMix = noiseMix();
-    p.oscillator.osc1PulseWidth = osc1PulseWidth();
-    p.oscillator.osc2PulseWidth = osc2PulseWidth();
-    p.oscillator.waveform0 = static_cast<synth::WaveformType>(osc1WaveformParam_->getIndex());
-    p.oscillator.waveform1 = static_cast<synth::WaveformType>(osc2WaveformParam_->getIndex());
+    p.oscillator.osc1.pulseWidth = osc1PulseWidth();
+    p.oscillator.osc2.pulseWidth = osc2PulseWidth();
+    p.oscillator.osc1.waveform = static_cast<synth::WaveformType>(osc1WaveformParam_->getIndex());
+    p.oscillator.osc2.waveform = static_cast<synth::WaveformType>(osc2WaveformParam_->getIndex());
 
     p.filter.keyTracking = filterKeyTracking();
     p.filter.q = filterQ();

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GlideMode.h"
-#include "WaveformType.h"
+#include "OscillatorParameters.h"
 
 namespace synth
 {
@@ -18,16 +18,10 @@ struct Parameters
 
     struct Oscillator
     {
-        float osc1Volume{1.0f};
-        float osc2Volume{0.0f};
-        float osc1Tune{1.0f};       // period multiplier for osc1 (semitones+cents relative to global)
-        float osc2Tune{1.0f};       // period multiplier for osc2 (semitones+cents relative to global)
-        float globalTune{1.0f};     // period multiplier from sampleRate × octave × global tuning
-        float noiseMix{0.0f};       // normalised 0-1
-        float osc1PulseWidth{0.5f}; // duty cycle 0.1-0.9
-        float osc2PulseWidth{0.5f}; // duty cycle 0.1-0.9
-        WaveformType waveform0{WaveformType::Sawtooth};
-        WaveformType waveform1{WaveformType::Sawtooth};
+        OscillatorParameters osc1{.volume = 1.0f};
+        OscillatorParameters osc2{};
+        float globalTune{1.0f}; // period multiplier from sampleRate × octave × global tuning
+        float noiseMix{0.0f};   // normalised 0-1
     } oscillator;
 
     struct Filter
