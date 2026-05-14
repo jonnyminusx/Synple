@@ -37,9 +37,10 @@ void PolyBlepOscillator::squareWave(const PolyBlepOscillator& other, const float
     period_ = newPeriod;
 
     const float halfPeriod{(newPeriod / 2.0f) * modulation_};
-    halfPhase_ = (std::floor(0.5f + halfPeriod) - 0.5f) * math::pi;
+    const float halfPhaseUnscaled{std::floor(0.5f + halfPeriod) - 0.5f};
+    dcOffset_ = 0.5f * amplitude_ / halfPhaseUnscaled;
+    halfPhase_ = halfPhaseUnscaled * math::pi;
     const float incMag{halfPhase_ / halfPeriod};
-    dcOffset_ = 0.5f * amplitude_ / halfPhase_;
 
     // Compute the primary's normalised cycle angle θ ∈ [0, τ).
     // Upswing (increment > 0): θ ∈ [0, π). Downswing (increment < 0): θ ∈ [π, τ).
