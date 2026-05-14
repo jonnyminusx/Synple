@@ -34,28 +34,43 @@ void PolyBlepOscillator::setModulation(const float modulation)
 void PolyBlepOscillator::squareWave(const PolyBlepOscillator& other, const float newPeriod, const float dutyCycle)
 {
     reset();
+    period_ = newPeriod;
 
-    if (other.increment_ > 0.0f)
+    const float halfPeriod{(newPeriod / 2.0f) * modulation_};
+    const float halfPhaseUnscaled{std::floor(0.5f + halfPeriod) - 0.5f};
+    dcOffset_ = 0.5f * amplitude_ / halfPhaseUnscaled;
+    halfPhase_ = halfPhaseUnscaled * math::pi;
+    const float incMag{halfPhase_ / halfPeriod};
+
+    // Compute the primary's normalised cycle angle θ ∈ [0, τ).
+    // Upswing (increment > 0): θ ∈ [0, π). Downswing (increment < 0): θ ∈ [π, τ).
+    float theta{0.0f};
+    if (other.halfPhase_ > 0.0f)
     {
-        phase_ = other.halfPhase_ + other.halfPhase_ - other.phase_;
-        increment_ = -other.increment_;
+        if (other.increment_ > 0.0f)
+            theta = (other.phase_ / other.halfPhase_) * math::pi;
+        else if (other.increment_ < 0.0f)
+            theta = (2.0f - other.phase_ / other.halfPhase_) * math::pi;
     }
-    else if (other.increment_ < 0.0f)
+
+    float deltaTheta{math::tau * dutyCycle - theta};
+    if (deltaTheta < 0.0f)
+        deltaTheta += math::tau;
+
+    // ratio ∈ [0, 2): ≤ 1 → secondary is descending toward fire point,
+    // > 1 → secondary already fired and is ascending.
+    const float ratio{deltaTheta / math::pi};
+    if (ratio <= 1.0f)
     {
-        phase_ = other.phase_;
-        increment_ = other.increment_;
+        phase_ = ratio * halfPhase_;
+        increment_ = -incMag;
     }
     else
     {
-        phase_ = -math::pi;
-        increment_ = math::pi;
+        phase_ = (2.0f - ratio) * halfPhase_;
+        increment_ = incMag;
     }
 
-    phase_ += math::pi * newPeriod * dutyCycle;
-    halfPhase_ = phase_;
-
-    // Initialise sine recurrence state so the first nextSample() call
-    // produces correct output without a silent half-period transient.
     sinCurrent_ = amplitude_ * std::sin(phase_);
     sinPrevious_ = amplitude_ * std::sin(phase_ - increment_);
     sinRecurrenceCoeff_ = 2.0f * std::cos(increment_);
