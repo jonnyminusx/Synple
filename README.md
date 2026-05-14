@@ -4,7 +4,7 @@ A subtractive synthesizer plugin built with C++20 and JUCE, with a React/TypeScr
 
 Targets VST3, AU, and Standalone formats.
 
-<img width="876" height="285" alt="image" src="https://github.com/user-attachments/assets/f6fc386b-fe35-4dfb-b07e-47060ca6b630" />
+<img width="1133" height="293" alt="image" src="https://github.com/user-attachments/assets/a1308ddd-80e4-4085-be56-eb88e4f250a9" />
 
 ## Features
 
