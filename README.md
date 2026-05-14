@@ -51,9 +51,10 @@ For hot-reload during development:
 
 ```
 source/juce/   — JUCE plugin layer (AudioProcessor, AudioProcessorEditor, Parameters)
-source/synth/  — Pure synth engine (no JUCE dependencies except juce_audio_basics)
+source/synth/  — Pure synth engine (no JUCE dependencies)
 source/midi/   — MIDI processing (MidiProcessor, MidiState, NoteHandler)
-source/utils/  — Constants, ear protection
+source/dsp/    — DSP primitives (Filter, AudioBuffer, noise)
+source/math/   — Math constants
 source/ui/     — React/TypeScript WebView frontend
 ```
 
