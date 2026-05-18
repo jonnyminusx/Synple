@@ -7,7 +7,6 @@
 
 #include <cmath>
 #include <numeric>
-#include <tuple>
 #include <vector>
 
 namespace
@@ -246,15 +245,16 @@ TEST_CASE("Sawtooth oscillator suppresses aliasing relative to the fundamental",
 {
     constexpr int N = 16384;
 
-    auto [f0, threshold] = GENERATE(table<float, float>({
-        std::make_tuple(3000.0f, 45.0f),
-        std::make_tuple(5000.0f, 40.0f),
-        std::make_tuple(7000.0f, 35.0f)
+    struct TestCase { float f0; float thresholdDb; };
+    auto [f0, thresholdDb] = GENERATE(values<TestCase>({
+        {.f0 = 3000.0f, .thresholdDb = 45.0f},
+        {.f0 = 5000.0f, .thresholdDb = 40.0f},
+        {.f0 = 7000.0f, .thresholdDb = 35.0f}
     }));
     auto signal = renderAliasSawtooth(f0, sampleRate, N);
     auto r = measureAliasing(signal, f0, sampleRate);
     INFO("f0=" << f0 << " Hz, worst alias: " << r.worstAliasFreq << " Hz, suppression: " << r.suppressionDb() << " dB");
-    REQUIRE(r.suppressionDb() >= threshold);
+    REQUIRE(r.suppressionDb() >= thresholdDb);
 }
 
 // ─── Aliasing: suppression across sample rates ────────────────────────────────

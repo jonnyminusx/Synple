@@ -6,7 +6,6 @@
 #include "midi/NoteHandler.h"
 
 #include <cmath>
-#include <tuple>
 #include <vector>
 
 namespace {
@@ -107,14 +106,15 @@ TEST_CASE("Note data bytes are masked to 7 bits", "[midi][note]")
 
 TEST_CASE("Mod wheel (CC 0x01) maps value to 0..1", "[midi][cc]")
 {
-    auto [value, expected] = GENERATE(table<int, float>({
-        std::make_tuple(0,   0.0f),
-        std::make_tuple(127, 1.0f),
-        std::make_tuple(64,  64.0f / 127.0f)
+    struct TestCase { int ccValue; float expected; };
+    auto [ccValue, expected] = GENERATE(values<TestCase>({
+        {.ccValue = 0,   .expected = 0.0f},
+        {.ccValue = 127, .expected = 1.0f},
+        {.ccValue = 64,  .expected = 64.0f / 127.0f}
     }));
     FakeHandler handler;
     midi::MidiProcessor proc{handler};
-    proc.process(0xB0, 0x01, value);
+    proc.process(0xB0, 0x01, ccValue);
     REQUIRE(proc.state().modWheel == Catch::Approx(expected));
 }
 
