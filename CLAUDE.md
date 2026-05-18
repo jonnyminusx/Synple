@@ -51,7 +51,7 @@ Tests use Catch2 v3 and live in `tests/`. There are three per-layer test binarie
 |--------|-------|-------|
 | `MidiTests` | `synple_midi` | `midi::MidiProcessor` |
 | `DspTests` | `synple_dsp` (+ math) | `dsp::AudioBuffer`, `dsp::Filter` |
-| `SynthTests` | `synple_synth` (+ dsp, midi, math) | `synth::Oscillator` |
+| `SynthTests` | `synple_synth` (+ dsp, midi, math) | `synth` oscillators |
 
 The per-layer split enforces dependencies at link time: if midi code calls a dsp function, `MidiTests` fails to link.
 
@@ -89,7 +89,10 @@ Both targets operate on `source/dsp/`, `source/midi/`, `source/synth/`, and `sou
 | `tests/MidiProcessorTest.cpp` | `MidiTests` | `midi::MidiProcessor` |
 | `tests/AudioBufferTest.cpp` | `DspTests` | `dsp::AudioBuffer` (including `sanitise()`) |
 | `tests/FilterTest.cpp` | `DspTests` | `dsp::Filter` |
-| `tests/OscillatorTest.cpp` | `SynthTests` | `synth::Oscillator` (waveform, aliasing, modulation) |
+| `tests/PolyBlepOscillatorTest.cpp` | `SynthTests` | `synth::PolyBlepOscillator` (DC, modulation) |
+| `tests/SawtoothOscillatorTest.cpp` | `SynthTests` | `synth::SawtoothOscillator` (amplitude, frequency, reset, aliasing) |
+| `tests/PulseOscillatorTest.cpp` | `SynthTests` | `synth::PulseOscillator` (PWM harmonic structure, duty cycle) |
+| `tests/SineOscillatorTest.cpp` | `SynthTests` | `synth::SineOscillator` (amplitude, frequency, reset) |
 
 **Adding a test file** — two steps:
 1. Create `tests/FooTest.cpp` (use `#include <catch2/catch_test_macros.hpp>` and `#include <catch2/catch_approx.hpp>`).

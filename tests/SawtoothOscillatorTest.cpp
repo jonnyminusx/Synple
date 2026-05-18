@@ -2,8 +2,6 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "dsp/Goertzel.h"
-#include "synth/PolyBlepOscillator.h"
-#include "synth/PulseOscillator.h"
 #include "synth/SawtoothOscillator.h"
 
 #include <cmath>
@@ -15,28 +13,6 @@ namespace
 
 constexpr float sampleRate = 44100.0f;
 constexpr int warmup = 4096;
-
-// Renders raw BLEP output (no leaky integrator) — tests DC compensation and
-// modulation effects directly on the PolyBlepOscillator layer.
-std::vector<float> renderBlep(float f0, float fs, int numSamples, float amplitude = 1.0f)
-{
-    synth::PolyBlepOscillator osc;
-    osc.setAmplitude(amplitude);
-    osc.setPeriod(fs / f0);
-    osc.setModulation(1.0f);
-
-    std::vector<float> output;
-    output.reserve(numSamples);
-
-    for (int i = 0; i < warmup + numSamples; ++i)
-    {
-        const float s = osc.nextSample();
-        if (i >= warmup)
-            output.push_back(s);
-    }
-
-    return output;
-}
 
 // Renders the integrated sawtooth output from a single SawtoothOscillator.
 std::vector<float> renderRaw(float f0, float fs, int numSamples, float amplitude = 1.0f)
@@ -153,45 +129,7 @@ float rms(const std::vector<float>& v)
     return std::sqrt(sum / static_cast<float>(v.size()));
 }
 
-float mean(const std::vector<float>& v)
-{
-    return std::accumulate(v.begin(), v.end(), 0.0f) / static_cast<float>(v.size());
-}
-
 } // namespace
-
-// ─── DC offset ───────────────────────────────────────────────────────────────
-
-// Tests the BLEP generator's own DC compensation (raw output, no leaky integrator).
-// The leaky integrator's DC gain is 1/(1-0.997) ≈ 333×, so even a tiny
-// residual DC in the raw output would read as a large mean in the integrated
-// signal — testing PolyBlepOscillator directly isolates the compensation logic.
-TEST_CASE("Raw BLEP output has near-zero DC after warmup", "[oscillator][dc]")
-{
-    constexpr int N = 16384;
-    constexpr float tolerance = 0.01f;
-
-    SECTION("440 Hz")
-    {
-        auto sig = renderBlep(440.0f, sampleRate, N);
-        INFO("mean = " << mean(sig));
-        REQUIRE(std::abs(mean(sig)) < tolerance);
-    }
-
-    SECTION("1000 Hz")
-    {
-        auto sig = renderBlep(1000.0f, sampleRate, N);
-        INFO("mean = " << mean(sig));
-        REQUIRE(std::abs(mean(sig)) < tolerance);
-    }
-
-    SECTION("5000 Hz")
-    {
-        auto sig = renderBlep(5000.0f, sampleRate, N);
-        INFO("mean = " << mean(sig));
-        REQUIRE(std::abs(mean(sig)) < tolerance);
-    }
-}
 
 // ─── Amplitude scaling ────────────────────────────────────────────────────────
 
@@ -286,154 +224,6 @@ TEST_CASE("Oscillator produces identical output after reset", "[oscillator][rese
     REQUIRE(run1.size() == run2.size());
     for (size_t i = 0; i < run1.size(); ++i)
         REQUIRE(run1[i] == Catch::Approx(run2[i]).epsilon(1e-5f));
-}
-
-// ─── PWM: odd-harmonic dominance ─────────────────────────────────────────────
-
-TEST_CASE("PulseOscillator at 50% duty cycle has odd-harmonic dominance", "[oscillator][pwm]")
-{
-    // At 50% duty cycle the pulse wave is a square wave with only odd harmonics.
-    // noteOn() initialises the secondary BLEP at half-period offset; setModulation(1.0)
-    // keeps it there (pwmMod=1.0 → dutyCycle=0.5).
-    constexpr float f0 = 440.0f;
-    constexpr int N = 32768;
-    const float period = sampleRate / f0;
-
-    synth::PulseOscillator osc;
-    osc.setAmplitude(1.0f);
-    osc.setPeriod(period);
-    osc.noteOn(period); // initialises secondary at 50% duty cycle
-
-    // Warmup to let both BLEPs and the leaky integrator settle
-    for (int i = 0; i < warmup; ++i)
-        osc.nextSample();
-
-    std::vector<float> sig;
-    sig.reserve(N);
-    for (int i = 0; i < N; ++i)
-        sig.push_back(osc.nextSample());
-
-    const float fund = dsp::goertzel(sig, f0, sampleRate);
-    const float harm2 = dsp::goertzel(sig, 2.0f * f0, sampleRate);
-    const float harm3 = dsp::goertzel(sig, 3.0f * f0, sampleRate);
-
-    INFO("fundamental=" << fund << " 2nd=" << harm2 << " 3rd=" << harm3);
-
-    REQUIRE(fund > 0.1f);
-
-    // 2nd harmonic (even) suppressed by ≥20 dB relative to fundamental
-    const float suppression2dB = 20.0f * std::log10(fund / (harm2 + 1e-12f));
-    INFO("2nd harmonic suppression: " << suppression2dB << " dB");
-    REQUIRE(suppression2dB >= 20.0f);
-
-    // 3rd harmonic (odd) must be present — for a perfect square wave it sits at
-    // 20·log₁₀(3) ≈ 9.5 dB below the fundamental. Allow up to 15 dB for
-    // Hann-window leakage and BLEP correction rounding.
-    const float suppression3dB = 20.0f * std::log10(fund / (harm3 + 1e-12f));
-    INFO("3rd harmonic level: " << suppression3dB << " dB below fundamental");
-    REQUIRE(suppression3dB <= 15.0f);
-}
-
-TEST_CASE("PulseOscillator duty cycle changes with setModulation", "[oscillator][pwm]")
-{
-    // setModulation(pwmMod) changes the duty cycle via the secondary BLEP.
-    // At 50% duty (pwmMod=1.0) the 2nd harmonic is suppressed ≥20 dB.
-    // At 25% duty (pwmMod=0.5) the 2nd harmonic becomes significant.
-    constexpr float f0 = 440.0f;
-    constexpr int N = 32768;
-    const float period = sampleRate / f0;
-
-    auto renderPulse = [&](float pwmMod) {
-        synth::PulseOscillator osc;
-        osc.setAmplitude(1.0f);
-        osc.setPeriod(period);
-        osc.noteOn(period);
-        osc.setModulation(pwmMod);
-        for (int i = 0; i < warmup; ++i)
-            osc.nextSample();
-        std::vector<float> sig;
-        sig.reserve(N);
-        for (int i = 0; i < N; ++i)
-            sig.push_back(osc.nextSample());
-        return sig;
-    };
-
-    const auto sig50 = renderPulse(1.0f);  // 50% duty → square wave
-    const auto sig25 = renderPulse(0.5f);  // 25% duty → narrow pulse
-
-    const float fund50  = dsp::goertzel(sig50, f0, sampleRate);
-    const float harm2at50 = dsp::goertzel(sig50, 2.0f * f0, sampleRate);
-    const float harm2at25 = dsp::goertzel(sig25, 2.0f * f0, sampleRate);
-
-    INFO("50% duty: fundamental=" << fund50 << " 2nd=" << harm2at50);
-    INFO("25% duty: 2nd=" << harm2at25);
-
-    // 50% duty: even harmonics suppressed
-    const float supp2at50 = 20.0f * std::log10(fund50 / (harm2at50 + 1e-12f));
-    INFO("2nd harmonic suppression at 50%: " << supp2at50 << " dB");
-    REQUIRE(supp2at50 >= 20.0f);
-
-    // 25% duty: 2nd harmonic present (narrower pulse has stronger even harmonics)
-    REQUIRE(harm2at25 > harm2at50);
-}
-
-// ─── Modulation ───────────────────────────────────────────────────────────────
-
-TEST_CASE("Modulation parameter changes oscillator output", "[oscillator][modulation]")
-{
-    // setModulation() scales halfPeriod, which changes halfPhase_ and increment_.
-    // Tested on PolyBlepOscillator directly: the leaky integrator in
-    // SawtoothOscillator smooths the waveform and makes the RMS difference
-    // between modulation values too small to assert reliably.
-    constexpr int N = 4096;
-    const float period = sampleRate / 440.0f;
-
-    auto renderWithMod = [&](float mod) -> std::vector<float> {
-        synth::PolyBlepOscillator osc;
-        osc.setAmplitude(1.0f);
-        osc.setPeriod(period);
-        osc.setModulation(mod);
-        std::vector<float> out;
-        out.reserve(N);
-        for (int i = 0; i < N; ++i)
-            out.push_back(osc.nextSample());
-        return out;
-    };
-
-    const float rms1 = rms(renderWithMod(1.0f));
-    const float rmsHalf = rms(renderWithMod(0.5f));
-
-    INFO("rms(mod=1.0)=" << rms1 << "  rms(mod=0.5)=" << rmsHalf);
-    REQUIRE(std::abs(rms1 - rmsHalf) > 0.01f);
-}
-
-TEST_CASE("setModulation clamps near-zero and negative values to prevent NaN", "[oscillator][modulation]")
-{
-    // Without the clamp in setModulation(), modulation=0 causes
-    // increment_ = halfPhase_ / 0 → ±inf, producing NaN output.
-    // Tested on PolyBlepOscillator where the clamp logic lives.
-    constexpr int N = 2048;
-    const float period = sampleRate / 440.0f;
-
-    for (const float mod : {0.0f, -0.5f, -1.0f})
-    {
-        synth::PolyBlepOscillator osc;
-        osc.setAmplitude(1.0f);
-        osc.setPeriod(period);
-        osc.setModulation(mod);
-
-        bool allFinite = true;
-        for (int i = 0; i < N; ++i)
-        {
-            if (!std::isfinite(osc.nextSample()))
-            {
-                allFinite = false;
-                break;
-            }
-        }
-        INFO("modulation = " << mod);
-        REQUIRE(allFinite);
-    }
 }
 
 // ─── Aliasing: sanity check ───────────────────────────────────────────────────

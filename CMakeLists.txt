@@ -151,7 +151,12 @@ CPMAddPackage(
 
 add_executable(MidiTests  tests/MidiProcessorTest.cpp)
 add_executable(DspTests   tests/AudioBufferTest.cpp tests/FilterTest.cpp)
-add_executable(SynthTests tests/OscillatorTest.cpp)
+add_executable(SynthTests
+    tests/PolyBlepOscillatorTest.cpp
+    tests/PulseOscillatorTest.cpp
+    tests/SawtoothOscillatorTest.cpp
+    tests/SineOscillatorTest.cpp
+)
 
 target_link_libraries(MidiTests  PRIVATE synple_midi  Catch2::Catch2WithMain)
 target_link_libraries(DspTests   PRIVATE synple_dsp   Catch2::Catch2WithMain)
