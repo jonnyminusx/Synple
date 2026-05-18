@@ -3,10 +3,10 @@
 #include <catch2/generators/catch_generators.hpp>
 
 #include "dsp/Goertzel.h"
+#include "dsp/Rms.h"
 #include "synth/SawtoothOscillator.h"
 
 #include <cmath>
-#include <numeric>
 #include <vector>
 
 namespace
@@ -122,14 +122,6 @@ AliasingResult measureAliasing(
     return {fundamentalMag, worstAlias, worstAliasFreq};
 }
 
-float rms(const std::vector<float>& v)
-{
-    float sum = 0.0f;
-    for (float s : v)
-        sum += s * s;
-    return std::sqrt(sum / static_cast<float>(v.size()));
-}
-
 } // namespace
 
 // ─── Amplitude scaling ────────────────────────────────────────────────────────
@@ -141,8 +133,8 @@ TEST_CASE("Sawtooth RMS scales linearly with amplitude", "[oscillator][amplitude
     const auto sig1x = renderRaw(440.0f, sampleRate, N, 1.0f);
     const auto sig2x = renderRaw(440.0f, sampleRate, N, 2.0f);
 
-    const float rms1 = rms(sig1x);
-    const float rms2 = rms(sig2x);
+    const float rms1 = dsp::rms(sig1x);
+    const float rms2 = dsp::rms(sig2x);
 
     INFO("rms(1x) = " << rms1 << "  rms(2x) = " << rms2);
     REQUIRE(rms1 > 0.0f);

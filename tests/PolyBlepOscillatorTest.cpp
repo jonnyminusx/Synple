@@ -2,10 +2,11 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
+#include "dsp/Mean.h"
+#include "dsp/Rms.h"
 #include "synth/PolyBlepOscillator.h"
 
 #include <cmath>
-#include <numeric>
 #include <vector>
 
 namespace
@@ -36,19 +37,6 @@ std::vector<float> renderBlep(float f0, float fs, int numSamples, float amplitud
     return output;
 }
 
-float rms(const std::vector<float>& v)
-{
-    float sum = 0.0f;
-    for (float s : v)
-        sum += s * s;
-    return std::sqrt(sum / static_cast<float>(v.size()));
-}
-
-float mean(const std::vector<float>& v)
-{
-    return std::accumulate(v.begin(), v.end(), 0.0f) / static_cast<float>(v.size());
-}
-
 } // namespace
 
 // ─── DC offset ───────────────────────────────────────────────────────────────
@@ -64,8 +52,8 @@ TEST_CASE("Raw BLEP output has near-zero DC after warmup", "[oscillator][dc]")
 
     const float f0 = GENERATE(440.0f, 1000.0f, 5000.0f);
     auto sig = renderBlep(f0, sampleRate, N);
-    INFO("f0=" << f0 << " Hz, mean=" << mean(sig));
-    REQUIRE(std::abs(mean(sig)) < tolerance);
+    INFO("f0=" << f0 << " Hz, mean=" << dsp::mean(sig));
+    REQUIRE(std::abs(dsp::mean(sig)) < tolerance);
 }
 
 // ─── Modulation ───────────────────────────────────────────────────────────────
@@ -91,8 +79,8 @@ TEST_CASE("Modulation parameter changes oscillator output", "[oscillator][modula
         return out;
     };
 
-    const float rms1 = rms(renderWithMod(1.0f));
-    const float rmsHalf = rms(renderWithMod(0.5f));
+    const float rms1 = dsp::rms(renderWithMod(1.0f));
+    const float rmsHalf = dsp::rms(renderWithMod(0.5f));
 
     INFO("rms(mod=1.0)=" << rms1 << "  rms(mod=0.5)=" << rmsHalf);
     REQUIRE(std::abs(rms1 - rmsHalf) > 0.01f);

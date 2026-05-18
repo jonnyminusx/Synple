@@ -117,7 +117,9 @@ target_include_directories(synple_midi PUBLIC source)
 add_library(synple_dsp STATIC
     source/dsp/AudioBuffer.cpp
     source/dsp/Filter.cpp
+    source/dsp/Mean.cpp
     source/dsp/NoiseGenerator.cpp
+    source/dsp/Rms.cpp
 )
 target_include_directories(synple_dsp PUBLIC source)
 target_link_libraries(synple_dsp PUBLIC synple_math)

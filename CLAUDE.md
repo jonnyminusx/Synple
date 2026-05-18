@@ -217,3 +217,4 @@ Avoid unless the type is verbose and unambiguous from context (e.g. `auto buffer
 - `source/dsp/`, `source/synth/`, and `source/midi/` must stay JUCE-free (eligible for `SynthTests`). Never add a JUCE include to these layers.
 - Parameter IDs must come from `parameter_id::` constants in `ParameterIDs.h` — never raw string literals.
 - The synth engine reads parameters via `synth::Parameters` (a plain struct); do not reach from the synth layer back into `source/juce/`.
+- Free functions in `source/dsp/`, `source/synth/`, and `source/midi/` are declared in a `.h` file and defined in a matching `.cpp` file — do not use `inline` implementations in headers unless the function is a template or `constexpr`. Add the `.cpp` to the corresponding `add_library(...)` block in `CMakeLists.txt`.
