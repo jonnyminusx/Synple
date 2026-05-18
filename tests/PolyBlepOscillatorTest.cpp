@@ -1,5 +1,6 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 #include "synth/PolyBlepOscillator.h"
 
@@ -61,26 +62,10 @@ TEST_CASE("Raw BLEP output has near-zero DC after warmup", "[oscillator][dc]")
     constexpr int N = 16384;
     constexpr float tolerance = 0.01f;
 
-    SECTION("440 Hz")
-    {
-        auto sig = renderBlep(440.0f, sampleRate, N);
-        INFO("mean = " << mean(sig));
-        REQUIRE(std::abs(mean(sig)) < tolerance);
-    }
-
-    SECTION("1000 Hz")
-    {
-        auto sig = renderBlep(1000.0f, sampleRate, N);
-        INFO("mean = " << mean(sig));
-        REQUIRE(std::abs(mean(sig)) < tolerance);
-    }
-
-    SECTION("5000 Hz")
-    {
-        auto sig = renderBlep(5000.0f, sampleRate, N);
-        INFO("mean = " << mean(sig));
-        REQUIRE(std::abs(mean(sig)) < tolerance);
-    }
+    const float f0 = GENERATE(440.0f, 1000.0f, 5000.0f);
+    auto sig = renderBlep(f0, sampleRate, N);
+    INFO("f0=" << f0 << " Hz, mean=" << mean(sig));
+    REQUIRE(std::abs(mean(sig)) < tolerance);
 }
 
 // ─── Modulation ───────────────────────────────────────────────────────────────

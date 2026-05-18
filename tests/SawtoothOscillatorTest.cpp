@@ -1,11 +1,13 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 #include "dsp/Goertzel.h"
 #include "synth/SawtoothOscillator.h"
 
 #include <cmath>
 #include <numeric>
+#include <tuple>
 #include <vector>
 
 namespace
@@ -166,29 +168,14 @@ TEST_CASE("Oscillator fundamental energy is concentrated at the set frequency", 
 {
     constexpr int N = 16384;
 
-    SECTION("440 Hz")
-    {
-        constexpr float f0 = 440.0f;
-        const auto sig = renderRaw(f0, sampleRate, N);
-        const float atF0 = dsp::goertzel(sig, f0, sampleRate);
-        const float atLow = dsp::goertzel(sig, f0 - 100.0f, sampleRate);
-        const float atHigh = dsp::goertzel(sig, f0 + 100.0f, sampleRate);
-        INFO("energy at f0=" << atF0 << " at f0-100=" << atLow << " at f0+100=" << atHigh);
-        REQUIRE(atF0 > 10.0f * atLow);
-        REQUIRE(atF0 > 10.0f * atHigh);
-    }
-
-    SECTION("1000 Hz")
-    {
-        constexpr float f0 = 1000.0f;
-        const auto sig = renderRaw(f0, sampleRate, N);
-        const float atF0 = dsp::goertzel(sig, f0, sampleRate);
-        const float atLow = dsp::goertzel(sig, f0 - 100.0f, sampleRate);
-        const float atHigh = dsp::goertzel(sig, f0 + 100.0f, sampleRate);
-        INFO("energy at f0=" << atF0 << " at f0-100=" << atLow << " at f0+100=" << atHigh);
-        REQUIRE(atF0 > 10.0f * atLow);
-        REQUIRE(atF0 > 10.0f * atHigh);
-    }
+    const float f0 = GENERATE(440.0f, 1000.0f);
+    const auto sig = renderRaw(f0, sampleRate, N);
+    const float atF0   = dsp::goertzel(sig, f0,           sampleRate);
+    const float atLow  = dsp::goertzel(sig, f0 - 100.0f, sampleRate);
+    const float atHigh = dsp::goertzel(sig, f0 + 100.0f, sampleRate);
+    INFO("f0=" << f0 << " Hz, energy at f0=" << atF0 << " at f0-100=" << atLow << " at f0+100=" << atHigh);
+    REQUIRE(atF0 > 10.0f * atLow);
+    REQUIRE(atF0 > 10.0f * atHigh);
 }
 
 // ─── Reset ────────────────────────────────────────────────────────────────────
@@ -232,26 +219,11 @@ TEST_CASE("Oscillator produces a signal at the expected fundamental frequency", 
 {
     constexpr int N = 16384;
 
-    SECTION("440 Hz")
-    {
-        auto signal = renderAliasSawtooth(440.0f, sampleRate, N);
-        const float mag = dsp::goertzel(signal, 440.0f, sampleRate);
-        REQUIRE(mag > 1.0f);
-    }
-
-    SECTION("3000 Hz")
-    {
-        auto signal = renderAliasSawtooth(3000.0f, sampleRate, N);
-        const float mag = dsp::goertzel(signal, 3000.0f, sampleRate);
-        REQUIRE(mag > 1.0f);
-    }
-
-    SECTION("7000 Hz")
-    {
-        auto signal = renderAliasSawtooth(7000.0f, sampleRate, N);
-        const float mag = dsp::goertzel(signal, 7000.0f, sampleRate);
-        REQUIRE(mag > 1.0f);
-    }
+    const float f0 = GENERATE(440.0f, 3000.0f, 7000.0f);
+    auto signal = renderAliasSawtooth(f0, sampleRate, N);
+    const float mag = dsp::goertzel(signal, f0, sampleRate);
+    INFO("f0=" << f0 << " Hz, magnitude=" << mag);
+    REQUIRE(mag > 1.0f);
 }
 
 // ─── Aliasing: suppression ────────────────────────────────────────────────────
@@ -266,33 +238,23 @@ TEST_CASE("Oscillator produces a signal at the expected fundamental frequency", 
 //   5000 Hz → 47.0 dB   (threshold 40 dB)
 //   7000 Hz → 40.6 dB   (threshold 35 dB)
 
+// Alias frequencies by fundamental:
+//   3000 Hz → first alias at 20100 Hz
+//   5000 Hz → aliases at 19100, 14100, 9100, 4100 Hz
+//   7000 Hz → many aliases fold back
 TEST_CASE("Sawtooth oscillator suppresses aliasing relative to the fundamental", "[oscillator][aliasing]")
 {
     constexpr int N = 16384;
 
-    SECTION("3000 Hz — moderate stress, first alias at 20100 Hz")
-    {
-        auto signal = renderAliasSawtooth(3000.0f, sampleRate, N);
-        auto r = measureAliasing(signal, 3000.0f, sampleRate);
-        INFO("Worst alias: " << r.worstAliasFreq << " Hz, suppression: " << r.suppressionDb() << " dB");
-        REQUIRE(r.suppressionDb() >= 45.0f);
-    }
-
-    SECTION("5000 Hz — high stress, aliases at 19100, 14100, 9100, 4100 Hz")
-    {
-        auto signal = renderAliasSawtooth(5000.0f, sampleRate, N);
-        auto r = measureAliasing(signal, 5000.0f, sampleRate);
-        INFO("Worst alias: " << r.worstAliasFreq << " Hz, suppression: " << r.suppressionDb() << " dB");
-        REQUIRE(r.suppressionDb() >= 40.0f);
-    }
-
-    SECTION("7000 Hz — very high stress, many aliases fold back")
-    {
-        auto signal = renderAliasSawtooth(7000.0f, sampleRate, N);
-        auto r = measureAliasing(signal, 7000.0f, sampleRate);
-        INFO("Worst alias: " << r.worstAliasFreq << " Hz, suppression: " << r.suppressionDb() << " dB");
-        REQUIRE(r.suppressionDb() >= 35.0f);
-    }
+    auto [f0, threshold] = GENERATE(table<float, float>({
+        std::make_tuple(3000.0f, 45.0f),
+        std::make_tuple(5000.0f, 40.0f),
+        std::make_tuple(7000.0f, 35.0f)
+    }));
+    auto signal = renderAliasSawtooth(f0, sampleRate, N);
+    auto r = measureAliasing(signal, f0, sampleRate);
+    INFO("f0=" << f0 << " Hz, worst alias: " << r.worstAliasFreq << " Hz, suppression: " << r.suppressionDb() << " dB");
+    REQUIRE(r.suppressionDb() >= threshold);
 }
 
 // ─── Aliasing: suppression across sample rates ────────────────────────────────
@@ -305,27 +267,9 @@ TEST_CASE("Alias suppression holds across common sample rates", "[oscillator][al
     constexpr float thresholdDb = 35.0f;
     constexpr int N = 16384;
 
-    SECTION("44100 Hz")
-    {
-        auto signal = renderAliasSawtooth(f0, 44100.0f, N);
-        auto r = measureAliasing(signal, f0, 44100.0f);
-        INFO("Worst alias: " << r.worstAliasFreq << " Hz, suppression: " << r.suppressionDb() << " dB");
-        REQUIRE(r.suppressionDb() >= thresholdDb);
-    }
-
-    SECTION("48000 Hz")
-    {
-        auto signal = renderAliasSawtooth(f0, 48000.0f, N);
-        auto r = measureAliasing(signal, f0, 48000.0f);
-        INFO("Worst alias: " << r.worstAliasFreq << " Hz, suppression: " << r.suppressionDb() << " dB");
-        REQUIRE(r.suppressionDb() >= thresholdDb);
-    }
-
-    SECTION("96000 Hz")
-    {
-        auto signal = renderAliasSawtooth(f0, 96000.0f, N);
-        auto r = measureAliasing(signal, f0, 96000.0f);
-        INFO("Worst alias: " << r.worstAliasFreq << " Hz, suppression: " << r.suppressionDb() << " dB");
-        REQUIRE(r.suppressionDb() >= thresholdDb);
-    }
+    const float fs = GENERATE(44100.0f, 48000.0f, 96000.0f);
+    auto signal = renderAliasSawtooth(f0, fs, N);
+    auto r = measureAliasing(signal, f0, fs);
+    INFO("fs=" << fs << " Hz, worst alias: " << r.worstAliasFreq << " Hz, suppression: " << r.suppressionDb() << " dB");
+    REQUIRE(r.suppressionDb() >= thresholdDb);
 }

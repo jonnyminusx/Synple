@@ -1,5 +1,6 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 #include "dsp/Filter.h"
 #include "dsp/Goertzel.h"
@@ -76,31 +77,16 @@ TEST_CASE("Filter reset clears state but preserves coefficients", "[filter]")
 
 TEST_CASE("Filter passes DC at unity gain", "[filter]")
 {
-    SECTION("44100 Hz sample rate")
-    {
-        dsp::Filter filter;
-        filter.setSampleRate(44100.0f);
-        filter.updateCoefficients(1000.0f, 0.707f);
+    const float fs = GENERATE(44100.0f, 96000.0f);
+    dsp::Filter filter;
+    filter.setSampleRate(fs);
+    filter.updateCoefficients(1000.0f, 0.707f);
 
-        float out = 0.0f;
-        for (int i = 0; i < 4096; ++i)
-            out = filter.render(1.0f);
+    float out = 0.0f;
+    for (int i = 0; i < 4096; ++i)
+        out = filter.render(1.0f);
 
-        REQUIRE(out == Catch::Approx(1.0f).margin(0.01f));
-    }
-
-    SECTION("96000 Hz sample rate")
-    {
-        dsp::Filter filter;
-        filter.setSampleRate(96000.0f);
-        filter.updateCoefficients(1000.0f, 0.707f);
-
-        float out = 0.0f;
-        for (int i = 0; i < 4096; ++i)
-            out = filter.render(1.0f);
-
-        REQUIRE(out == Catch::Approx(1.0f).margin(0.01f));
-    }
+    REQUIRE(out == Catch::Approx(1.0f).margin(0.01f));
 }
 
 // ─── Frequency response ───────────────────────────────────────────────────────

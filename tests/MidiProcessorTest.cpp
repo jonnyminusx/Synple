@@ -1,10 +1,12 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 #include "midi/MidiProcessor.h"
 #include "midi/NoteHandler.h"
 
 #include <cmath>
+#include <tuple>
 #include <vector>
 
 namespace {
@@ -105,26 +107,15 @@ TEST_CASE("Note data bytes are masked to 7 bits", "[midi][note]")
 
 TEST_CASE("Mod wheel (CC 0x01) maps value to 0..1", "[midi][cc]")
 {
+    auto [value, expected] = GENERATE(table<int, float>({
+        std::make_tuple(0,   0.0f),
+        std::make_tuple(127, 1.0f),
+        std::make_tuple(64,  64.0f / 127.0f)
+    }));
     FakeHandler handler;
     midi::MidiProcessor proc{handler};
-
-    SECTION("zero")
-    {
-        proc.process(0xB0, 0x01, 0);
-        REQUIRE(proc.state().modWheel == Catch::Approx(0.0f));
-    }
-
-    SECTION("max")
-    {
-        proc.process(0xB0, 0x01, 127);
-        REQUIRE(proc.state().modWheel == Catch::Approx(1.0f));
-    }
-
-    SECTION("midpoint")
-    {
-        proc.process(0xB0, 0x01, 64);
-        REQUIRE(proc.state().modWheel == Catch::Approx(64.0f / 127.0f));
-    }
+    proc.process(0xB0, 0x01, value);
+    REQUIRE(proc.state().modWheel == Catch::Approx(expected));
 }
 
 // ─── Sustain Pedal ────────────────────────────────────────────────────────────
