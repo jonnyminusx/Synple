@@ -117,7 +117,9 @@ target_include_directories(synple_midi PUBLIC source)
 add_library(synple_dsp STATIC
     source/dsp/AudioBuffer.cpp
     source/dsp/Filter.cpp
+    source/dsp/Mean.cpp
     source/dsp/NoiseGenerator.cpp
+    source/dsp/Rms.cpp
 )
 target_include_directories(synple_dsp PUBLIC source)
 target_link_libraries(synple_dsp PUBLIC synple_math)
@@ -151,7 +153,12 @@ CPMAddPackage(
 
 add_executable(MidiTests  tests/MidiProcessorTest.cpp)
 add_executable(DspTests   tests/AudioBufferTest.cpp tests/FilterTest.cpp)
-add_executable(SynthTests tests/OscillatorTest.cpp)
+add_executable(SynthTests
+    tests/PolyBlepOscillatorTest.cpp
+    tests/PulseOscillatorTest.cpp
+    tests/SawtoothOscillatorTest.cpp
+    tests/SineOscillatorTest.cpp
+)
 
 target_link_libraries(MidiTests  PRIVATE synple_midi  Catch2::Catch2WithMain)
 target_link_libraries(DspTests   PRIVATE synple_dsp   Catch2::Catch2WithMain)
