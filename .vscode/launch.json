@@ -4,6 +4,14 @@
         {
             "type": "lldb",
             "request": "launch",
+            "name": "Debug Standalone",
+            "program": "${workspaceFolder}/build_debug/Synple_artefacts/Debug/Standalone/Synple.app/Contents/MacOS/Synple",
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
             "name": "Debug MidiTests",
             "program": "${workspaceFolder}/build_debug/MidiTests",
             "args": [],
