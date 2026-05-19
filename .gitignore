@@ -31,6 +31,7 @@
 *.out
 *.app
 
+.cache/
 build*/
 source/ui/public/
 source/ui/node_modules/
