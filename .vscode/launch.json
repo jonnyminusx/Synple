@@ -1,0 +1,29 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug MidiTests",
+            "program": "${workspaceFolder}/build_debug/MidiTests",
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug DspTests",
+            "program": "${workspaceFolder}/build_debug/DspTests",
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug SynthTests",
+            "program": "${workspaceFolder}/build_debug/SynthTests",
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

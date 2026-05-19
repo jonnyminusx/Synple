@@ -14,7 +14,7 @@ option(BUILD_PLUGIN "Build the JUCE audio plugin" ON)
 option(ENABLE_SANITIZERS "Build SynthTests with ASan and UBSan" OFF)
 
 # We're going to use CPM as our package manager
-set(CPM_DOWNLOAD_VERSION 0.34.0)
+set(CPM_DOWNLOAD_VERSION 0.42.3)
 set(CPM_DOWNLOAD_LOCATION "${CMAKE_BINARY_DIR}/cmake/CPM_${CPM_DOWNLOAD_VERSION}.cmake")
 
 if (NOT EXISTS "${CPM_DOWNLOAD_LOCATION}")
@@ -208,7 +208,7 @@ endif()
 CPMAddPackage(
     NAME juce
     GIT_REPOSITORY https://github.com/juce-framework/JUCE.git
-    GIT_TAG origin/master
+    GIT_TAG 8.0.13
 )
 
 set(SourceFiles
@@ -241,7 +241,7 @@ set(SourceFiles
 )
 
 juce_add_plugin(${PROJECT_NAME}
-        COMPANY_NAME "Ghostwritten DSP"
+        COMPANY_NAME "GhostwrittenDSP"
         IS_SYNTH TRUE
         NEEDS_MIDI_INPUT TRUE
         NEEDS_MIDI_OUTPUT FALSE
