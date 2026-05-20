@@ -13,7 +13,7 @@ class NoiseGenerator
 
   private:
     std::mt19937 rng_;
-    std::uniform_real_distribution<float> dist_{0.0f, 1.0f};
+    std::uniform_real_distribution<float> dist_{-1.0f, 1.0f};
 };
 
 } // namespace dsp

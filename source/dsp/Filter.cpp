@@ -26,6 +26,12 @@
 namespace dsp
 {
 
+namespace
+{
+// Below this magnitude, flush to zero to prevent x86 denormal-float slowdown.
+constexpr float kDenormalThreshold{1e-30f};
+} // namespace
+
 void Filter::updateCoefficients(const float cutoff, const float Q)
 {
     g_ = std::tan(math::pi * cutoff / sampleRate_);
@@ -48,10 +54,9 @@ float Filter::render(const float x)
     const float v2 = s2_ + a2_ * s1_ + a3_ * v3;
     s1_ = 2.0f * v1 - s1_;
     s2_ = 2.0f * v2 - s2_;
-    // Flush denormals: prevents x86 soft-float slowdown during long quiet sustains.
-    if (std::abs(s1_) < 1e-30f)
+    if (std::abs(s1_) < kDenormalThreshold)
         s1_ = 0.0f;
-    if (std::abs(s2_) < 1e-30f)
+    if (std::abs(s2_) < kDenormalThreshold)
         s2_ = 0.0f;
     return v2;
 }

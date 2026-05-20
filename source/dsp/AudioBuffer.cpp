@@ -3,8 +3,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <cstddef>
-#include <string>
+#include <string_view>
 #include <utility>
 #ifndef NDEBUG
 #include <iostream>
@@ -20,13 +19,13 @@ constexpr float kClampThreshold{1.0f};
 constexpr float kSilenceThreshold{2.0f};
 
 #ifndef NDEBUG
-void printWarning(const std::string& problem, const std::string& solution, size_t channel, size_t sample)
+void printWarning(std::string_view problem, std::string_view solution, size_t channel, size_t sample)
 {
     std::cerr << "Warning: Sample value is " << problem << " at channel: " << channel << ", sample: " << sample << " - "
               << solution << "\n";
 }
 #else
-void printWarning(const std::string&, const std::string&, size_t, size_t) {}
+void printWarning(std::string_view, std::string_view, size_t, size_t) {}
 #endif
 
 } // namespace
@@ -44,14 +43,12 @@ AudioBuffer::AudioBuffer(std::vector<std::span<float>> channels) : channels_(std
 
 std::span<float> AudioBuffer::channelBuffer(const size_t channel)
 {
-    assert(channel >= 0);
     assert(channel < channelCount());
     return channels_[channel];
 }
 
 std::span<const float> AudioBuffer::channelBuffer(const size_t channel) const
 {
-    assert(channel >= 0);
     assert(channel < channelCount());
     return channels_[channel];
 }
@@ -68,7 +65,6 @@ size_t AudioBuffer::channelCount() const
 
 void AudioBuffer::clear(const size_t channel)
 {
-    assert(channel >= 0);
     assert(channel < channelCount());
 
     std::fill(channels_[channel].begin(), channels_[channel].end(), 0.0f);

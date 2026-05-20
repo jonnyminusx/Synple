@@ -61,7 +61,7 @@ TEST_CASE("Filter reset clears state but preserves coefficients", "[filter]")
 
     // Load up the state variables with some audio.
     for (int i = 0; i < 1000; ++i)
-        filter.render(std::sin(2.0f * std::numbers::pi_v<float> * 100.0f * static_cast<float>(i) / sampleRate));
+        (void)filter.render(std::sin(2.0f * std::numbers::pi_v<float> * 100.0f * static_cast<float>(i) / sampleRate));
 
     filter.reset();
 
@@ -149,7 +149,7 @@ TEST_CASE("Filter impulse response decays to silence", "[filter][stability]")
     filter.setSampleRate(sampleRate);
     filter.updateCoefficients(1000.0f, 0.707f);
 
-    filter.render(1.0f); // impulse
+    (void)filter.render(1.0f); // impulse
 
     float out = 0.0f;
     for (int i = 0; i < 8192; ++i)

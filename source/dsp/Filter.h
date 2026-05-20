@@ -8,8 +8,8 @@ class Filter
   public:
     void updateCoefficients(float cutoff, float Q);
     void reset();
+    [[nodiscard]] float render(float x);
     void setSampleRate(float sampleRate);
-    float render(float x);
 
   private:
     float sampleRate_{0.0f};
