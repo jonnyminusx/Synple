@@ -167,12 +167,13 @@ target_link_libraries(SynthTests PRIVATE synple_synth Catch2::Catch2WithMain)
 set(kTestTargets MidiTests DspTests SynthTests)
 
 if (ENABLE_SANITIZERS)
+    set(kSanitizerFlags -fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all)
+    foreach(LIB IN ITEMS synple_midi synple_dsp synple_synth)
+        target_compile_options(${LIB} PRIVATE ${kSanitizerFlags})
+        target_link_options(${LIB} PRIVATE -fsanitize=address,undefined)
+    endforeach()
     foreach(TARGET IN LISTS kTestTargets)
-        target_compile_options(${TARGET} PRIVATE
-            -fsanitize=address,undefined
-            -fno-omit-frame-pointer
-            -fno-sanitize-recover=all
-        )
+        target_compile_options(${TARGET} PRIVATE ${kSanitizerFlags})
         target_link_options(${TARGET} PRIVATE -fsanitize=address,undefined)
     endforeach()
 endif()
@@ -201,7 +202,6 @@ if (UNIX AND NOT APPLE)
     if (NOT WEBKIT_FOUND)
         pkg_check_modules(WEBKIT REQUIRED webkit2gtk-4.0)
     endif()
-    include_directories(SYSTEM ${GTK3_INCLUDE_DIRS} ${WEBKIT_INCLUDE_DIRS})
 endif()
 
 # Bring in JUCE
@@ -275,7 +275,7 @@ target_compile_definitions(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
-        PUBLIC
+        PRIVATE
         juce::juce_audio_basics
         juce::juce_audio_devices
         juce::juce_core
@@ -288,7 +288,6 @@ target_link_libraries(${PROJECT_NAME}
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags
-        PRIVATE
         WebViewFiles
         synple_synth
 )
@@ -331,6 +330,11 @@ add_custom_target(ZipWebViewFiles
 # Pass the prefix of the zipped files (e.g., "public/") to C++
 cmake_path(GET PUBLIC_PATH FILENAME ZIPPED_FILES_PREFIX)
 target_compile_definitions(${PROJECT_NAME} PRIVATE ZIPPED_FILES_PREFIX="${ZIPPED_FILES_PREFIX}/")
+
+if (UNIX AND NOT APPLE)
+    target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
+        ${GTK3_INCLUDE_DIRS} ${WEBKIT_INCLUDE_DIRS})
+endif()
 
 # Package web UI sources as binary data
 juce_add_binary_data(WebViewFiles
