@@ -1,6 +1,5 @@
 #include "Rms.h"
 
-#include <cassert>
 #include <cmath>
 
 namespace dsp
@@ -8,7 +7,8 @@ namespace dsp
 
 float rms(std::span<const float> v)
 {
-    assert(!v.empty());
+    if (v.empty())
+        return 0.0f;
     float sum{0.0f};
     for (float s : v)
         sum += s * s;
