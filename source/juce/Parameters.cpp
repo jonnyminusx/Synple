@@ -1,7 +1,13 @@
 #include "Parameters.h"
 #include "ParameterIds.h"
 #include "synth/Parameters.h"
+#include "synth/Synth.h"
 #include <cmath>
+
+namespace
+{
+constexpr float kSemitoneRatio{1.0594630943592952f}; // 2^(1/12)
+} // namespace
 
 juce::AudioProcessorValueTreeState::ParameterLayout Parameters::buildLayout()
 {
@@ -13,45 +19,45 @@ juce::AudioProcessorValueTreeState::ParameterLayout Parameters::buildLayout()
         layout.add(std::move(p));
     };
 
-    addParam(glideModeParam_, ParameterIds::glideMode, "Glide Mode", juce::StringArray{"Off", "Legato", "Always"}, 0);
+    addParam(glideModeParam_, parameter_id::glideMode, "Glide Mode", juce::StringArray{"Off", "Legato", "Always"}, 0);
 
     addParam(glideRateParam_,
-             ParameterIds::glideRate,
+             parameter_id::glideRate,
              "Glide Rate",
              juce::NormalisableRange<float>(0.0f, 100.f, 1.0f),
              35.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
     addParam(glideBendParam_,
-             ParameterIds::glideBend,
+             parameter_id::glideBend,
              "Glide Bend",
              juce::NormalisableRange<float>(-36.0f, 36.0f, 0.01f, 0.4f, true),
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("semi"));
 
     addParam(filterFreqParam_,
-             ParameterIds::filterFreq,
+             parameter_id::filterFreq,
              "Filter Freq",
              juce::NormalisableRange<float>(0.0f, 100.0f, 0.1f),
              100.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
     addParam(filterResoParam_,
-             ParameterIds::filterReso,
+             parameter_id::filterReso,
              "Filter Reso",
              juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
              15.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
     addParam(filterEnvParam_,
-             ParameterIds::filterEnv,
+             parameter_id::filterEnv,
              "Filter Env",
              juce::NormalisableRange<float>(-100.0f, 100.0f, 0.1f),
              50.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
     addParam(filterLFOParam_,
-             ParameterIds::filterLFO,
+             parameter_id::filterLFO,
              "Filter LFO",
              juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
              0.0f,
@@ -62,7 +68,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Parameters::buildLayout()
     };
 
     addParam(filterVelocityParam_,
-             ParameterIds::filterVelocity,
+             parameter_id::filterVelocity,
              "Velocity",
              juce::NormalisableRange<float>(-100.0f, 100.0f, 1.0f),
              0.0f,
@@ -70,56 +76,56 @@ juce::AudioProcessorValueTreeState::ParameterLayout Parameters::buildLayout()
                  filterVelocityStringFromValue));
 
     addParam(filterAttackParam_,
-             ParameterIds::filterAttack,
+             parameter_id::filterAttack,
              "Filter Attack",
              juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
     addParam(filterDecayParam_,
-             ParameterIds::filterDecay,
+             parameter_id::filterDecay,
              "Filter Decay",
              juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
              30.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
     addParam(filterSustainParam_,
-             ParameterIds::filterSustain,
+             parameter_id::filterSustain,
              "Filter Sustain",
              juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
     addParam(filterReleaseParam_,
-             ParameterIds::filterRelease,
+             parameter_id::filterRelease,
              "Filter Release",
              juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
              25.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
     addParam(envAttackParam_,
-             ParameterIds::envAttack,
+             parameter_id::envAttack,
              "Env Attack",
              juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
     addParam(envDecayParam_,
-             ParameterIds::envDecay,
+             parameter_id::envDecay,
              "Env Decay",
              juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
              50.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
     addParam(envSustainParam_,
-             ParameterIds::envSustain,
+             parameter_id::envSustain,
              "Env Sustain",
              juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
              100.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
     addParam(envReleaseParam_,
-             ParameterIds::envRelease,
+             parameter_id::envRelease,
              "Env Release",
              juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
              30.0f,
@@ -131,114 +137,114 @@ juce::AudioProcessorValueTreeState::ParameterLayout Parameters::buildLayout()
     };
 
     addParam(lfoRateParam_,
-             ParameterIds::lfoRate,
+             parameter_id::lfoRate,
              "LFO Rate",
              juce::NormalisableRange<float>(),
              0.81f,
              juce::AudioParameterFloatAttributes().withLabel("Hz").withStringFromValueFunction(lfoRateStringFromValue));
 
     addParam(vibratoParam_,
-             ParameterIds::vibrato,
+             parameter_id::vibrato,
              "Vibrato",
              juce::NormalisableRange<float>(0.0f, 100.0f, 0.1f),
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
     addParam(noiseParam_,
-             ParameterIds::noise,
+             parameter_id::noise,
              "Noise",
              juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f),
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
-    addParam(octaveParam_, ParameterIds::octave, "Octave", juce::NormalisableRange<float>(-2.0f, 2.0f, 1.0f), 0.0f);
+    addParam(octaveParam_, parameter_id::octave, "Octave", juce::NormalisableRange<float>(-2.0f, 2.0f, 1.0f), 0.0f);
 
     addParam(tuningParam_,
-             ParameterIds::tuning,
+             parameter_id::tuning,
              "Tuning",
              juce::NormalisableRange<float>(-100.0f, 100.0f, 0.1f),
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("cent"));
 
     addParam(outputLevelParam_,
-             ParameterIds::outputLevel,
+             parameter_id::outputLevel,
              "Output Level",
              juce::NormalisableRange<float>(-24.0f, 6.0f, 0.1f),
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("dB"));
 
-    addParam(polyModeParam_, ParameterIds::polyMode, "Polyphony", juce::StringArray{"Mono", "Poly"}, 1);
+    addParam(polyModeParam_, parameter_id::polyMode, "Polyphony", juce::StringArray{"Mono", "Poly"}, 1);
 
     addParam(pwmDepthParam_,
-             ParameterIds::pwmDepth,
+             parameter_id::pwmDepth,
              "PWM Depth",
              juce::NormalisableRange<float>(0.0f, 100.0f, 0.1f),
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
     addParam(osc1VolumeParam_,
-             ParameterIds::osc1Volume,
+             parameter_id::osc1Volume,
              "Osc 1 Volume",
              juce::NormalisableRange<float>(0.0f, 100.0f, 0.1f),
              100.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
     addParam(osc2VolumeParam_,
-             ParameterIds::osc2Volume,
+             parameter_id::osc2Volume,
              "Osc 2 Volume",
              juce::NormalisableRange<float>(0.0f, 100.0f, 0.1f),
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
     addParam(osc1TuneParam_,
-             ParameterIds::osc1Tune,
+             parameter_id::osc1Tune,
              "Osc 1 Tune",
              juce::NormalisableRange<float>(-24.0f, 24.0f, 1.0f),
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("semi"));
 
     addParam(osc2TuneParam_,
-             ParameterIds::osc2Tune,
+             parameter_id::osc2Tune,
              "Osc 2 Tune",
              juce::NormalisableRange<float>(-24.0f, 24.0f, 1.0f),
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("semi"));
 
     addParam(osc1FineParam_,
-             ParameterIds::osc1Fine,
+             parameter_id::osc1Fine,
              "Osc 1 Fine",
              juce::NormalisableRange<float>(-50.0f, 50.0f, 0.1f, 0.3f, true),
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("cent"));
 
     addParam(osc2FineParam_,
-             ParameterIds::osc2Fine,
+             parameter_id::osc2Fine,
              "Osc 2 Fine",
              juce::NormalisableRange<float>(-50.0f, 50.0f, 0.1f, 0.3f, true),
              0.0f,
              juce::AudioParameterFloatAttributes().withLabel("cent"));
 
     addParam(osc1WaveformParam_,
-             ParameterIds::osc1Waveform,
+             parameter_id::osc1Waveform,
              "Osc 1 Waveform",
              juce::StringArray{"Sawtooth", "Sine", "Pulse"},
              0);
 
     addParam(osc2WaveformParam_,
-             ParameterIds::osc2Waveform,
+             parameter_id::osc2Waveform,
              "Osc 2 Waveform",
              juce::StringArray{"Sawtooth", "Sine", "Pulse"},
              0);
 
     addParam(osc1PulseWidthParam_,
-             ParameterIds::osc1PulseWidth,
+             parameter_id::osc1PulseWidth,
              "Osc 1 Pulse Width",
              juce::NormalisableRange<float>(10.0f, 90.0f, 0.1f),
              50.0f,
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
     addParam(osc2PulseWidthParam_,
-             ParameterIds::osc2PulseWidth,
+             parameter_id::osc2PulseWidth,
              "Osc 2 Pulse Width",
              juce::NormalisableRange<float>(10.0f, 90.0f, 0.1f),
              50.0f,
@@ -293,12 +299,12 @@ float Parameters::osc2Volume() const
 
 float Parameters::osc1TuneFactor() const
 {
-    return std::pow(1.059463094359f, -(osc1TuneParam_->get() + 0.01f * osc1FineParam_->get()));
+    return std::pow(kSemitoneRatio, -(osc1TuneParam_->get() + 0.01f * osc1FineParam_->get()));
 }
 
 float Parameters::osc2TuneFactor() const
 {
-    return std::pow(1.059463094359f, -(osc2TuneParam_->get() + 0.01f * osc2FineParam_->get()));
+    return std::pow(kSemitoneRatio, -(osc2TuneParam_->get() + 0.01f * osc2FineParam_->get()));
 }
 
 float Parameters::osc1PulseWidth() const
@@ -442,7 +448,7 @@ float Parameters::glideRateCoefficient(const float inverseSampleRate, const floa
 
 synth::Parameters Parameters::createSnapshot(const float sampleRate) const
 {
-    constexpr float kModulationUpdateInterval{32.0f};
+    const float kModulationUpdateInterval{static_cast<float>(synth::Synth::lfoMaxSamplesPerUpdate())};
     const float inverseSampleRate{1.0f / sampleRate};
     const float inverseUpdateRate{inverseSampleRate * kModulationUpdateInterval};
 

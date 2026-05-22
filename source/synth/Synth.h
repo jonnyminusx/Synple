@@ -39,6 +39,8 @@ class Synth : public midi::NoteHandler
     void setParameters(const Parameters& parameters);
     void setOutputLevelInstantly(const float outputLevel);
 
+    static int lfoMaxSamplesPerUpdate();
+
   private:
     void startVoice(const size_t voiceIdx, const int note, const int velocity);
     void restartMonoVoice(const int note, const int velocity);
@@ -65,7 +67,6 @@ class Synth : public midi::NoteHandler
 
     float sampleRate_{44100.0f};
 
-    static constexpr int kLfoMaxSamplesPerUpdate{32};
     float lfo_{0.0f};
     int lfoStep_{0};
 

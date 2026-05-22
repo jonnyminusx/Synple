@@ -134,6 +134,7 @@ void SynpleAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     envelopeFollower_.setReleaseTime(200.0f);
     envelopeFollower_.setLevelCalculationType(juce::dsp::BallisticsFilter<float>::LevelCalculationType::peak);
     envelopeFollowerOutputBuffer_.setSize(getTotalNumOutputChannels(), samplesPerBlock);
+    renderChannels_.reserve(static_cast<size_t>(getTotalNumOutputChannels()));
 }
 
 void SynpleAudioProcessor::releaseResources()
@@ -147,10 +148,6 @@ bool SynpleAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) co
     juce::ignoreUnused(layouts);
     return true;
 #else
-    // This is the place where you check if the layout is supported.
-    // In this template code we only support mono or stereo.
-    // Some plugin hosts, such as certain GarageBand versions, will only
-    // load plugins that support stereo bus layouts.
     if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono() &&
         layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
     {
@@ -175,8 +172,8 @@ void SynpleAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::
 
     juce::ScopedNoDenormals noDenormals;
 
-    auto totalNumInputChannels = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
+    int totalNumInputChannels = getTotalNumInputChannels();
+    int totalNumOutputChannels = getTotalNumOutputChannels();
 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear(i, 0, buffer.getNumSamples());
@@ -212,7 +209,7 @@ void SynpleAudioProcessor::reset()
 //==============================================================================
 bool SynpleAudioProcessor::hasEditor() const
 {
-    return true; // (change this to false if you choose to not supply an editor)
+    return true;
 }
 
 juce::AudioProcessorEditor* SynpleAudioProcessor::createEditor()
@@ -308,7 +305,6 @@ void SynpleAudioProcessor::handleMidi(const uint8_t data0, const uint8_t data1, 
     {
         if (midiLearn)
         {
-            DBG("learned a MIDI CC");
             midiLearnCC_.store(data1);
             midiLearn.store(false);
             return;
@@ -335,14 +331,11 @@ void SynpleAudioProcessor::handleMidi(const uint8_t data0, const uint8_t data1, 
 
 void SynpleAudioProcessor::render(juce::AudioBuffer<float>& buffer, const int sampleCount, const int bufferOffset)
 {
-    std::vector<std::span<float>> channels;
-    channels.reserve(static_cast<size_t>(buffer.getNumChannels()));
+    renderChannels_.resize(static_cast<size_t>(buffer.getNumChannels()));
     for (int ch = 0; ch < buffer.getNumChannels(); ++ch)
-    {
-        auto ptr = buffer.getWritePointer(ch, bufferOffset);
-        channels.emplace_back(ptr, sampleCount);
-    }
-    dsp::AudioBuffer audioBuffer{channels};
+        renderChannels_[static_cast<size_t>(ch)] = {buffer.getWritePointer(ch, bufferOffset),
+                                                    static_cast<size_t>(sampleCount)};
+    dsp::AudioBuffer audioBuffer{renderChannels_};
     synth_.render(audioBuffer);
 }
 

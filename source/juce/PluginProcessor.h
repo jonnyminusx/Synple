@@ -6,6 +6,8 @@
 #include "synth/Synth.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
+#include <span>
+#include <vector>
 
 //==============================================================================
 class SynpleAudioProcessor final : public juce::AudioProcessor, private juce::ValueTree::Listener
@@ -72,6 +74,7 @@ class SynpleAudioProcessor final : public juce::AudioProcessor, private juce::Va
 
     juce::dsp::BallisticsFilter<float> envelopeFollower_;
     juce::AudioBuffer<float> envelopeFollowerOutputBuffer_;
+    std::vector<std::span<float>> renderChannels_;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynpleAudioProcessor)
