@@ -6,7 +6,7 @@
 
 namespace
 {
-constexpr float kSemitoneRatio{kSemitoneRatio}; // 2^(1/12)
+constexpr float kSemitoneRatio{1.0594630943592952f}; // 2^(1/12)
 } // namespace
 
 juce::AudioProcessorValueTreeState::ParameterLayout Parameters::buildLayout()
