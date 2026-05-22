@@ -24,9 +24,6 @@ class Parameters
     // Fills a 34-element array with all parameters in canonical preset order
     void fillParameterArray(juce::RangedAudioParameter** params) const;
 
-    // Apply a normalised [0,1] volume CC to the output level parameter
-    void setOutputLevelFromMidi(float normalised0to1);
-
   private:
     static float multiplierFromParam(float rateScale, float paramValue);
 

@@ -1,5 +1,7 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { useJuceSlider } from '../hooks/useJuceSlider.js'
+import { useMidiLearn } from '../hooks/useMidiLearn.js'
+import { ContextMenu } from './ContextMenu.js'
 
 interface KnobProps {
   parameterId: string
@@ -29,8 +31,10 @@ function arcPath(cx: number, cy: number, r: number, startDeg: number, endDeg: nu
 export function Knob({ parameterId, label, formatValue }: KnobProps) {
   const { scaledValue, normalisedValue, setNormalisedValue, onDragStart, onDragEnd } =
     useJuceSlider(parameterId)
+  const { cc, isLearning, startLearn, cancelLearn, clearLearn } = useMidiLearn(parameterId)
 
   const dragRef = useRef<{ startY: number; startNorm: number } | null>(null)
+  const [menu, setMenu] = useState<{ x: number; y: number } | null>(null)
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
@@ -51,12 +55,27 @@ export function Knob({ parameterId, label, formatValue }: KnobProps) {
   )
 
   const handlePointerUp = useCallback(
-    (e: React.PointerEvent<SVGSVGElement>) => {
+    (_e: React.PointerEvent<SVGSVGElement>) => {
       dragRef.current = null
       onDragEnd()
     },
     [onDragEnd],
   )
+
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    setMenu({ x: e.clientX, y: e.clientY })
+  }, [])
+
+  const menuItems = isLearning
+    ? [
+        { label: 'Cancel Learning', action: cancelLearn, variant: 'danger' as const },
+        ...(cc !== null ? [{ label: `Clear CC ${cc}`, action: clearLearn, variant: 'danger' as const }] : []),
+      ]
+    : [
+        { label: 'Learn MIDI CC', action: startLearn },
+        ...(cc !== null ? [{ label: `Clear CC ${cc}`, action: clearLearn, variant: 'danger' as const }] : []),
+      ]
 
   const endAngle = START_ANGLE + normalisedValue * SWEEP
   const dot = polarXY(CX, CY, RADIUS, endAngle)
@@ -64,7 +83,10 @@ export function Knob({ parameterId, label, formatValue }: KnobProps) {
   const valueText = formatValue ? formatValue(scaledValue) : scaledValue.toFixed(1)
 
   return (
-    <div className="flex flex-col items-center gap-0.5 select-none cursor-ns-resize">
+    <div
+      className="flex flex-col items-center gap-0.5 select-none cursor-ns-resize"
+      onContextMenu={handleContextMenu}
+    >
       <svg
         width={SIZE}
         height={SIZE}
@@ -72,6 +94,7 @@ export function Knob({ parameterId, label, formatValue }: KnobProps) {
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
+        style={isLearning ? { outline: '1.5px solid #f59e0b', outlineOffset: '1px', borderRadius: '50%' } : undefined}
       >
         {/* Track */}
         <path
@@ -98,6 +121,20 @@ export function Knob({ parameterId, label, formatValue }: KnobProps) {
       <span className="text-[9px] text-zinc-800 font-mono uppercase tracking-wide leading-none">
         {label}
       </span>
+      {isLearning && (
+        <span className="text-[8px] font-mono text-amber-500 leading-none animate-pulse">learn</span>
+      )}
+      {!isLearning && cc !== null && (
+        <span className="text-[8px] font-mono text-amber-600 leading-none">cc:{cc}</span>
+      )}
+      {menu && (
+        <ContextMenu
+          x={menu.x}
+          y={menu.y}
+          items={menuItems}
+          onClose={() => setMenu(null)}
+        />
+      )}
     </div>
   )
 }

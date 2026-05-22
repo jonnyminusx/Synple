@@ -71,20 +71,8 @@ void MidiProcessor::controlChange(const uint8_t controller, const uint8_t value)
         }
         break;
 
-    case 0x4A: // Filter +
-        state_.filterControl = 0.02f * float(value);
-        break;
-
-    case 0x4B: // Filter -
-        state_.filterControl = -0.03f * float(value);
-        break;
-
     default:
-        if (controller == resoCC_)
-        {
-            state_.resonanceCtl = 154.0f / float(154 - value);
-        }
-        else if (controller >= 0x78)
+        if (controller >= 0x78)
         {
             state_.sustainPedal = false;
             handler_.allNotesOff();
