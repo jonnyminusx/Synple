@@ -3,7 +3,6 @@
 #include "ParameterIds.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_gui_extra/juce_gui_extra.h>
-
 #include <optional>
 
 class SynpleAudioProcessor;
@@ -21,43 +20,43 @@ class SynpleAudioProcessorEditor final : public juce::AudioProcessorEditor
     using Resource = juce::WebBrowserComponent::Resource;
     std::optional<Resource> getResource(const juce::String& url);
 
-    SynpleAudioProcessor& processorRef;
+    SynpleAudioProcessor& processorRef_;
 
     // Relays must be declared before webView_
-    juce::WebSliderRelay webOsc1VolumeRelay_{ParameterIds::osc1Volume.getParamID()};
-    juce::WebSliderRelay webOsc2VolumeRelay_{ParameterIds::osc2Volume.getParamID()};
-    juce::WebSliderRelay webOsc1TuneRelay_{ParameterIds::osc1Tune.getParamID()};
-    juce::WebSliderRelay webOsc2TuneRelay_{ParameterIds::osc2Tune.getParamID()};
-    juce::WebSliderRelay webOsc1FineRelay_{ParameterIds::osc1Fine.getParamID()};
-    juce::WebSliderRelay webOsc2FineRelay_{ParameterIds::osc2Fine.getParamID()};
-    juce::WebComboBoxRelay webOsc1WaveformRelay_{ParameterIds::osc1Waveform.getParamID()};
-    juce::WebComboBoxRelay webOsc2WaveformRelay_{ParameterIds::osc2Waveform.getParamID()};
-    juce::WebSliderRelay webOsc1PulseWidthRelay_{ParameterIds::osc1PulseWidth.getParamID()};
-    juce::WebSliderRelay webOsc2PulseWidthRelay_{ParameterIds::osc2PulseWidth.getParamID()};
-    juce::WebComboBoxRelay webGlideModeRelay_{ParameterIds::glideMode.getParamID()};
-    juce::WebSliderRelay webGlideRateRelay_{ParameterIds::glideRate.getParamID()};
-    juce::WebSliderRelay webGlideBendRelay_{ParameterIds::glideBend.getParamID()};
-    juce::WebSliderRelay webFilterFreqRelay_{ParameterIds::filterFreq.getParamID()};
-    juce::WebSliderRelay webFilterResoRelay_{ParameterIds::filterReso.getParamID()};
-    juce::WebSliderRelay webFilterEnvRelay_{ParameterIds::filterEnv.getParamID()};
-    juce::WebSliderRelay webFilterLFORelay_{ParameterIds::filterLFO.getParamID()};
-    juce::WebSliderRelay webFilterVelocityRelay_{ParameterIds::filterVelocity.getParamID()};
-    juce::WebSliderRelay webFilterAttackRelay_{ParameterIds::filterAttack.getParamID()};
-    juce::WebSliderRelay webFilterDecayRelay_{ParameterIds::filterDecay.getParamID()};
-    juce::WebSliderRelay webFilterSustainRelay_{ParameterIds::filterSustain.getParamID()};
-    juce::WebSliderRelay webFilterReleaseRelay_{ParameterIds::filterRelease.getParamID()};
-    juce::WebSliderRelay webEnvAttackRelay_{ParameterIds::envAttack.getParamID()};
-    juce::WebSliderRelay webEnvDecayRelay_{ParameterIds::envDecay.getParamID()};
-    juce::WebSliderRelay webEnvSustainRelay_{ParameterIds::envSustain.getParamID()};
-    juce::WebSliderRelay webEnvReleaseRelay_{ParameterIds::envRelease.getParamID()};
-    juce::WebSliderRelay webLfoRateRelay_{ParameterIds::lfoRate.getParamID()};
-    juce::WebSliderRelay webVibratoRelay_{ParameterIds::vibrato.getParamID()};
-    juce::WebSliderRelay webNoiseRelay_{ParameterIds::noise.getParamID()};
-    juce::WebSliderRelay webOctaveRelay_{ParameterIds::octave.getParamID()};
-    juce::WebSliderRelay webTuningRelay_{ParameterIds::tuning.getParamID()};
-    juce::WebSliderRelay webOutputLevelRelay_{ParameterIds::outputLevel.getParamID()};
-    juce::WebComboBoxRelay webPolyModeRelay_{ParameterIds::polyMode.getParamID()};
-    juce::WebSliderRelay webPwmDepthRelay_{ParameterIds::pwmDepth.getParamID()};
+    juce::WebSliderRelay webOsc1VolumeRelay_{parameter_id::osc1Volume.getParamID()};
+    juce::WebSliderRelay webOsc2VolumeRelay_{parameter_id::osc2Volume.getParamID()};
+    juce::WebSliderRelay webOsc1TuneRelay_{parameter_id::osc1Tune.getParamID()};
+    juce::WebSliderRelay webOsc2TuneRelay_{parameter_id::osc2Tune.getParamID()};
+    juce::WebSliderRelay webOsc1FineRelay_{parameter_id::osc1Fine.getParamID()};
+    juce::WebSliderRelay webOsc2FineRelay_{parameter_id::osc2Fine.getParamID()};
+    juce::WebComboBoxRelay webOsc1WaveformRelay_{parameter_id::osc1Waveform.getParamID()};
+    juce::WebComboBoxRelay webOsc2WaveformRelay_{parameter_id::osc2Waveform.getParamID()};
+    juce::WebSliderRelay webOsc1PulseWidthRelay_{parameter_id::osc1PulseWidth.getParamID()};
+    juce::WebSliderRelay webOsc2PulseWidthRelay_{parameter_id::osc2PulseWidth.getParamID()};
+    juce::WebComboBoxRelay webGlideModeRelay_{parameter_id::glideMode.getParamID()};
+    juce::WebSliderRelay webGlideRateRelay_{parameter_id::glideRate.getParamID()};
+    juce::WebSliderRelay webGlideBendRelay_{parameter_id::glideBend.getParamID()};
+    juce::WebSliderRelay webFilterFreqRelay_{parameter_id::filterFreq.getParamID()};
+    juce::WebSliderRelay webFilterResoRelay_{parameter_id::filterReso.getParamID()};
+    juce::WebSliderRelay webFilterEnvRelay_{parameter_id::filterEnv.getParamID()};
+    juce::WebSliderRelay webFilterLFORelay_{parameter_id::filterLFO.getParamID()};
+    juce::WebSliderRelay webFilterVelocityRelay_{parameter_id::filterVelocity.getParamID()};
+    juce::WebSliderRelay webFilterAttackRelay_{parameter_id::filterAttack.getParamID()};
+    juce::WebSliderRelay webFilterDecayRelay_{parameter_id::filterDecay.getParamID()};
+    juce::WebSliderRelay webFilterSustainRelay_{parameter_id::filterSustain.getParamID()};
+    juce::WebSliderRelay webFilterReleaseRelay_{parameter_id::filterRelease.getParamID()};
+    juce::WebSliderRelay webEnvAttackRelay_{parameter_id::envAttack.getParamID()};
+    juce::WebSliderRelay webEnvDecayRelay_{parameter_id::envDecay.getParamID()};
+    juce::WebSliderRelay webEnvSustainRelay_{parameter_id::envSustain.getParamID()};
+    juce::WebSliderRelay webEnvReleaseRelay_{parameter_id::envRelease.getParamID()};
+    juce::WebSliderRelay webLfoRateRelay_{parameter_id::lfoRate.getParamID()};
+    juce::WebSliderRelay webVibratoRelay_{parameter_id::vibrato.getParamID()};
+    juce::WebSliderRelay webNoiseRelay_{parameter_id::noise.getParamID()};
+    juce::WebSliderRelay webOctaveRelay_{parameter_id::octave.getParamID()};
+    juce::WebSliderRelay webTuningRelay_{parameter_id::tuning.getParamID()};
+    juce::WebSliderRelay webOutputLevelRelay_{parameter_id::outputLevel.getParamID()};
+    juce::WebComboBoxRelay webPolyModeRelay_{parameter_id::polyMode.getParamID()};
+    juce::WebSliderRelay webPwmDepthRelay_{parameter_id::pwmDepth.getParamID()};
 
     juce::WebBrowserComponent webView_;
 

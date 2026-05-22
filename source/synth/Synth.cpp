@@ -12,6 +12,11 @@
 #include <limits>
 #include <span>
 
+namespace
+{
+constexpr int kLfoMaxSamplesPerUpdate{32};
+} // namespace
+
 namespace synth
 {
 
@@ -305,6 +310,11 @@ void Synth::setParameters(const Parameters& params)
 void Synth::setOutputLevelInstantly(const float outputLevel)
 {
     outputLevelSmoother_.setCurrentAndTargetValue(outputLevel);
+}
+
+int Synth::lfoMaxSamplesPerUpdate()
+{
+    return kLfoMaxSamplesPerUpdate;
 }
 
 } // namespace synth

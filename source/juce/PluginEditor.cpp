@@ -9,10 +9,10 @@ namespace
 
 auto streamToVector(juce::InputStream& stream)
 {
-    std::vector<std::byte> result((size_t)stream.getTotalLength());
+    std::vector<std::byte> result(static_cast<size_t>(stream.getTotalLength()));
     stream.setPosition(0);
     [[maybe_unused]] const auto bytesRead = stream.read(result.data(), result.size());
-    jassert(bytesRead == (ssize_t)result.size());
+    jassert(bytesRead == static_cast<juce::int64>(result.size()));
     return result;
 }
 
@@ -72,7 +72,7 @@ constexpr auto kLocalDevServerAddress{"http://localhost:8080"};
 //==============================================================================
 SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
     : AudioProcessorEditor(&p),
-      processorRef(p),
+      processorRef_(p),
       webView_(juce::WebBrowserComponent::Options()
                    .withResourceProvider([this](const auto& url) { return getResource(url); },
                                          juce::URL(kLocalDevServerAddress).getOrigin())
@@ -121,40 +121,40 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
                                                    [this, w = (int)args[0], h = (int)args[1]]() { setSize(w, h); });
                                            complete({});
                                        })),
-      webOsc1VolumeAttachment_(p.getParameter(ParameterIds::osc1Volume), webOsc1VolumeRelay_),
-      webOsc2VolumeAttachment_(p.getParameter(ParameterIds::osc2Volume), webOsc2VolumeRelay_),
-      webOsc1TuneAttachment_(p.getParameter(ParameterIds::osc1Tune), webOsc1TuneRelay_),
-      webOsc2TuneAttachment_(p.getParameter(ParameterIds::osc2Tune), webOsc2TuneRelay_),
-      webOsc1FineAttachment_(p.getParameter(ParameterIds::osc1Fine), webOsc1FineRelay_),
-      webOsc2FineAttachment_(p.getParameter(ParameterIds::osc2Fine), webOsc2FineRelay_),
-      webOsc1WaveformAttachment_(p.getParameter(ParameterIds::osc1Waveform), webOsc1WaveformRelay_),
-      webOsc2WaveformAttachment_(p.getParameter(ParameterIds::osc2Waveform), webOsc2WaveformRelay_),
-      webOsc1PulseWidthAttachment_(p.getParameter(ParameterIds::osc1PulseWidth), webOsc1PulseWidthRelay_),
-      webOsc2PulseWidthAttachment_(p.getParameter(ParameterIds::osc2PulseWidth), webOsc2PulseWidthRelay_),
-      webGlideModeAttachment_(p.getParameter(ParameterIds::glideMode), webGlideModeRelay_),
-      webGlideRateAttachment_(p.getParameter(ParameterIds::glideRate), webGlideRateRelay_),
-      webGlideBendAttachment_(p.getParameter(ParameterIds::glideBend), webGlideBendRelay_),
-      webFilterFreqAttachment_(p.getParameter(ParameterIds::filterFreq), webFilterFreqRelay_),
-      webFilterResoAttachment_(p.getParameter(ParameterIds::filterReso), webFilterResoRelay_),
-      webFilterEnvAttachment_(p.getParameter(ParameterIds::filterEnv), webFilterEnvRelay_),
-      webFilterLFOAttachment_(p.getParameter(ParameterIds::filterLFO), webFilterLFORelay_),
-      webFilterVelocityAttachment_(p.getParameter(ParameterIds::filterVelocity), webFilterVelocityRelay_),
-      webFilterAttackAttachment_(p.getParameter(ParameterIds::filterAttack), webFilterAttackRelay_),
-      webFilterDecayAttachment_(p.getParameter(ParameterIds::filterDecay), webFilterDecayRelay_),
-      webFilterSustainAttachment_(p.getParameter(ParameterIds::filterSustain), webFilterSustainRelay_),
-      webFilterReleaseAttachment_(p.getParameter(ParameterIds::filterRelease), webFilterReleaseRelay_),
-      webEnvAttackAttachment_(p.getParameter(ParameterIds::envAttack), webEnvAttackRelay_),
-      webEnvDecayAttachment_(p.getParameter(ParameterIds::envDecay), webEnvDecayRelay_),
-      webEnvSustainAttachment_(p.getParameter(ParameterIds::envSustain), webEnvSustainRelay_),
-      webEnvReleaseAttachment_(p.getParameter(ParameterIds::envRelease), webEnvReleaseRelay_),
-      webLfoRateAttachment_(p.getParameter(ParameterIds::lfoRate), webLfoRateRelay_),
-      webVibratoAttachment_(p.getParameter(ParameterIds::vibrato), webVibratoRelay_),
-      webNoiseAttachment_(p.getParameter(ParameterIds::noise), webNoiseRelay_),
-      webOctaveAttachment_(p.getParameter(ParameterIds::octave), webOctaveRelay_),
-      webTuningAttachment_(p.getParameter(ParameterIds::tuning), webTuningRelay_),
-      webOutputLevelAttachment_(p.getParameter(ParameterIds::outputLevel), webOutputLevelRelay_),
-      webPolyModeAttachment_(p.getParameter(ParameterIds::polyMode), webPolyModeRelay_),
-      webPwmDepthAttachment_(p.getParameter(ParameterIds::pwmDepth), webPwmDepthRelay_)
+      webOsc1VolumeAttachment_(p.getParameter(parameter_id::osc1Volume), webOsc1VolumeRelay_),
+      webOsc2VolumeAttachment_(p.getParameter(parameter_id::osc2Volume), webOsc2VolumeRelay_),
+      webOsc1TuneAttachment_(p.getParameter(parameter_id::osc1Tune), webOsc1TuneRelay_),
+      webOsc2TuneAttachment_(p.getParameter(parameter_id::osc2Tune), webOsc2TuneRelay_),
+      webOsc1FineAttachment_(p.getParameter(parameter_id::osc1Fine), webOsc1FineRelay_),
+      webOsc2FineAttachment_(p.getParameter(parameter_id::osc2Fine), webOsc2FineRelay_),
+      webOsc1WaveformAttachment_(p.getParameter(parameter_id::osc1Waveform), webOsc1WaveformRelay_),
+      webOsc2WaveformAttachment_(p.getParameter(parameter_id::osc2Waveform), webOsc2WaveformRelay_),
+      webOsc1PulseWidthAttachment_(p.getParameter(parameter_id::osc1PulseWidth), webOsc1PulseWidthRelay_),
+      webOsc2PulseWidthAttachment_(p.getParameter(parameter_id::osc2PulseWidth), webOsc2PulseWidthRelay_),
+      webGlideModeAttachment_(p.getParameter(parameter_id::glideMode), webGlideModeRelay_),
+      webGlideRateAttachment_(p.getParameter(parameter_id::glideRate), webGlideRateRelay_),
+      webGlideBendAttachment_(p.getParameter(parameter_id::glideBend), webGlideBendRelay_),
+      webFilterFreqAttachment_(p.getParameter(parameter_id::filterFreq), webFilterFreqRelay_),
+      webFilterResoAttachment_(p.getParameter(parameter_id::filterReso), webFilterResoRelay_),
+      webFilterEnvAttachment_(p.getParameter(parameter_id::filterEnv), webFilterEnvRelay_),
+      webFilterLFOAttachment_(p.getParameter(parameter_id::filterLFO), webFilterLFORelay_),
+      webFilterVelocityAttachment_(p.getParameter(parameter_id::filterVelocity), webFilterVelocityRelay_),
+      webFilterAttackAttachment_(p.getParameter(parameter_id::filterAttack), webFilterAttackRelay_),
+      webFilterDecayAttachment_(p.getParameter(parameter_id::filterDecay), webFilterDecayRelay_),
+      webFilterSustainAttachment_(p.getParameter(parameter_id::filterSustain), webFilterSustainRelay_),
+      webFilterReleaseAttachment_(p.getParameter(parameter_id::filterRelease), webFilterReleaseRelay_),
+      webEnvAttackAttachment_(p.getParameter(parameter_id::envAttack), webEnvAttackRelay_),
+      webEnvDecayAttachment_(p.getParameter(parameter_id::envDecay), webEnvDecayRelay_),
+      webEnvSustainAttachment_(p.getParameter(parameter_id::envSustain), webEnvSustainRelay_),
+      webEnvReleaseAttachment_(p.getParameter(parameter_id::envRelease), webEnvReleaseRelay_),
+      webLfoRateAttachment_(p.getParameter(parameter_id::lfoRate), webLfoRateRelay_),
+      webVibratoAttachment_(p.getParameter(parameter_id::vibrato), webVibratoRelay_),
+      webNoiseAttachment_(p.getParameter(parameter_id::noise), webNoiseRelay_),
+      webOctaveAttachment_(p.getParameter(parameter_id::octave), webOctaveRelay_),
+      webTuningAttachment_(p.getParameter(parameter_id::tuning), webTuningRelay_),
+      webOutputLevelAttachment_(p.getParameter(parameter_id::outputLevel), webOutputLevelRelay_),
+      webPolyModeAttachment_(p.getParameter(parameter_id::polyMode), webPolyModeRelay_),
+      webPwmDepthAttachment_(p.getParameter(parameter_id::pwmDepth), webPwmDepthRelay_)
 {
     webView_.goToURL(webView_.getResourceProviderRoot());
     // webView_.goToURL(kLocalDevServerAddress);
@@ -167,7 +167,7 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
 
 SynpleAudioProcessorEditor::~SynpleAudioProcessorEditor()
 {
-    processorRef.midiLearn.store(false);
+    processorRef_.midiLearn.store(false);
 }
 
 void SynpleAudioProcessorEditor::resized()
