@@ -38,6 +38,7 @@ export function Knob({ parameterId, label, formatValue }: KnobProps) {
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
+      if (e.button !== 0) return
       ; (e.target as Element).setPointerCapture(e.pointerId)
       dragRef.current = { startY: e.clientY, startNorm: normalisedValue }
       onDragStart()

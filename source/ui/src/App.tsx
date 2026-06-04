@@ -25,6 +25,13 @@ export default function App() {
     })
   }, [])
 
+  // Suppress the native WebView context menu globally so our custom one can appear.
+  useEffect(() => {
+    const suppress = (e: MouseEvent) => e.preventDefault()
+    document.addEventListener('contextmenu', suppress)
+    return () => document.removeEventListener('contextmenu', suppress)
+  }, [])
+
   return (
     <MidiLearnProvider>
     <div style={{ zoom: 1.2 }} className="w-full h-screen bg-zinc-600 text-zinc-200 flex flex-col overflow-hidden select-none">

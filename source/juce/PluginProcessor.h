@@ -63,6 +63,17 @@ class SynpleAudioProcessor final : public juce::AudioProcessor, private juce::Va
     uint8_t getMidiLearnCC(const juce::String& paramId) const;
     juce::String getMidiLearnParamId() const;
 
+    static constexpr uint8_t kCCUnassigned{0xFF};
+    static constexpr size_t kNumLearnableParams{34};
+    static constexpr std::array<const char*, kNumLearnableParams> kLearnableParamIds{{
+        "glideMode",    "glideRate",      "glideBend",      "filterFreq",     "filterReso",    "filterEnv",
+        "filterLFO",    "filterVelocity", "filterAttack",   "filterDecay",    "filterSustain", "filterRelease",
+        "envAttack",    "envDecay",       "envSustain",     "envRelease",     "lfoRate",       "vibrato",
+        "noise",        "octave",         "tuning",         "outputLevel",    "polyMode",      "pwmDepth",
+        "osc1Volume",   "osc2Volume",     "osc1Tune",       "osc2Tune",       "osc1Fine",      "osc2Fine",
+        "osc1Waveform", "osc2Waveform",   "osc1PulseWidth", "osc2PulseWidth",
+    }};
+
   private:
     void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier&) override;
     void update();
@@ -80,16 +91,6 @@ class SynpleAudioProcessor final : public juce::AudioProcessor, private juce::Va
     synth::Presets presets_;
     int currentProgram_;
 
-    static constexpr uint8_t kCCUnassigned{0xFF};
-    static constexpr size_t kNumLearnableParams{34};
-    static constexpr std::array<const char*, kNumLearnableParams> kLearnableParamIds{{
-        "glideMode",    "glideRate",      "glideBend",      "filterFreq",     "filterReso",    "filterEnv",
-        "filterLFO",    "filterVelocity", "filterAttack",   "filterDecay",    "filterSustain", "filterRelease",
-        "envAttack",    "envDecay",       "envSustain",     "envRelease",     "lfoRate",       "vibrato",
-        "noise",        "octave",         "tuning",         "outputLevel",    "polyMode",      "pwmDepth",
-        "osc1Volume",   "osc2Volume",     "osc1Tune",       "osc2Tune",       "osc1Fine",      "osc2Fine",
-        "osc1Waveform", "osc2Waveform",   "osc1PulseWidth", "osc2PulseWidth",
-    }};
     std::array<juce::RangedAudioParameter*, kNumLearnableParams> learnableParams_{};
     std::array<std::atomic<uint8_t>, kNumLearnableParams> midiCCMap_;
     std::atomic<int> midiLearnIndex_{-1};
