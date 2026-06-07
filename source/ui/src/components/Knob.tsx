@@ -95,8 +95,10 @@ export function Knob({ parameterId, label, formatValue }: KnobProps) {
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
-        style={isLearning ? { outline: '1.5px solid #f59e0b', outlineOffset: '1px', borderRadius: '50%' } : undefined}
       >
+        {isLearning && (
+          <circle cx={CX} cy={CY} r={CX - 1} fill="none" stroke="#f59e0b" strokeWidth="1.5" />
+        )}
         {/* Track */}
         <path
           d={arcPath(CX, CY, RADIUS, START_ANGLE, trackEnd)}
