@@ -73,90 +73,77 @@ constexpr auto kLocalDevServerAddress{"http://localhost:8080"};
 SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
     : AudioProcessorEditor(&p),
       processorRef_(p),
-      webView_(
-          juce::WebBrowserComponent::Options()
-              .withResourceProvider([this](const auto& url) { return getResource(url); },
-                                    juce::URL(kLocalDevServerAddress).getOrigin())
-              .withNativeIntegrationEnabled()
-              .withInitialisationData("vendor", JUCE_COMPANY_NAME)
-              .withInitialisationData("pluginName", JUCE_PRODUCT_NAME)
-              .withInitialisationData("pluginVersion", JUCE_PRODUCT_VERSION)
-              .withOptionsFrom(webOsc1VolumeRelay_)
-              .withOptionsFrom(webOsc2VolumeRelay_)
-              .withOptionsFrom(webOsc1TuneRelay_)
-              .withOptionsFrom(webOsc2TuneRelay_)
-              .withOptionsFrom(webOsc1FineRelay_)
-              .withOptionsFrom(webOsc2FineRelay_)
-              .withOptionsFrom(webOsc1WaveformRelay_)
-              .withOptionsFrom(webOsc2WaveformRelay_)
-              .withOptionsFrom(webOsc1PulseWidthRelay_)
-              .withOptionsFrom(webOsc2PulseWidthRelay_)
-              .withOptionsFrom(webGlideModeRelay_)
-              .withOptionsFrom(webGlideRateRelay_)
-              .withOptionsFrom(webGlideBendRelay_)
-              .withOptionsFrom(webFilterFreqRelay_)
-              .withOptionsFrom(webFilterResoRelay_)
-              .withOptionsFrom(webFilterEnvRelay_)
-              .withOptionsFrom(webFilterLFORelay_)
-              .withOptionsFrom(webFilterVelocityRelay_)
-              .withOptionsFrom(webFilterAttackRelay_)
-              .withOptionsFrom(webFilterDecayRelay_)
-              .withOptionsFrom(webFilterSustainRelay_)
-              .withOptionsFrom(webFilterReleaseRelay_)
-              .withOptionsFrom(webEnvAttackRelay_)
-              .withOptionsFrom(webEnvDecayRelay_)
-              .withOptionsFrom(webEnvSustainRelay_)
-              .withOptionsFrom(webEnvReleaseRelay_)
-              .withOptionsFrom(webLfoRateRelay_)
-              .withOptionsFrom(webVibratoRelay_)
-              .withOptionsFrom(webNoiseRelay_)
-              .withOptionsFrom(webOctaveRelay_)
-              .withOptionsFrom(webTuningRelay_)
-              .withOptionsFrom(webOutputLevelRelay_)
-              .withOptionsFrom(webPolyModeRelay_)
-              .withOptionsFrom(webPwmDepthRelay_)
-              .withNativeFunction("setWindowSize",
-                                  [this](const juce::Array<juce::var>& args, auto complete) {
-                                      if (args.size() >= 2)
-                                          juce::MessageManager::callAsync(
-                                              [this, w = (int)args[0], h = (int)args[1]]() { setSize(w, h); });
-                                      complete({});
-                                  })
-              .withNativeFunction("midiLearnStart",
-                                  [this](const juce::Array<juce::var>& args, auto complete) {
-                                      if (args.size() >= 1)
-                                          processorRef_.beginMidiLearn(args[0].toString());
-                                      complete({});
-                                  })
-              .withNativeFunction("midiLearnCancel",
-                                  [this](const juce::Array<juce::var>& args, auto complete) {
-                                      juce::ignoreUnused(args);
-                                      processorRef_.cancelMidiLearn();
-                                      complete({});
-                                  })
-              .withNativeFunction("midiLearnClear",
-                                  [this](const juce::Array<juce::var>& args, auto complete) {
-                                      if (args.size() >= 1)
-                                          processorRef_.clearMidiLearn(args[0].toString());
-                                      complete({});
-                                  })
-              .withNativeFunction("midiLearnGetState",
-                                  [this](const juce::Array<juce::var>& args, auto complete) {
-                                      juce::ignoreUnused(args);
-                                      auto obj = juce::DynamicObject::Ptr{new juce::DynamicObject{}};
-                                      auto assignmentsObj = juce::DynamicObject::Ptr{new juce::DynamicObject{}};
-                                      for (size_t i = 0; i < SynpleAudioProcessor::kNumLearnableParams; ++i)
-                                      {
-                                          const uint8_t cc =
-                                              processorRef_.getMidiLearnCC(SynpleAudioProcessor::kLearnableParamIds[i]);
-                                          if (cc != SynpleAudioProcessor::kCCUnassigned)
-                                              assignmentsObj->setProperty(SynpleAudioProcessor::kLearnableParamIds[i],
-                                                                          static_cast<int>(cc));
-                                      }
-                                      obj->setProperty("assignments", juce::var{assignmentsObj.get()});
-                                      obj->setProperty("learningParam", processorRef_.getMidiLearnParamId());
-                                      complete(juce::var{obj.get()});
-                                  })),
+      webView_(juce::WebBrowserComponent::Options()
+                   .withResourceProvider([this](const auto& url) { return getResource(url); },
+                                         juce::URL(kLocalDevServerAddress).getOrigin())
+                   .withNativeIntegrationEnabled()
+                   .withInitialisationData("vendor", JUCE_COMPANY_NAME)
+                   .withInitialisationData("pluginName", JUCE_PRODUCT_NAME)
+                   .withInitialisationData("pluginVersion", JUCE_PRODUCT_VERSION)
+                   .withOptionsFrom(webOsc1VolumeRelay_)
+                   .withOptionsFrom(webOsc2VolumeRelay_)
+                   .withOptionsFrom(webOsc1TuneRelay_)
+                   .withOptionsFrom(webOsc2TuneRelay_)
+                   .withOptionsFrom(webOsc1FineRelay_)
+                   .withOptionsFrom(webOsc2FineRelay_)
+                   .withOptionsFrom(webOsc1WaveformRelay_)
+                   .withOptionsFrom(webOsc2WaveformRelay_)
+                   .withOptionsFrom(webOsc1PulseWidthRelay_)
+                   .withOptionsFrom(webOsc2PulseWidthRelay_)
+                   .withOptionsFrom(webGlideModeRelay_)
+                   .withOptionsFrom(webGlideRateRelay_)
+                   .withOptionsFrom(webGlideBendRelay_)
+                   .withOptionsFrom(webFilterFreqRelay_)
+                   .withOptionsFrom(webFilterResoRelay_)
+                   .withOptionsFrom(webFilterEnvRelay_)
+                   .withOptionsFrom(webFilterLFORelay_)
+                   .withOptionsFrom(webFilterVelocityRelay_)
+                   .withOptionsFrom(webFilterAttackRelay_)
+                   .withOptionsFrom(webFilterDecayRelay_)
+                   .withOptionsFrom(webFilterSustainRelay_)
+                   .withOptionsFrom(webFilterReleaseRelay_)
+                   .withOptionsFrom(webEnvAttackRelay_)
+                   .withOptionsFrom(webEnvDecayRelay_)
+                   .withOptionsFrom(webEnvSustainRelay_)
+                   .withOptionsFrom(webEnvReleaseRelay_)
+                   .withOptionsFrom(webLfoRateRelay_)
+                   .withOptionsFrom(webVibratoRelay_)
+                   .withOptionsFrom(webNoiseRelay_)
+                   .withOptionsFrom(webOctaveRelay_)
+                   .withOptionsFrom(webTuningRelay_)
+                   .withOptionsFrom(webOutputLevelRelay_)
+                   .withOptionsFrom(webPolyModeRelay_)
+                   .withOptionsFrom(webPwmDepthRelay_)
+                   .withNativeFunction("setWindowSize",
+                                       [this](const juce::Array<juce::var>& args, auto complete) {
+                                           if (args.size() >= 2)
+                                               juce::MessageManager::callAsync(
+                                                   [this, w = (int)args[0], h = (int)args[1]]() { setSize(w, h); });
+                                           complete({});
+                                       })
+                   .withNativeFunction("midiLearnStart",
+                                       [this](const juce::Array<juce::var>& args, auto complete) {
+                                           if (args.size() >= 1)
+                                               processorRef_.beginMidiLearn(args[0].toString());
+                                           complete({});
+                                       })
+                   .withNativeFunction("midiLearnCancel",
+                                       [this](const juce::Array<juce::var>& args, auto complete) {
+                                           juce::ignoreUnused(args);
+                                           processorRef_.cancelMidiLearn();
+                                           complete({});
+                                       })
+                   .withNativeFunction("midiLearnClear",
+                                       [this](const juce::Array<juce::var>& args, auto complete) {
+                                           if (args.size() >= 1)
+                                               processorRef_.clearMidiLearn(args[0].toString());
+                                           complete({});
+                                       })
+                   .withNativeFunction("midiLearnGetState",
+                                       [this](const juce::Array<juce::var>& args, auto complete) {
+                                           juce::ignoreUnused(args);
+                                           complete(processorRef_.getMidiLearnState());
+                                       })),
       webOsc1VolumeAttachment_(p.getParameter(parameter_id::osc1Volume), webOsc1VolumeRelay_),
       webOsc2VolumeAttachment_(p.getParameter(parameter_id::osc2Volume), webOsc2VolumeRelay_),
       webOsc1TuneAttachment_(p.getParameter(parameter_id::osc1Tune), webOsc1TuneRelay_),

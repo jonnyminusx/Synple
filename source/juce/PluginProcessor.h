@@ -62,6 +62,7 @@ class SynpleAudioProcessor final : public juce::AudioProcessor, private juce::Va
     void clearMidiLearn(const juce::String& paramId);
     uint8_t getMidiLearnCC(const juce::String& paramId) const;
     juce::String getMidiLearnParamId() const;
+    juce::var getMidiLearnState() const;
 
     static constexpr uint8_t kCCUnassigned{0xFF};
     static constexpr size_t kNumLearnableParams{34};
@@ -92,7 +93,7 @@ class SynpleAudioProcessor final : public juce::AudioProcessor, private juce::Va
     int currentProgram_;
 
     std::array<juce::RangedAudioParameter*, kNumLearnableParams> learnableParams_{};
-    std::array<std::atomic<uint8_t>, kNumLearnableParams> midiCCMap_;
+    std::array<std::atomic<uint8_t>, kNumLearnableParams> midiCCMap_{};
     std::atomic<int> midiLearnIndex_{-1};
 
     juce::dsp::BallisticsFilter<float> envelopeFollower_;
