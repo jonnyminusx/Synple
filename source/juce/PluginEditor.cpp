@@ -3,6 +3,7 @@
 #include "WebViewFiles.h"
 
 #include <ranges>
+#include <string_view>
 
 namespace
 {
@@ -67,6 +68,19 @@ std::vector<std::byte> getWebViewFileAsBytes(const juce::String& filepath)
 
 constexpr auto kLocalDevServerAddress{"http://localhost:8080"};
 
+juce::var buildMidiLearnState(const midi::MidiLearnMap& map)
+{
+    juce::DynamicObject::Ptr assignmentsObj{new juce::DynamicObject{}};
+    map.forEachAssignment([&](const char* id, uint8_t cc) {
+        assignmentsObj->setProperty(id, static_cast<int>(cc));
+    });
+    const char* learningId{map.learningParamId()};
+    juce::DynamicObject::Ptr obj{new juce::DynamicObject{}};
+    obj->setProperty("assignments", juce::var{assignmentsObj.get()});
+    obj->setProperty("learningParam", learningId != nullptr ? juce::String{learningId} : juce::String{});
+    return juce::var{obj.get()};
+}
+
 } // namespace
 
 //==============================================================================
@@ -126,25 +140,27 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
                    .withNativeFunction("midiLearnStart",
                                        [this](const juce::Array<juce::var>& args, auto complete) {
                                            if (args.size() >= 1)
-                                               processorRef_.beginMidiLearn(args[0].toString());
+                                               processorRef_.midiLearnMap().beginLearn(
+                                                   std::string_view{args[0].toString().toRawUTF8()});
                                            complete({});
                                        })
                    .withNativeFunction("midiLearnCancel",
                                        [this](const juce::Array<juce::var>& args, auto complete) {
                                            juce::ignoreUnused(args);
-                                           processorRef_.cancelMidiLearn();
+                                           processorRef_.midiLearnMap().cancelLearn();
                                            complete({});
                                        })
                    .withNativeFunction("midiLearnClear",
                                        [this](const juce::Array<juce::var>& args, auto complete) {
                                            if (args.size() >= 1)
-                                               processorRef_.clearMidiLearn(args[0].toString());
+                                               processorRef_.midiLearnMap().clearLearn(
+                                                   std::string_view{args[0].toString().toRawUTF8()});
                                            complete({});
                                        })
                    .withNativeFunction("midiLearnGetState",
                                        [this](const juce::Array<juce::var>& args, auto complete) {
                                            juce::ignoreUnused(args);
-                                           complete(processorRef_.getMidiLearnState());
+                                           complete(buildMidiLearnState(processorRef_.midiLearnMap()));
                                        })),
       webOsc1VolumeAttachment_(p.getParameter(parameter_id::osc1Volume), webOsc1VolumeRelay_),
       webOsc2VolumeAttachment_(p.getParameter(parameter_id::osc2Volume), webOsc2VolumeRelay_),
@@ -192,7 +208,7 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
 
 SynpleAudioProcessorEditor::~SynpleAudioProcessorEditor()
 {
-    processorRef_.cancelMidiLearn();
+    processorRef_.midiLearnMap().cancelLearn();
 }
 
 void SynpleAudioProcessorEditor::resized()

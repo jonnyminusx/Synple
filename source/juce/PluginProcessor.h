@@ -56,12 +56,8 @@ class SynpleAudioProcessor final : public juce::AudioProcessor, private juce::Va
     using AudioProcessor::getParameter;
     juce::RangedAudioParameter& getParameter(const juce::ParameterID& id);
 
-    void beginMidiLearn(const juce::String& paramId);
-    void cancelMidiLearn();
-    void clearMidiLearn(const juce::String& paramId);
-    uint8_t getMidiLearnCC(const juce::String& paramId) const;
-    juce::String getMidiLearnParamId() const;
-    juce::var getMidiLearnState() const;
+    midi::MidiLearnMap& midiLearnMap() { return midiLearnMap_; }
+    const midi::MidiLearnMap& midiLearnMap() const { return midiLearnMap_; }
 
   private:
     void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier&) override;

@@ -336,43 +336,6 @@ void SynpleAudioProcessor::initialiseLearnableParams()
             &parameters_.getParameter(juce::ParameterID{midi::MidiLearnMap::kParamIds[i], parameter_id::kVersion});
 }
 
-void SynpleAudioProcessor::beginMidiLearn(const juce::String& paramId)
-{
-    midiLearnMap_.beginLearn(paramId.toRawUTF8());
-}
-
-void SynpleAudioProcessor::cancelMidiLearn()
-{
-    midiLearnMap_.cancelLearn();
-}
-
-void SynpleAudioProcessor::clearMidiLearn(const juce::String& paramId)
-{
-    midiLearnMap_.clearLearn(paramId.toRawUTF8());
-}
-
-uint8_t SynpleAudioProcessor::getMidiLearnCC(const juce::String& paramId) const
-{
-    return midiLearnMap_.ccForParam(paramId.toRawUTF8());
-}
-
-juce::String SynpleAudioProcessor::getMidiLearnParamId() const
-{
-    const char* id{midiLearnMap_.learningParamId()};
-    return id != nullptr ? juce::String{id} : juce::String{};
-}
-
-juce::var SynpleAudioProcessor::getMidiLearnState() const
-{
-    juce::DynamicObject::Ptr assignmentsObj{new juce::DynamicObject{}};
-    midiLearnMap_.forEachAssignment([&](const char* id, uint8_t cc) {
-        assignmentsObj->setProperty(id, static_cast<int>(cc));
-    });
-    juce::DynamicObject::Ptr obj{new juce::DynamicObject{}};
-    obj->setProperty("assignments", juce::var{assignmentsObj.get()});
-    obj->setProperty("learningParam", getMidiLearnParamId());
-    return juce::var{obj.get()};
-}
 
 //==============================================================================
 // This creates new instances of the plugin..
