@@ -2,9 +2,6 @@ CompileFlags:
   CompilationDatabase: build
 Completion:
   HeaderInsertion: Never
-Diagnostics:
-  ClangTidy:
-    Enable: true
 Index:
   Background: Build
 InlayHints:

@@ -88,7 +88,7 @@ void Synth::render(dsp::AudioBuffer& audioBuffer)
 
 void Synth::noteOn(const int note, const int velocity)
 {
-    int vel = velocity;
+    int vel{velocity};
     if (parameters_.output.ignoreVelocity)
     {
         vel = 80;
@@ -135,7 +135,7 @@ void Synth::sustainPedalReleased()
 {
     if (!isPolyphonic() && voices_[0].note() == Voice::sustain)
     {
-        const int queued = nextQueuedNote();
+        const int queued{nextQueuedNote()};
         if (queued > 0)
         {
             restartMonoVoice(queued, -1);
@@ -219,12 +219,12 @@ void Synth::startVoice(const size_t voiceIdx, const int note, const int velocity
         return;
     }
 
-    Voice& voice = voices_[voiceIdx];
+    Voice& voice{voices_[voiceIdx]};
 
-    Envelope& envelope = voice.envelope();
+    Envelope& envelope{voice.envelope()};
     envelope.attack();
 
-    Envelope& filterEnvelope = voice.filterEnvelope();
+    Envelope& filterEnvelope{voice.filterEnvelope()};
     filterEnvelope.attack();
 
     voice.noteOn(note, lastNote_, velocity, sampleRate_, voiceIdx, isPlayingLegatoStyle(), parameters_);

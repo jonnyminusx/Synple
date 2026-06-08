@@ -15,14 +15,14 @@ void MidiProcessor::process(const uint8_t data0, const uint8_t data1, const uint
     {
     case 0x80: // Note Off
     {
-        const uint8_t note = data1 & 0x7F;
+        const uint8_t note{static_cast<uint8_t>(data1 & 0x7F)};
         handler_.noteOff(note);
         break;
     }
     case 0x90: // Note On
     {
-        const uint8_t note = data1 & 0x7F;
-        const uint8_t velocity = data2 & 0x7F;
+        const uint8_t note{static_cast<uint8_t>(data1 & 0x7F)};
+        const uint8_t velocity{static_cast<uint8_t>(data2 & 0x7F)};
         if (velocity == 0)
         {
             handler_.noteOff(note);
@@ -40,13 +40,13 @@ void MidiProcessor::process(const uint8_t data0, const uint8_t data1, const uint
         break;
     case 0xD0: // Channel Aftertouch
     {
-        const uint8_t pressure = data1 & 0x7F;
+        const uint8_t pressure{static_cast<uint8_t>(data1 & 0x7F)};
         state_.pressure = 0.0001f * float(pressure * pressure);
         break;
     }
     case 0xE0: // Pitch Bend
     {
-        const int raw14 = (int(data2) << 7) | int(data1);
+        const int raw14{(static_cast<int>(data2) << 7) | static_cast<int>(data1)};
         state_.pitchBend = std::exp(-0.000014102f * float(raw14 - 8192));
         break;
     }

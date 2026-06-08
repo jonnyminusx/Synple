@@ -14,7 +14,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Parameters::buildLayout()
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
     auto addParam = [&]<typename T, typename... Args>(T*& dest, Args&&... args) {
-        auto p = std::make_unique<T>(std::forward<Args>(args)...);
+        auto p{std::make_unique<T>(std::forward<Args>(args)...)};
         dest = p.get();
         layout.add(std::move(p));
     };
@@ -132,7 +132,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Parameters::buildLayout()
              juce::AudioParameterFloatAttributes().withLabel("%"));
 
     auto lfoRateStringFromValue = [](float value, int) {
-        const float lfoHz = std::exp(7.0f * value - 4.0f);
+        const float lfoHz{std::exp(7.0f * value - 4.0f)};
         return juce::String(lfoHz, 3);
     };
 
@@ -257,7 +257,7 @@ Parameters::Parameters(juce::AudioProcessor& processor) : apvts_(processor, null
 
 juce::RangedAudioParameter& Parameters::getParameter(const juce::ParameterID& id)
 {
-    auto* param = apvts_.getParameter(id.getParamID());
+    auto* param{apvts_.getParameter(id.getParamID())};
     jassert(param != nullptr);
     return *param;
 }
@@ -387,7 +387,7 @@ float Parameters::filterLfoDepth() const
 synth::Parameters::ADSR Parameters::envelope(const float inverseSampleRate) const
 {
     const float releaseParamValue{envReleaseParam_->get()};
-    const float release = releaseParamValue < 1.0f ? 0.75f : multiplierFromParam(inverseSampleRate, releaseParamValue);
+    const float release{releaseParamValue < 1.0f ? 0.75f : multiplierFromParam(inverseSampleRate, releaseParamValue)};
 
     return synth::Parameters::ADSR{multiplierFromParam(inverseSampleRate, envAttackParam_->get()),
                                    multiplierFromParam(inverseSampleRate, envDecayParam_->get()),
@@ -418,8 +418,8 @@ float Parameters::volumeTrim() const
 
 float Parameters::lfoIncrement(const float inverseSampleRate, const float updateInterval) const
 {
-    const float inverseUpdateRate = inverseSampleRate * updateInterval;
-    const float lfoHz = std::exp(7.0f * lfoRateParam_->get() - 4.0f);
+    const float inverseUpdateRate{inverseSampleRate * updateInterval};
+    const float lfoHz{std::exp(7.0f * lfoRateParam_->get() - 4.0f)};
     return lfoHz * inverseUpdateRate * juce::MathConstants<float>::twoPi;
 }
 
@@ -436,7 +436,7 @@ float Parameters::pwmDepth() const
 
 float Parameters::glideRateCoefficient(const float inverseSampleRate, const float updateInterval) const
 {
-    const float inverseUpdateRate = inverseSampleRate * updateInterval;
+    const float inverseUpdateRate{inverseSampleRate * updateInterval};
 
     if (glideRateParam_->get() < 2.0f)
     {

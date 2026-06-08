@@ -6,7 +6,7 @@
 namespace synth
 {
 
-inline constexpr std::size_t kNumParams = 34;
+inline constexpr std::size_t kNumParams{34};
 
 class Preset
 {

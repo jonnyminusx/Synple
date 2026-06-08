@@ -187,7 +187,8 @@ Enforce this order inside every class/struct:
 - Primitive parameters passed by value; complex/aggregate parameters passed by `const&`.
 - No `#define` for constants — use `constexpr` (or `inline constexpr` for file/namespace scope).
 - Member variables initialized in-class: use `{}` or `= value` syntax directly on the declaration.
-- Brace initialization throughout: `float x{0.0f}`, not `float x = 0.0f` or `float x(0.0f)`.
+- Use `{}` when the initializer values are the same type as (or naturally compose) the object: `float x{0.5f}`, `std::array<int, 3> arr{1, 2, 3}`. Use `()` when calling a constructor that converts or builds from arguments of a different type: `juce::String s("hello")`, `std::vector<int> v(10, 0)`, `juce::DynamicObject::Ptr p(new juce::DynamicObject{})`. Never use `=` for initialization regardless of context — not `float x = 0.0f`, not `auto x = SomeType{value}`.
+- No C-style casts — use `static_cast`, `reinterpret_cast`, or `const_cast` as appropriate.
 
 ### `auto`
 Avoid unless the type is verbose and unambiguous from context (e.g. `auto buffer = audioBuffer.channelBuffer(0)`). Spell out types in arithmetic, DSP, and MIDI code.

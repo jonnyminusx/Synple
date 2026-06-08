@@ -38,7 +38,7 @@ void SineOscillator::noteOn(const float period)
 
 float SineOscillator::nextSample()
 {
-    const float sinx = (sinRecurrenceCoeff_ * sinCurrent_) - sinPrevious_;
+    const float sinx{(sinRecurrenceCoeff_ * sinCurrent_) - sinPrevious_};
     sinPrevious_ = sinCurrent_;
     sinCurrent_ = sinx;
     return sinx * amplitude_;
