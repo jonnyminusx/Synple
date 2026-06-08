@@ -34,12 +34,10 @@ TEST_CASE("MidiState defaults", "[midi]")
     FakeHandler handler;
     midi::MidiProcessor proc{handler};
 
-    REQUIRE(proc.state().pitchBend     == Catch::Approx(1.0f));
-    REQUIRE(proc.state().modWheel      == Catch::Approx(0.0f));
-    REQUIRE(proc.state().pressure      == Catch::Approx(0.0f));
-    REQUIRE(proc.state().filterControl == Catch::Approx(0.0f));
-    REQUIRE(proc.state().resonanceCtl  == Catch::Approx(1.0f));
-    REQUIRE(proc.state().sustainPedal  == false);
+    REQUIRE(proc.state().pitchBend    == Catch::Approx(1.0f));
+    REQUIRE(proc.state().modWheel     == Catch::Approx(0.0f));
+    REQUIRE(proc.state().pressure     == Catch::Approx(0.0f));
+    REQUIRE(proc.state().sustainPedal == false);
 }
 
 // ─── Note On / Note Off ───────────────────────────────────────────────────────
@@ -152,79 +150,6 @@ TEST_CASE("Sustain pedal (CC 0x40)", "[midi][cc]")
         REQUIRE(proc.state().sustainPedal == false);
         proc.process(0xB0, 0x40, 64);
         REQUIRE(proc.state().sustainPedal == true);
-    }
-}
-
-// ─── Filter CC ────────────────────────────────────────────────────────────────
-
-TEST_CASE("Filter CC 0x4A increases filterControl", "[midi][cc]")
-{
-    FakeHandler handler;
-    midi::MidiProcessor proc{handler};
-
-    proc.process(0xB0, 0x4A, 100);
-    REQUIRE(proc.state().filterControl == Catch::Approx(0.02f * 100.0f));
-}
-
-TEST_CASE("Filter CC 0x4B decreases filterControl", "[midi][cc]")
-{
-    FakeHandler handler;
-    midi::MidiProcessor proc{handler};
-
-    proc.process(0xB0, 0x4B, 100);
-    REQUIRE(proc.state().filterControl == Catch::Approx(-0.03f * 100.0f));
-}
-
-// ─── Resonance CC ─────────────────────────────────────────────────────────────
-
-TEST_CASE("Resonance CC (default 0x47)", "[midi][cc]")
-{
-    FakeHandler handler;
-    midi::MidiProcessor proc{handler};
-
-    SECTION("value 0 gives resonanceCtl = 1.0")
-    {
-        proc.process(0xB0, 0x47, 0);
-        REQUIRE(proc.state().resonanceCtl == Catch::Approx(154.0f / 154.0f));
-    }
-
-    SECTION("value 127 gives resonanceCtl = 154/27")
-    {
-        proc.process(0xB0, 0x47, 127);
-        REQUIRE(proc.state().resonanceCtl == Catch::Approx(154.0f / 27.0f));
-    }
-
-    SECTION("resonanceCtl is monotonically increasing with value")
-    {
-        proc.process(0xB0, 0x47, 64);
-        float mid = proc.state().resonanceCtl;
-        proc.process(0xB0, 0x47, 127);
-        float hi = proc.state().resonanceCtl;
-        REQUIRE(hi > mid);
-        REQUIRE(mid > 1.0f);
-    }
-
-    SECTION("resoCC getter/setter round-trip")
-    {
-        proc.setResoCC(0x10);
-        REQUIRE(proc.resoCC() == 0x10);
-    }
-
-    SECTION("reassigned resoCC responds to new CC")
-    {
-        proc.setResoCC(0x10);
-        proc.process(0xB0, 0x10, 0);
-        REQUIRE(proc.state().resonanceCtl == Catch::Approx(1.0f));
-    }
-
-    SECTION("resoCC does not fire when it overlaps a named CC")
-    {
-        // Named cases (0x4A) take precedence over the default branch where
-        // resoCC is checked — resonanceCtl must stay at its initial value.
-        proc.setResoCC(0x4A);
-        proc.process(0xB0, 0x4A, 100);
-        REQUIRE(proc.state().filterControl  == Catch::Approx(0.02f * 100.0f));
-        REQUIRE(proc.state().resonanceCtl   == Catch::Approx(1.0f));
     }
 }
 

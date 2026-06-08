@@ -120,6 +120,29 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
                                                juce::MessageManager::callAsync(
                                                    [this, w = (int)args[0], h = (int)args[1]]() { setSize(w, h); });
                                            complete({});
+                                       })
+                   .withNativeFunction("midiLearnStart",
+                                       [this](const juce::Array<juce::var>& args, auto complete) {
+                                           if (args.size() >= 1)
+                                               processorRef_.beginMidiLearn(args[0].toString());
+                                           complete({});
+                                       })
+                   .withNativeFunction("midiLearnCancel",
+                                       [this](const juce::Array<juce::var>& args, auto complete) {
+                                           juce::ignoreUnused(args);
+                                           processorRef_.cancelMidiLearn();
+                                           complete({});
+                                       })
+                   .withNativeFunction("midiLearnClear",
+                                       [this](const juce::Array<juce::var>& args, auto complete) {
+                                           if (args.size() >= 1)
+                                               processorRef_.clearMidiLearn(args[0].toString());
+                                           complete({});
+                                       })
+                   .withNativeFunction("midiLearnGetState",
+                                       [this](const juce::Array<juce::var>& args, auto complete) {
+                                           juce::ignoreUnused(args);
+                                           complete(processorRef_.getMidiLearnState());
                                        })),
       webOsc1VolumeAttachment_(p.getParameter(parameter_id::osc1Volume), webOsc1VolumeRelay_),
       webOsc2VolumeAttachment_(p.getParameter(parameter_id::osc2Volume), webOsc2VolumeRelay_),
@@ -167,7 +190,7 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
 
 SynpleAudioProcessorEditor::~SynpleAudioProcessorEditor()
 {
-    processorRef_.midiLearn.store(false);
+    processorRef_.cancelMidiLearn();
 }
 
 void SynpleAudioProcessorEditor::resized()

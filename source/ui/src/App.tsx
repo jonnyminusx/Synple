@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react'
 import { getNativeFunction } from './lib/juce/index.js'
+import { MidiLearnProvider } from './context/MidiLearnContext.js'
 import { Osc1Section } from './components/OscSection.js'
 import { Osc2Section } from './components/Osc2Section.js'
 import { GlideSection } from './components/GlideSection.js'
@@ -24,7 +25,9 @@ export default function App() {
     })
   }, [])
 
+
   return (
+    <MidiLearnProvider>
     <div style={{ zoom: 1.2 }} className="w-full h-screen bg-zinc-600 text-zinc-200 flex flex-col overflow-hidden select-none">
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-zinc-500/60">
         <span className="text-xl font-mono font-bold tracking-[0.2em] text-zinc-300 uppercase">Synple</span>
@@ -51,5 +54,6 @@ export default function App() {
         </div>
       </div>
     </div>
+    </MidiLearnProvider>
   )
 }

@@ -527,10 +527,3 @@ void Parameters::fillParameterArray(juce::RangedAudioParameter** params) const
     params[32] = osc1PulseWidthParam_;
     params[33] = osc2PulseWidthParam_;
 }
-
-void Parameters::setOutputLevelFromMidi(float normalised0to1)
-{
-    outputLevelParam_->beginChangeGesture();
-    outputLevelParam_->setValueNotifyingHost(normalised0to1);
-    outputLevelParam_->endChangeGesture();
-}

@@ -169,7 +169,7 @@ void Synth::updateLfo()
                             sineValue * (midi.modWheel + parameters_.lfo.pwmDepth)};
         const float pwmMod1{2.0f * parameters_.oscillator.osc2.pulseWidth +
                             sineValue * (midi.modWheel + parameters_.lfo.pwmDepth)};
-        const float filterMod{parameters_.filter.keyTracking + midi.filterControl +
+        const float filterMod{parameters_.filter.keyTracking +
                               (parameters_.filter.lfoDepth + midi.pressure) * sineValue};
         filterZip_ += 0.005f * (filterMod - filterZip_);
 
@@ -178,7 +178,7 @@ void Synth::updateLfo()
             voice.setModulation(vibratoModulation, pwmMod0, pwmMod1);
             voice.updateLfo(parameters_.glide.rateCoefficient,
                             filterZip_,
-                            parameters_.filter.q * midi.resonanceCtl,
+                            parameters_.filter.q,
                             midi.pitchBend,
                             parameters_.filter.envelopeDepth);
             voice.updatePeriod(midi.pitchBend, parameters_.oscillator.osc1.tune, parameters_.oscillator.osc2.tune);

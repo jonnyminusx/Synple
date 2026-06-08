@@ -225,7 +225,6 @@ set(SourceFiles
     source/juce/PluginProcessor.cpp
     source/juce/PluginProcessor.h
     source/math/constants.h
-    source/midi/CC.h
     source/midi/MidiProcessor.h
     source/midi/MidiState.h
     source/midi/NoteHandler.h
