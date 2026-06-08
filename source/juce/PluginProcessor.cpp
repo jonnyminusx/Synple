@@ -101,7 +101,7 @@ void SynpleAudioProcessor::setCurrentProgram(int index)
     juce::RangedAudioParameter* params[synth::kNumParams]{};
     parameters_.fillParameterArray(params);
 
-    const synth::Preset& preset = presets_[static_cast<size_t>(index)];
+    const synth::Preset& preset{presets_[static_cast<size_t>(index)]};
     for (size_t i = 0; i < synth::kNumParams; ++i)
     {
         params[i]->setValueNotifyingHost(params[i]->convertTo0to1(preset.parameters()[i]));
@@ -126,15 +126,6 @@ void SynpleAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     synth_.allocateResources(static_cast<float>(sampleRate), samplesPerBlock);
     parametersChanged_.store(true);
     reset();
-
-    envelopeFollower_.prepare(
-        juce::dsp::ProcessSpec{.sampleRate = sampleRate,
-                               .maximumBlockSize = static_cast<juce::uint32>(samplesPerBlock),
-                               .numChannels = static_cast<juce::uint32>(getTotalNumOutputChannels())});
-    envelopeFollower_.setAttackTime(200.0f);
-    envelopeFollower_.setReleaseTime(200.0f);
-    envelopeFollower_.setLevelCalculationType(juce::dsp::BallisticsFilter<float>::LevelCalculationType::peak);
-    envelopeFollowerOutputBuffer_.setSize(getTotalNumOutputChannels(), samplesPerBlock);
     renderChannels_.reserve(static_cast<size_t>(getTotalNumOutputChannels()));
 }
 
@@ -173,27 +164,19 @@ void SynpleAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::
 
     juce::ScopedNoDenormals noDenormals;
 
-    int totalNumInputChannels = getTotalNumInputChannels();
-    int totalNumOutputChannels = getTotalNumOutputChannels();
+    int totalNumInputChannels{getTotalNumInputChannels()};
+    int totalNumOutputChannels{getTotalNumOutputChannels()};
 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear(i, 0, buffer.getNumSamples());
 
-    bool expected = true;
+    bool expected{true};
     if (isNonRealtime() || parametersChanged_.compare_exchange_strong(expected, false))
     {
         update();
     }
 
     splitBufferByEvents(buffer, midiMessages);
-
-    const auto inBlock =
-        juce::dsp::AudioBlock<float>(buffer).getSubsetChannelBlock(0u, static_cast<size_t>(totalNumOutputChannels));
-    auto outputBlock = juce::dsp::AudioBlock<float>(envelopeFollowerOutputBuffer_);
-
-    envelopeFollower_.process(juce::dsp::ProcessContextNonReplacing<float>(inBlock, outputBlock));
-    outputLevelLeft.store(
-        juce::Decibels::gainToDecibels(outputBlock.getSample(0u, static_cast<int>(outputBlock.getNumSamples() - 1))));
 }
 
 void SynpleAudioProcessor::reset()
@@ -216,13 +199,13 @@ juce::AudioProcessorEditor* SynpleAudioProcessor::createEditor()
 //==============================================================================
 void SynpleAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
-    auto xml = std::make_unique<juce::XmlElement>(pluginTag);
+    auto xml{std::make_unique<juce::XmlElement>(pluginTag)};
     xml->addChildElement(parameters_.copyStateToXml().release());
 
-    auto extraXML = std::make_unique<juce::XmlElement>(extraTag);
+    auto extraXML{std::make_unique<juce::XmlElement>(extraTag)};
     for (size_t i = 0; i < kNumLearnableParams; ++i)
     {
-        const uint8_t cc = midiCCMap_[i].load();
+        const uint8_t cc{midiCCMap_[i].load()};
         if (cc != kCCUnassigned)
         {
             extraXML->setAttribute(juce::String("cc_") + kLearnableParamIds[i], static_cast<int>(cc));
@@ -245,10 +228,10 @@ void SynpleAudioProcessor::setStateInformation(const void* data, int sizeInBytes
         {
             for (size_t i = 0; i < kNumLearnableParams; ++i)
             {
-                const juce::String attr = juce::String("cc_") + kLearnableParamIds[i];
+                const juce::String attr{juce::String("cc_") + kLearnableParamIds[i]};
                 if (extraXML->hasAttribute(attr))
                 {
-                    const int cc = extraXML->getIntAttribute(attr, -1);
+                    const int cc{extraXML->getIntAttribute(attr, -1)};
                     if (cc >= 0 && cc <= 127)
                         midiCCMap_[i].store(static_cast<uint8_t>(cc));
                 }
@@ -311,12 +294,12 @@ void SynpleAudioProcessor::handleMidi(const uint8_t data0, const uint8_t data1, 
     // Control Change
     if ((data0 & 0xF0) == 0xB0)
     {
-        const uint8_t controller = data1 & 0x7F;
-        const uint8_t value = data2 & 0x7F;
-        const float normalised = float(value) / 127.0f;
+        const uint8_t controller{static_cast<uint8_t>(data1 & 0x7F)};
+        const uint8_t value{static_cast<uint8_t>(data2 & 0x7F)};
+        const float normalised{static_cast<float>(value) / 127.0f};
 
         // MIDI learn capture: assign the incoming CC to the waiting parameter
-        const int learnIdx = midiLearnIndex_.load();
+        const int learnIdx{midiLearnIndex_.load()};
         if (learnIdx >= 0)
         {
             midiCCMap_[static_cast<size_t>(learnIdx)].store(controller);
@@ -379,7 +362,7 @@ int SynpleAudioProcessor::midiLearnIndexForId(const juce::String& paramId) const
 
 void SynpleAudioProcessor::beginMidiLearn(const juce::String& paramId)
 {
-    const int idx = midiLearnIndexForId(paramId);
+    const int idx{midiLearnIndexForId(paramId)};
     if (idx >= 0)
         midiLearnIndex_.store(idx);
 }
@@ -391,14 +374,14 @@ void SynpleAudioProcessor::cancelMidiLearn()
 
 void SynpleAudioProcessor::clearMidiLearn(const juce::String& paramId)
 {
-    const int idx = midiLearnIndexForId(paramId);
+    const int idx{midiLearnIndexForId(paramId)};
     if (idx >= 0)
         midiCCMap_[static_cast<size_t>(idx)].store(kCCUnassigned);
 }
 
 uint8_t SynpleAudioProcessor::getMidiLearnCC(const juce::String& paramId) const
 {
-    const int idx = midiLearnIndexForId(paramId);
+    const int idx{midiLearnIndexForId(paramId)};
     if (idx >= 0)
         return midiCCMap_[static_cast<size_t>(idx)].load();
     return kCCUnassigned;
@@ -406,7 +389,7 @@ uint8_t SynpleAudioProcessor::getMidiLearnCC(const juce::String& paramId) const
 
 juce::String SynpleAudioProcessor::getMidiLearnParamId() const
 {
-    const int idx = midiLearnIndex_.load();
+    const int idx{midiLearnIndex_.load()};
     if (idx >= 0 && static_cast<size_t>(idx) < kNumLearnableParams)
         return juce::String{kLearnableParamIds[static_cast<size_t>(idx)]};
     return {};

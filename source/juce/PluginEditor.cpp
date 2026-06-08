@@ -118,7 +118,9 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
                                        [this](const juce::Array<juce::var>& args, auto complete) {
                                            if (args.size() >= 2)
                                                juce::MessageManager::callAsync(
-                                                   [this, w = (int)args[0], h = (int)args[1]]() { setSize(w, h); });
+                                                   [this,
+                                                    w = static_cast<int>(args[0]),
+                                                    h = static_cast<int>(args[1])]() { setSize(w, h); });
                                            complete({});
                                        })
                    .withNativeFunction("midiLearnStart",

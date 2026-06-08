@@ -49,9 +49,9 @@ void Filter::reset()
 
 float Filter::render(const float x)
 {
-    const float v3 = x - s2_;
-    const float v1 = a1_ * s1_ + a2_ * v3;
-    const float v2 = s2_ + a2_ * s1_ + a3_ * v3;
+    const float v3{x - s2_};
+    const float v1{a1_ * s1_ + a2_ * v3};
+    const float v2{s2_ + a2_ * s1_ + a3_ * v3};
     s1_ = 2.0f * v1 - s1_;
     s2_ = 2.0f * v2 - s2_;
     if (std::abs(s1_) < kDenormalThreshold)

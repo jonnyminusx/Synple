@@ -5,7 +5,7 @@ namespace synth
 
 namespace
 {
-constexpr float kSilence = 0.0001f;
+constexpr float kSilence{0.0001f};
 }
 
 void Envelope::reset()

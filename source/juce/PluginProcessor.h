@@ -55,8 +55,6 @@ class SynpleAudioProcessor final : public juce::AudioProcessor, private juce::Va
     using AudioProcessor::getParameter;
     juce::RangedAudioParameter& getParameter(const juce::ParameterID& id);
 
-    std::atomic<float> outputLevelLeft;
-
     void beginMidiLearn(const juce::String& paramId);
     void cancelMidiLearn();
     void clearMidiLearn(const juce::String& paramId);
@@ -96,8 +94,6 @@ class SynpleAudioProcessor final : public juce::AudioProcessor, private juce::Va
     std::array<std::atomic<uint8_t>, kNumLearnableParams> midiCCMap_{};
     std::atomic<int> midiLearnIndex_{-1};
 
-    juce::dsp::BallisticsFilter<float> envelopeFollower_;
-    juce::AudioBuffer<float> envelopeFollowerOutputBuffer_;
     std::vector<std::span<float>> renderChannels_;
 
     //==============================================================================
