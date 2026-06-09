@@ -2,6 +2,7 @@
 
 #include "ParameterIds.h"
 #include "Parameters.h"
+#include "midi/MidiLearnMap.h"
 #include "synth/Presets.h"
 #include "synth/Synth.h"
 #include <array>
@@ -55,23 +56,9 @@ class SynpleAudioProcessor final : public juce::AudioProcessor, private juce::Va
     using AudioProcessor::getParameter;
     juce::RangedAudioParameter& getParameter(const juce::ParameterID& id);
 
-    void beginMidiLearn(const juce::String& paramId);
-    void cancelMidiLearn();
-    void clearMidiLearn(const juce::String& paramId);
-    uint8_t getMidiLearnCC(const juce::String& paramId) const;
-    juce::String getMidiLearnParamId() const;
+    midi::MidiLearnMap& midiLearnMap() { return midiLearnMap_; }
+    const midi::MidiLearnMap& midiLearnMap() const { return midiLearnMap_; }
     juce::var getMidiLearnState() const;
-
-    static constexpr uint8_t kCCUnassigned{0xFF};
-    static constexpr size_t kNumLearnableParams{34};
-    static constexpr std::array<const char*, kNumLearnableParams> kLearnableParamIds{{
-        "glideMode",    "glideRate",      "glideBend",      "filterFreq",     "filterReso",    "filterEnv",
-        "filterLFO",    "filterVelocity", "filterAttack",   "filterDecay",    "filterSustain", "filterRelease",
-        "envAttack",    "envDecay",       "envSustain",     "envRelease",     "lfoRate",       "vibrato",
-        "noise",        "octave",         "tuning",         "outputLevel",    "polyMode",      "pwmDepth",
-        "osc1Volume",   "osc2Volume",     "osc1Tune",       "osc2Tune",       "osc1Fine",      "osc2Fine",
-        "osc1Waveform", "osc2Waveform",   "osc1PulseWidth", "osc2PulseWidth",
-    }};
 
   private:
     void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier&) override;
@@ -81,8 +68,7 @@ class SynpleAudioProcessor final : public juce::AudioProcessor, private juce::Va
     void handleMidi(uint8_t data0, uint8_t data1, uint8_t data2);
     void render(juce::AudioBuffer<float>& buffer, int sampleCount, int bufferOffset);
 
-    void initialiseMidiLearnMap();
-    int midiLearnIndexForId(const juce::String& paramId) const;
+    void initialiseLearnableParams();
 
     synth::Synth synth_;
     Parameters parameters_;
@@ -90,9 +76,8 @@ class SynpleAudioProcessor final : public juce::AudioProcessor, private juce::Va
     synth::Presets presets_;
     int currentProgram_;
 
-    std::array<juce::RangedAudioParameter*, kNumLearnableParams> learnableParams_{};
-    std::array<std::atomic<uint8_t>, kNumLearnableParams> midiCCMap_{};
-    std::atomic<int> midiLearnIndex_{-1};
+    midi::MidiLearnMap midiLearnMap_{};
+    std::array<juce::RangedAudioParameter*, midi::MidiLearnMap::kNumParams> learnableParams_{};
 
     std::vector<std::span<float>> renderChannels_;
 

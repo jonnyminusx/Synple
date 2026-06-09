@@ -31,7 +31,7 @@ SynpleAudioProcessor::SynpleAudioProcessor()
       parameters_(*this)
 {
     parameters_.addStateListener(this);
-    initialiseMidiLearnMap();
+    initialiseLearnableParams();
     setCurrentProgram(0);
 }
 
@@ -203,14 +203,8 @@ void SynpleAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
     xml->addChildElement(parameters_.copyStateToXml().release());
 
     auto extraXML{std::make_unique<juce::XmlElement>(extraTag)};
-    for (size_t i = 0; i < kNumLearnableParams; ++i)
-    {
-        const uint8_t cc{midiCCMap_[i].load()};
-        if (cc != kCCUnassigned)
-        {
-            extraXML->setAttribute(juce::String("cc_") + kLearnableParamIds[i], static_cast<int>(cc));
-        }
-    }
+    midiLearnMap_.forEachAssignment(
+        [&](const char* id, uint8_t cc) { extraXML->setAttribute(juce::String("cc_") + id, static_cast<int>(cc)); });
     xml->addChildElement(extraXML.release());
 
     copyXmlToBinary(*xml, destData);
@@ -226,14 +220,14 @@ void SynpleAudioProcessor::setStateInformation(const void* data, int sizeInBytes
 
         if (auto* extraXML = xml->getChildByName(extraTag))
         {
-            for (size_t i = 0; i < kNumLearnableParams; ++i)
+            for (size_t i = 0; i < midi::MidiLearnMap::kNumParams; ++i)
             {
-                const juce::String attr{juce::String("cc_") + kLearnableParamIds[i]};
+                const juce::String attr{juce::String("cc_") + midi::MidiLearnMap::kParamIds[i]};
                 if (extraXML->hasAttribute(attr))
                 {
                     const int cc{extraXML->getIntAttribute(attr, -1)};
                     if (cc >= 0 && cc <= 127)
-                        midiCCMap_[i].store(static_cast<uint8_t>(cc));
+                        midiLearnMap_.setCC(i, static_cast<uint8_t>(cc));
                 }
             }
         }
@@ -299,21 +293,15 @@ void SynpleAudioProcessor::handleMidi(const uint8_t data0, const uint8_t data1, 
         const float normalised{static_cast<float>(value) / 127.0f};
 
         // MIDI learn capture: assign the incoming CC to the waiting parameter
-        const int learnIdx{midiLearnIndex_.load()};
-        if (learnIdx >= 0)
-        {
-            midiCCMap_[static_cast<size_t>(learnIdx)].store(controller);
-            midiLearnIndex_.store(-1);
-            learnableParams_[static_cast<size_t>(learnIdx)]->setValueNotifyingHost(normalised);
-        }
+        const int capturedIdx{midiLearnMap_.tryCaptureLearning(controller)};
+        if (capturedIdx >= 0)
+            learnableParams_[static_cast<size_t>(capturedIdx)]->setValueNotifyingHost(normalised);
 
         // Apply any CC-to-parameter assignments (may include the one just learned)
-        for (size_t i = 0; i < kNumLearnableParams; ++i)
+        for (size_t i = 0; i < midi::MidiLearnMap::kNumParams; ++i)
         {
-            if (midiCCMap_[i].load(std::memory_order_relaxed) == controller)
-            {
+            if (midiLearnMap_.ccAtIndex(i) == controller)
                 learnableParams_[i]->setValueNotifyingHost(normalised);
-            }
         }
     }
 
@@ -340,73 +328,22 @@ void SynpleAudioProcessor::render(juce::AudioBuffer<float>& buffer, const int sa
 }
 
 //==============================================================================
-void SynpleAudioProcessor::initialiseMidiLearnMap()
+void SynpleAudioProcessor::initialiseLearnableParams()
 {
-    for (size_t i = 0; i < kNumLearnableParams; ++i)
-    {
+    for (size_t i = 0; i < midi::MidiLearnMap::kNumParams; ++i)
         learnableParams_[i] =
-            &parameters_.getParameter(juce::ParameterID{kLearnableParamIds[i], parameter_id::kVersion});
-        midiCCMap_[i].store(kCCUnassigned);
-    }
-}
-
-int SynpleAudioProcessor::midiLearnIndexForId(const juce::String& paramId) const
-{
-    for (size_t i = 0; i < kNumLearnableParams; ++i)
-    {
-        if (paramId == kLearnableParamIds[i])
-            return static_cast<int>(i);
-    }
-    return -1;
-}
-
-void SynpleAudioProcessor::beginMidiLearn(const juce::String& paramId)
-{
-    const int idx{midiLearnIndexForId(paramId)};
-    if (idx >= 0)
-        midiLearnIndex_.store(idx);
-}
-
-void SynpleAudioProcessor::cancelMidiLearn()
-{
-    midiLearnIndex_.store(-1);
-}
-
-void SynpleAudioProcessor::clearMidiLearn(const juce::String& paramId)
-{
-    const int idx{midiLearnIndexForId(paramId)};
-    if (idx >= 0)
-        midiCCMap_[static_cast<size_t>(idx)].store(kCCUnassigned);
-}
-
-uint8_t SynpleAudioProcessor::getMidiLearnCC(const juce::String& paramId) const
-{
-    const int idx{midiLearnIndexForId(paramId)};
-    if (idx >= 0)
-        return midiCCMap_[static_cast<size_t>(idx)].load();
-    return kCCUnassigned;
-}
-
-juce::String SynpleAudioProcessor::getMidiLearnParamId() const
-{
-    const int idx{midiLearnIndex_.load()};
-    if (idx >= 0 && static_cast<size_t>(idx) < kNumLearnableParams)
-        return juce::String{kLearnableParamIds[static_cast<size_t>(idx)]};
-    return {};
+            &parameters_.getParameter(juce::ParameterID{midi::MidiLearnMap::kParamIds[i], parameter_id::kVersion});
 }
 
 juce::var SynpleAudioProcessor::getMidiLearnState() const
 {
     juce::DynamicObject::Ptr assignmentsObj{new juce::DynamicObject{}};
-    for (size_t i = 0; i < kNumLearnableParams; ++i)
-    {
-        const uint8_t cc{midiCCMap_[i].load()};
-        if (cc != kCCUnassigned)
-            assignmentsObj->setProperty(kLearnableParamIds[i], static_cast<int>(cc));
-    }
+    midiLearnMap_.forEachAssignment(
+        [&](const char* id, uint8_t cc) { assignmentsObj->setProperty(id, static_cast<int>(cc)); });
+    const char* learningId{midiLearnMap_.learningParamId()};
     juce::DynamicObject::Ptr obj{new juce::DynamicObject{}};
     obj->setProperty("assignments", juce::var{assignmentsObj.get()});
-    obj->setProperty("learningParam", getMidiLearnParamId());
+    obj->setProperty("learningParam", learningId != nullptr ? juce::String{learningId} : juce::String{});
     return juce::var{obj.get()};
 }
 

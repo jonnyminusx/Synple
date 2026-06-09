@@ -110,6 +110,7 @@ add_library(synple_math INTERFACE)
 target_include_directories(synple_math INTERFACE source)
 
 add_library(synple_midi STATIC
+    source/midi/MidiLearnMap.cpp
     source/midi/MidiProcessor.cpp
 )
 target_include_directories(synple_midi PUBLIC source)
@@ -152,7 +153,7 @@ CPMAddPackage(
     GITHUB_REPOSITORY catchorg/Catch2
 )
 
-add_executable(MidiTests  tests/MidiProcessorTest.cpp)
+add_executable(MidiTests  tests/MidiLearnMapTest.cpp tests/MidiProcessorTest.cpp)
 add_executable(DspTests   tests/AudioBufferTest.cpp tests/FilterTest.cpp)
 add_executable(SynthTests
     tests/PolyBlepOscillatorTest.cpp

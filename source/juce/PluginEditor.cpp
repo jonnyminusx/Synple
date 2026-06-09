@@ -126,19 +126,21 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
                    .withNativeFunction("midiLearnStart",
                                        [this](const juce::Array<juce::var>& args, auto complete) {
                                            if (args.size() >= 1)
-                                               processorRef_.beginMidiLearn(args[0].toString());
+                                               processorRef_.midiLearnMap().beginLearn(
+                                                   std::string_view{args[0].toString().toRawUTF8()});
                                            complete({});
                                        })
                    .withNativeFunction("midiLearnCancel",
                                        [this](const juce::Array<juce::var>& args, auto complete) {
                                            juce::ignoreUnused(args);
-                                           processorRef_.cancelMidiLearn();
+                                           processorRef_.midiLearnMap().cancelLearn();
                                            complete({});
                                        })
                    .withNativeFunction("midiLearnClear",
                                        [this](const juce::Array<juce::var>& args, auto complete) {
                                            if (args.size() >= 1)
-                                               processorRef_.clearMidiLearn(args[0].toString());
+                                               processorRef_.midiLearnMap().clearLearn(
+                                                   std::string_view{args[0].toString().toRawUTF8()});
                                            complete({});
                                        })
                    .withNativeFunction("midiLearnGetState",
@@ -192,7 +194,7 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
 
 SynpleAudioProcessorEditor::~SynpleAudioProcessorEditor()
 {
-    processorRef_.cancelMidiLearn();
+    processorRef_.midiLearnMap().cancelLearn();
 }
 
 void SynpleAudioProcessorEditor::resized()
