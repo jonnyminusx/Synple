@@ -39,8 +39,7 @@ class MidiLearnMap
     uint8_t ccAtIndex(size_t idx) const;
     void setCC(size_t idx, uint8_t cc);
 
-    template <typename Visitor>
-    void forEachAssignment(Visitor&& visitor) const
+    template <typename Visitor> void forEachAssignment(Visitor&& visitor) const
     {
         for (size_t i = 0; i < kNumParams; ++i)
         {

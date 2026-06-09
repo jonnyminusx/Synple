@@ -203,9 +203,8 @@ void SynpleAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
     xml->addChildElement(parameters_.copyStateToXml().release());
 
     auto extraXML{std::make_unique<juce::XmlElement>(extraTag)};
-    midiLearnMap_.forEachAssignment([&](const char* id, uint8_t cc) {
-        extraXML->setAttribute(juce::String("cc_") + id, static_cast<int>(cc));
-    });
+    midiLearnMap_.forEachAssignment(
+        [&](const char* id, uint8_t cc) { extraXML->setAttribute(juce::String("cc_") + id, static_cast<int>(cc)); });
     xml->addChildElement(extraXML.release());
 
     copyXmlToBinary(*xml, destData);
@@ -335,7 +334,6 @@ void SynpleAudioProcessor::initialiseLearnableParams()
         learnableParams_[i] =
             &parameters_.getParameter(juce::ParameterID{midi::MidiLearnMap::kParamIds[i], parameter_id::kVersion});
 }
-
 
 //==============================================================================
 // This creates new instances of the plugin..

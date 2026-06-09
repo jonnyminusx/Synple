@@ -71,9 +71,7 @@ constexpr auto kLocalDevServerAddress{"http://localhost:8080"};
 juce::var buildMidiLearnState(const midi::MidiLearnMap& map)
 {
     juce::DynamicObject::Ptr assignmentsObj{new juce::DynamicObject{}};
-    map.forEachAssignment([&](const char* id, uint8_t cc) {
-        assignmentsObj->setProperty(id, static_cast<int>(cc));
-    });
+    map.forEachAssignment([&](const char* id, uint8_t cc) { assignmentsObj->setProperty(id, static_cast<int>(cc)); });
     const char* learningId{map.learningParamId()};
     juce::DynamicObject::Ptr obj{new juce::DynamicObject{}};
     obj->setProperty("assignments", juce::var{assignmentsObj.get()});
