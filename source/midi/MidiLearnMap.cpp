@@ -56,11 +56,12 @@ const char* MidiLearnMap::learningParamId() const
 
 int MidiLearnMap::tryCaptureLearning(uint8_t cc)
 {
-    const int idx{midiLearnIndex_.load()};
+    int idx{midiLearnIndex_.load()};
     if (idx < 0)
         return -1;
+    if (!midiLearnIndex_.compare_exchange_strong(idx, -1))
+        return -1;
     midiCCMap_[static_cast<size_t>(idx)].store(cc);
-    midiLearnIndex_.store(-1);
     return idx;
 }
 
