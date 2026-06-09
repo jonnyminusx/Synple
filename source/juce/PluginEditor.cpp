@@ -3,7 +3,6 @@
 #include "WebViewFiles.h"
 
 #include <ranges>
-#include <string_view>
 
 namespace
 {
@@ -67,17 +66,6 @@ std::vector<std::byte> getWebViewFileAsBytes(const juce::String& filepath)
 }
 
 constexpr auto kLocalDevServerAddress{"http://localhost:8080"};
-
-juce::var buildMidiLearnState(const midi::MidiLearnMap& map)
-{
-    juce::DynamicObject::Ptr assignmentsObj{new juce::DynamicObject{}};
-    map.forEachAssignment([&](const char* id, uint8_t cc) { assignmentsObj->setProperty(id, static_cast<int>(cc)); });
-    const char* learningId{map.learningParamId()};
-    juce::DynamicObject::Ptr obj{new juce::DynamicObject{}};
-    obj->setProperty("assignments", juce::var{assignmentsObj.get()});
-    obj->setProperty("learningParam", learningId != nullptr ? juce::String{learningId} : juce::String{});
-    return juce::var{obj.get()};
-}
 
 } // namespace
 
@@ -158,7 +146,7 @@ SynpleAudioProcessorEditor::SynpleAudioProcessorEditor(SynpleAudioProcessor& p)
                    .withNativeFunction("midiLearnGetState",
                                        [this](const juce::Array<juce::var>& args, auto complete) {
                                            juce::ignoreUnused(args);
-                                           complete(buildMidiLearnState(processorRef_.midiLearnMap()));
+                                           complete(processorRef_.getMidiLearnState());
                                        })),
       webOsc1VolumeAttachment_(p.getParameter(parameter_id::osc1Volume), webOsc1VolumeRelay_),
       webOsc2VolumeAttachment_(p.getParameter(parameter_id::osc2Volume), webOsc2VolumeRelay_),

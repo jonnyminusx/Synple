@@ -335,6 +335,18 @@ void SynpleAudioProcessor::initialiseLearnableParams()
             &parameters_.getParameter(juce::ParameterID{midi::MidiLearnMap::kParamIds[i], parameter_id::kVersion});
 }
 
+juce::var SynpleAudioProcessor::getMidiLearnState() const
+{
+    juce::DynamicObject::Ptr assignmentsObj{new juce::DynamicObject{}};
+    midiLearnMap_.forEachAssignment(
+        [&](const char* id, uint8_t cc) { assignmentsObj->setProperty(id, static_cast<int>(cc)); });
+    const char* learningId{midiLearnMap_.learningParamId()};
+    juce::DynamicObject::Ptr obj{new juce::DynamicObject{}};
+    obj->setProperty("assignments", juce::var{assignmentsObj.get()});
+    obj->setProperty("learningParam", learningId != nullptr ? juce::String{learningId} : juce::String{});
+    return juce::var{obj.get()};
+}
+
 //==============================================================================
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()

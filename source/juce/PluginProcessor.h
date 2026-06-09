@@ -58,6 +58,7 @@ class SynpleAudioProcessor final : public juce::AudioProcessor, private juce::Va
 
     midi::MidiLearnMap& midiLearnMap() { return midiLearnMap_; }
     const midi::MidiLearnMap& midiLearnMap() const { return midiLearnMap_; }
+    juce::var getMidiLearnState() const;
 
   private:
     void valueTreePropertyChanged(juce::ValueTree&, const juce::Identifier&) override;
