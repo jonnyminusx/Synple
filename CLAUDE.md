@@ -63,9 +63,23 @@ cmake --build build
 ctest --test-dir build
 ```
 
+`SYNPLE_BUILD_TESTS` defaults to ON when this project is configured as the top-level project and OFF when consumed with `add_subdirectory`. Plugin consumers can explicitly disable the engine tests to avoid fetching Catch2:
+```bash
+cmake -B build-plugin -DSYNPLE_BUILD_TESTS=OFF
+```
+
+**Develop against a sibling engine checkout**:
+```bash
+cmake -B build-plugin \
+    -DSYNPLE_ENGINE_SOURCE_DIR=/path/to/synple-engine \
+    -DSYNPLE_BUILD_TESTS=OFF
+cmake --build build-plugin
+```
+When `SYNPLE_ENGINE_SOURCE_DIR` is set, CMake adds that engine project and builds its targets as part of the plugin. When unset, the current project builds its in-tree engine. Keep the local path in a user-specific CMake preset or cache rather than committing a machine-specific path. In VS Code, open both repositories in a multi-root workspace and configure/build the plugin folder; CMake reconfiguration refreshes its `compile_commands.json` when switching source paths.
+
 **Run tests with AddressSanitizer + UBSan** (catches memory errors and undefined behaviour):
 ```bash
-cmake -B build -DBUILD_PLUGIN=OFF -DENABLE_SANITIZERS=ON
+cmake -B build -DBUILD_PLUGIN=OFF -DSYNPLE_BUILD_TESTS=ON -DENABLE_SANITIZERS=ON
 cmake --build build
 ```
 Set `ASAN_OPTIONS=detect_leaks=1` and `UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1` in the environment for full diagnostics. The `sanitizers` CI job runs with these flags on every PR.

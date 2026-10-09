@@ -9,9 +9,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_XCODE_GENERATE_SCHEME OFF)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# Set to OFF to build only the test suite (no GTK/WebKit/JUCE required)
+# Set to OFF to skip the JUCE plugin and its GTK/WebKit requirements
 option(BUILD_PLUGIN "Build the JUCE audio plugin" ON)
-option(ENABLE_SANITIZERS "Build SynthTests with ASan and UBSan" OFF)
+option(SYNPLE_BUILD_TESTS "Build engine functionality tests" ${PROJECT_IS_TOP_LEVEL})
+option(ENABLE_SANITIZERS "Build engine tests with ASan and UBSan" OFF)
+set(SYNPLE_ENGINE_SOURCE_DIR "" CACHE PATH "Path to a local Synple engine checkout")
 
 # We're going to use CPM as our package manager
 set(CPM_DOWNLOAD_VERSION 0.42.3)
@@ -106,6 +108,22 @@ endif()
 
 # ─── Layer libraries ──────────────────────────────────────────────────────────
 
+if (SYNPLE_ENGINE_SOURCE_DIR)
+    get_filename_component(SYNPLE_ENGINE_SOURCE_DIR_REAL "${SYNPLE_ENGINE_SOURCE_DIR}" REALPATH)
+    get_filename_component(SYNPLE_PROJECT_SOURCE_DIR_REAL "${CMAKE_CURRENT_SOURCE_DIR}" REALPATH)
+    if (SYNPLE_ENGINE_SOURCE_DIR_REAL STREQUAL SYNPLE_PROJECT_SOURCE_DIR_REAL)
+        message(FATAL_ERROR "SYNPLE_ENGINE_SOURCE_DIR must point to a separate engine checkout")
+    endif()
+    if (NOT EXISTS "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/CMakeLists.txt")
+        message(FATAL_ERROR "No CMakeLists.txt found at SYNPLE_ENGINE_SOURCE_DIR=${SYNPLE_ENGINE_SOURCE_DIR}")
+    endif()
+    add_subdirectory("${SYNPLE_ENGINE_SOURCE_DIR_REAL}" "${CMAKE_BINARY_DIR}/synple-engine")
+    foreach(ENGINE_TARGET IN ITEMS Synple::Math Synple::Midi Synple::Dsp Synple::Synth)
+        if (NOT TARGET ${ENGINE_TARGET})
+            message(FATAL_ERROR "The engine project must define the ${ENGINE_TARGET} target")
+        endif()
+    endforeach()
+else()
 add_library(synple_math INTERFACE)
 target_include_directories(synple_math INTERFACE source)
 
@@ -142,7 +160,14 @@ target_link_libraries(synple_synth PUBLIC synple_dsp synple_midi synple_math)
 
 set_target_properties(synple_midi synple_dsp synple_synth PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
+add_library(Synple::Math ALIAS synple_math)
+add_library(Synple::Midi ALIAS synple_midi)
+add_library(Synple::Dsp ALIAS synple_dsp)
+add_library(Synple::Synth ALIAS synple_synth)
+endif()
+
 # ─── Tests ────────────────────────────────────────────────────────────────────
+if (SYNPLE_BUILD_TESTS)
 # Test binaries link only pure-C++ layer libraries; no JUCE or GTK needed.
 enable_testing()
 include(CTest)
@@ -162,9 +187,9 @@ add_executable(SynthTests
     tests/SineOscillatorTest.cpp
 )
 
-target_link_libraries(MidiTests  PRIVATE synple_midi  Catch2::Catch2WithMain)
-target_link_libraries(DspTests   PRIVATE synple_dsp   Catch2::Catch2WithMain)
-target_link_libraries(SynthTests PRIVATE synple_synth Catch2::Catch2WithMain)
+target_link_libraries(MidiTests  PRIVATE Synple::Midi  Catch2::Catch2WithMain)
+target_link_libraries(DspTests   PRIVATE Synple::Dsp   Catch2::Catch2WithMain)
+target_link_libraries(SynthTests PRIVATE Synple::Synth Catch2::Catch2WithMain)
 
 set(kTestTargets MidiTests DspTests SynthTests)
 
@@ -192,6 +217,7 @@ foreach(TARGET IN LISTS kTestTargets)
         VERBATIM
     )
 endforeach()
+endif()
 
 # ─── Plugin ───────────────────────────────────────────────────────────────────
 if (BUILD_PLUGIN)
@@ -266,6 +292,9 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SourceFiles})
 target_sources(${PROJECT_NAME} PRIVATE ${SourceFiles})
 
 # Add source directory to include paths to avoid relative includes
+if (SYNPLE_ENGINE_SOURCE_DIR)
+    target_include_directories(${PROJECT_NAME} BEFORE PRIVATE "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source")
+endif()
 target_include_directories(${PROJECT_NAME} PRIVATE source)
 
 target_compile_definitions(${PROJECT_NAME}
@@ -290,7 +319,7 @@ target_link_libraries(${PROJECT_NAME}
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags
         WebViewFiles
-        synple_synth
+        Synple::Synth
 )
 
 file(COPY "${CMAKE_BINARY_DIR}/_deps/juce-src/modules/juce_gui_extra/native/javascript/"

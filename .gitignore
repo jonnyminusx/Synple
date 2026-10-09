@@ -33,6 +33,7 @@
 
 .cache/
 build*/
+CMakeUserPresets.json
 source/ui/public/
 source/ui/node_modules/
 source/ui/src/lib/juce/
