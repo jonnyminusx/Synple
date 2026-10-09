@@ -45,74 +45,17 @@ cmake --build build
 
 ### Testing
 
-Tests use Catch2 v3 and live in `tests/`. There are three per-layer test binaries, all linking only pure-C++ sources — no JUCE, GTK, or WebKit required:
+Engine functionality tests live in the [Jape repository](https://github.com/jonnyminusx/Jape) and run independently of JUCE and the plugin build.
 
-| Binary | Links | Tests |
-|--------|-------|-------|
-| `MidiTests` | `synple_midi` | `midi::MidiProcessor` |
-| `DspTests` | `synple_dsp` (+ math) | `dsp::AudioBuffer`, `dsp::Filter` |
-| `SynthTests` | `synple_synth` (+ dsp, midi, math) | `synth` oscillators |
-
-The per-layer split enforces dependencies at link time: if midi code calls a dsp function, `MidiTests` fails to link.
-
-**Build and run tests** (no system dependencies needed):
 ```bash
-cmake -B build -DBUILD_PLUGIN=OFF
-cmake --build build
-# All three binaries run automatically post-build; or run via CTest:
-ctest --test-dir build
+cmake -S ../Jape -B ../Jape/build -DSYNPLE_BUILD_TESTS=ON
+cmake --build ../Jape/build
+ctest --test-dir ../Jape/build --output-on-failure
 ```
 
-`SYNPLE_BUILD_TESTS` defaults to ON when this project is configured as the top-level project and OFF when consumed with `add_subdirectory`. Plugin consumers can explicitly disable the engine tests to avoid fetching Catch2:
-```bash
-cmake -B build-plugin -DSYNPLE_BUILD_TESTS=OFF
-```
+The Synple plugin consumes the pinned Jape commit by default. For engine development, set `SYNPLE_ENGINE_SOURCE_DIR` to a local Jape checkout; keep that machine-specific path in a user preset or CMake cache rather than committing it. In VS Code, open both repositories in a multi-root workspace and build the plugin from Synple; CMake Tools uses the plugin build's refreshed `compile_commands.json`.
 
-**Develop against a sibling engine checkout**:
-```bash
-cmake -B build-plugin \
-    -DSYNPLE_ENGINE_SOURCE_DIR=/path/to/synple-engine \
-    -DSYNPLE_BUILD_TESTS=OFF
-cmake --build build-plugin
-```
-When `SYNPLE_ENGINE_SOURCE_DIR` is set, CMake adds that engine project and builds its targets as part of the plugin. When unset, the current project builds its in-tree engine. Keep the local path in a user-specific CMake preset or cache rather than committing a machine-specific path. In VS Code, open both repositories in a multi-root workspace and configure/build the plugin folder; CMake reconfiguration refreshes its `compile_commands.json` when switching source paths.
-
-**Run tests with AddressSanitizer + UBSan** (catches memory errors and undefined behaviour):
-```bash
-cmake -B build -DBUILD_PLUGIN=OFF -DSYNPLE_BUILD_TESTS=ON -DENABLE_SANITIZERS=ON
-cmake --build build
-```
-Set `ASAN_OPTIONS=detect_leaks=1` and `UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1` in the environment for full diagnostics. The `sanitizers` CI job runs with these flags on every PR.
-
-**Auto-format all source files**:
-```bash
-cmake --build build --target format
-```
-
-**Static analysis** (`tidy`, `iwyu`) requires a full plugin build so that `compile_commands.json` contains entries for all source files, including those that depend on `juce_audio_basics`. Run after a normal `cmake -B build` (system deps required):
-```bash
-cmake --build build --target tidy
-cmake --build build --target iwyu
-```
-Both targets operate on `source/dsp/`, `source/midi/`, `source/synth/`, and `source/math/` only — `source/juce/` is excluded because JUCE macros produce false positives.
-
-**Test file conventions** — one test file per class or free function, named `<ClassName>Test.cpp` or `<functionName>Test.cpp`. Current test files:
-
-| File | Binary | Tests |
-|------|--------|-------|
-| `tests/MidiProcessorTest.cpp` | `MidiTests` | `midi::MidiProcessor` |
-| `tests/AudioBufferTest.cpp` | `DspTests` | `dsp::AudioBuffer` (including `sanitise()`) |
-| `tests/FilterTest.cpp` | `DspTests` | `dsp::Filter` |
-| `tests/PolyBlepOscillatorTest.cpp` | `SynthTests` | `synth::PolyBlepOscillator` (DC, modulation) |
-| `tests/SawtoothOscillatorTest.cpp` | `SynthTests` | `synth::SawtoothOscillator` (amplitude, frequency, reset, aliasing) |
-| `tests/PulseOscillatorTest.cpp` | `SynthTests` | `synth::PulseOscillator` (PWM harmonic structure, duty cycle) |
-| `tests/SineOscillatorTest.cpp` | `SynthTests` | `synth::SineOscillator` (amplitude, frequency, reset) |
-
-**Adding a test file** — two steps:
-1. Create `tests/FooTest.cpp` (use `#include <catch2/catch_test_macros.hpp>` and `#include <catch2/catch_approx.hpp>`).
-2. In `CMakeLists.txt`, add `tests/FooTest.cpp` to the `add_executable(...)` block that matches the layer under test (`MidiTests`, `DspTests`, or `SynthTests`).
-
-Sources from `source/dsp/`, `source/synth/`, `source/midi/`, and `source/math/` are eligible — they are JUCE-free. Never add `source/juce/` files to any test target.
+The Jape repository owns test-file conventions, sanitizer configuration, and engine CI.
 
 ### WebView UI development
 
@@ -132,14 +75,13 @@ CMake runs `npm run build` automatically as part of the plugin build. The JUCE J
 
 ### CI
 
-`.github/workflows/build.yml` runs two parallel jobs on every PR and push to `main`:
+`.github/workflows/build.yml` runs the plugin build job on every PR and push to `main`:
 
 | Job | Steps |
 |-----|-------|
-| `build` | Install system deps → cache JUCE + CPM → `npm ci` → clang-format check (dry-run, error on violation) → Configure → clang-tidy → IWYU → Build |
-| `sanitizers` | Cache CPM + Catch2 → Configure (`-DBUILD_PLUGIN=OFF -DENABLE_SANITIZERS=ON`) → Build and run `MidiTests`, `DspTests`, `SynthTests` under ASan + UBSan |
+| `build` | Install system deps → cache JUCE + CPM → `npm ci` → Configure → clang-format check → clang-tidy → IWYU → Build |
 
-The `sanitizers` job does not need system libraries (no GTK, WebKit, JUCE) — it only builds the pure-C++ test binaries.
+The Jape repository's workflow owns engine tests and sanitizer runs.
 
 ## Architecture
 
@@ -147,10 +89,10 @@ The `sanitizers` job does not need system libraries (no GTK, WebKit, JUCE) — i
 
 ```
 source/juce/   — JUCE plugin layer (AudioProcessor, AudioProcessorEditor, Parameters)
-source/synth/  — Pure synth engine (no JUCE dependencies)
-source/midi/   — MIDI message processing (MidiProcessor, MidiState, NoteHandler, CC type alias)
-source/dsp/    — DSP primitives (Filter, frequency-analysis utilities); JUCE-free, eligible for SynthTests
-source/math/   — Math constants
+Jape/source/synth/ — Pure synth engine (no JUCE dependencies)
+Jape/source/midi/  — MIDI message processing (MidiProcessor, MidiState, NoteHandler, CC type alias)
+Jape/source/dsp/   — JUCE-free DSP primitives
+Jape/source/math/  — Math constants
 source/ui/     — WebView frontend (HTML/JS)
 ```
 
@@ -165,7 +107,7 @@ source/ui/     — WebView frontend (HTML/JS)
 
 - `source/juce/Parameters` owns the `AudioProcessorValueTreeState` and exposes typed accessors (e.g. `envelope()`, `filterQ()`). Raw parameter pointers are stored privately; public accessors map raw values to usable units.
 - `source/juce/ParameterIDs.h` defines all parameter IDs as `juce::ParameterID` constants — use these everywhere instead of string literals.
-- `source/synth/Parameters.h` is a plain struct holding computed values that the synth engine reads each render block. `Synth` stores one instance; `PluginProcessor` maps from the JUCE parameter layer into it via `update()`.
+- `Jape/source/synth/Parameters.h` is a plain struct holding computed values that the synth engine reads each render block. `Synth` stores one instance; `PluginProcessor` maps from the JUCE parameter layer into it via `update()`.
 
 ### WebView ↔ C++ bridge
 
@@ -175,15 +117,15 @@ The editor uses JUCE's WebView integration:
 
 ### Presets
 
-`source/synth/Presets` stores factory presets as arrays of normalised parameter values. `PluginProcessor` implements `getNumPrograms` / `setCurrentProgram` using this class.
+`Jape/source/synth/Presets` stores factory presets as arrays of normalised parameter values. `PluginProcessor` implements `getNumPrograms` / `setCurrentProgram` using this class.
 
 ## Code review guidelines
 
 ### Naming
 - Classes/structs: PascalCase. Methods: camelCase.
 - Member variables (private/protected): trailing underscore (`period_`, `voices_`).
-- `constexpr` constants — all scopes except `source/math/` — use a `k` prefix in camelCase (`kMaxNumVoices`, `kSilence`, `kLocalDevServerAddress`). This applies to namespace-scope, anonymous-namespace, file-scope, static class members, and local `constexpr` variables. `static constexpr` class members use the `k` prefix and no trailing underscore (`kMaxNumVoices`, not `maxNumVoices_`).
-- Math constants in `source/math/` keep their plain lowercase names (`pi`, `tau`, `quarterPi`) to match the `std::numbers` style they wrap.
+- `constexpr` constants — all scopes except `Jape/source/math/` — use a `k` prefix in camelCase (`kMaxNumVoices`, `kSilence`, `kLocalDevServerAddress`). This applies to namespace-scope, anonymous-namespace, file-scope, static class members, and local `constexpr` variables. `static constexpr` class members use the `k` prefix and no trailing underscore (`kMaxNumVoices`, not `maxNumVoices_`).
+- Math constants in `Jape/source/math/` keep their plain lowercase names (`pi`, `tau`, `quarterPi`) to match the `std::numbers` style they wrap.
 - `#pragma once` in every header; never `#ifndef` include guards.
 
 ### Include order (within each group, alphabetical is fine)
@@ -229,7 +171,7 @@ Avoid unless the type is verbose and unambiguous from context (e.g. `auto buffer
 - No Doxygen/docstring blocks.
 
 ### Layer discipline
-- `source/dsp/`, `source/synth/`, and `source/midi/` must stay JUCE-free (eligible for `SynthTests`). Never add a JUCE include to these layers.
+- `Jape/source/dsp/`, `Jape/source/synth/`, and `Jape/source/midi/` must stay JUCE-free. Never add a JUCE include to these layers.
 - Parameter IDs must come from `parameter_id::` constants in `ParameterIDs.h` — never raw string literals.
 - The synth engine reads parameters via `synth::Parameters` (a plain struct); do not reach from the synth layer back into `source/juce/`.
-- Free functions in `source/dsp/`, `source/synth/`, and `source/midi/` are declared in a `.h` file and defined in a matching `.cpp` file — do not use `inline` implementations in headers unless the function is a template or `constexpr`. Add the `.cpp` to the corresponding `add_library(...)` block in `CMakeLists.txt`.
+- Free functions in `Jape/source/dsp/`, `Jape/source/synth/`, and `Jape/source/midi/` are declared in a `.h` file and defined in a matching `.cpp` file — do not use `inline` implementations in headers unless the function is a template or `constexpr`. Add the `.cpp` to the corresponding `add_library(...)` block in `Jape/CMakeLists.txt`.

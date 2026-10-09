@@ -39,46 +39,17 @@ jobs:
       - name: Install Node dependencies
         run: cd source/ui && npm ci
 
-      - name: Check formatting
-        run: |
-          clang-format --dry-run --Werror \
-            $(find source/juce source/midi source/synth source/math -name '*.cpp' -o -name '*.h')
-
       - name: Configure
         run: cmake -B build
 
+      - name: Check formatting
+        run: cmake --build build --target format-check
+
       - name: Check tidy
-        run: |
-          clang-tidy -p build \
-            $(find source/midi source/synth source/math -name '*.cpp')
+        run: cmake --build build --target tidy
 
       - name: Check IWYU
-        run: |
-          iwyu_tool -p build \
-            $(find source/midi source/synth source/math -name '*.cpp')
+        run: cmake --build build --target iwyu
 
       - name: Build
         run: cmake --build build --parallel
-
-  sanitizers:
-    runs-on: ubuntu-24.04
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Cache CPM and Catch2
-        uses: actions/cache@v4
-        with:
-          path: |
-            build/_deps
-            build/cmake
-          key: cpm-${{ runner.os }}-${{ hashFiles('CMakeLists.txt') }}
-
-      - name: Configure
-        run: cmake -B build -DBUILD_PLUGIN=OFF -DENABLE_SANITIZERS=ON
-
-      - name: Build and run tests
-        run: cmake --build build
-        env:
-          ASAN_OPTIONS: detect_leaks=1
-          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
