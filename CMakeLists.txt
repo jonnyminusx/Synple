@@ -9,9 +9,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_XCODE_GENERATE_SCHEME OFF)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# Set to OFF to build only the test suite (no GTK/WebKit/JUCE required)
+# Set to OFF to skip the JUCE plugin and its GTK/WebKit requirements
 option(BUILD_PLUGIN "Build the JUCE audio plugin" ON)
-option(ENABLE_SANITIZERS "Build SynthTests with ASan and UBSan" OFF)
+set(SYNPLE_ENGINE_SOURCE_DIR "" CACHE PATH "Path to a local Synple engine checkout")
+set(SYNPLE_BUILD_TESTS OFF CACHE BOOL "Engine tests are run from the engine repository" FORCE)
 
 # We're going to use CPM as our package manager
 set(CPM_DOWNLOAD_VERSION 0.42.3)
@@ -24,34 +25,60 @@ endif ()
 
 include("${CPM_DOWNLOAD_LOCATION}")
 
+if (SYNPLE_ENGINE_SOURCE_DIR)
+    get_filename_component(SYNPLE_ENGINE_SOURCE_DIR_REAL "${SYNPLE_ENGINE_SOURCE_DIR}" REALPATH)
+    get_filename_component(SYNPLE_PROJECT_SOURCE_DIR_REAL "${CMAKE_CURRENT_SOURCE_DIR}" REALPATH)
+    if (SYNPLE_ENGINE_SOURCE_DIR_REAL STREQUAL SYNPLE_PROJECT_SOURCE_DIR_REAL)
+        message(FATAL_ERROR "SYNPLE_ENGINE_SOURCE_DIR must point to a separate engine checkout")
+    endif()
+    if (NOT EXISTS "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/CMakeLists.txt")
+        message(FATAL_ERROR "No CMakeLists.txt found at SYNPLE_ENGINE_SOURCE_DIR=${SYNPLE_ENGINE_SOURCE_DIR}")
+    endif()
+    add_subdirectory("${SYNPLE_ENGINE_SOURCE_DIR_REAL}" "${CMAKE_BINARY_DIR}/synple-engine")
+else()
+    CPMAddPackage(
+        NAME SynpleEngine
+        GITHUB_REPOSITORY jonnyminusx/Jape
+        GIT_TAG 39646bfc021fb2d65887a83db070940c1aaeeef8
+    )
+    set(SYNPLE_ENGINE_SOURCE_DIR_REAL "${SynpleEngine_SOURCE_DIR}")
+endif()
+
+foreach(ENGINE_TARGET IN ITEMS Synple::Math Synple::Midi Synple::Dsp Synple::Synth)
+    if (NOT TARGET ${ENGINE_TARGET})
+        message(FATAL_ERROR "The engine project must define the ${ENGINE_TARGET} target")
+    endif()
+endforeach()
+
 # ─── clang-format ─────────────────────────────────────────────────────────────
 find_program(CLANG_FORMAT clang-format)
 if (CLANG_FORMAT)
-    file(GLOB_RECURSE FORMAT_SOURCE_FILES
-        "${CMAKE_CURRENT_SOURCE_DIR}/source/dsp/*.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/source/dsp/*.h"
+    file(GLOB_RECURSE SYNPLE_FORMAT_SOURCE_FILES
         "${CMAKE_CURRENT_SOURCE_DIR}/source/juce/*.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/source/juce/*.h"
-        "${CMAKE_CURRENT_SOURCE_DIR}/source/midi/*.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/source/midi/*.h"
-        "${CMAKE_CURRENT_SOURCE_DIR}/source/synth/*.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/source/synth/*.h"
-        "${CMAKE_CURRENT_SOURCE_DIR}/source/math/*.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/source/math/*.h"
     )
+    file(GLOB_RECURSE ENGINE_FORMAT_SOURCE_FILES
+        "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/dsp/*.cpp"
+        "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/dsp/*.h"
+        "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/midi/*.cpp"
+        "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/midi/*.h"
+        "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/synth/*.cpp"
+        "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/synth/*.h"
+        "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/math/*.cpp"
+        "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/math/*.h"
+    )
+    set(FORMAT_CHECK_SOURCE_FILES ${SYNPLE_FORMAT_SOURCE_FILES} ${ENGINE_FORMAT_SOURCE_FILES})
 
-    set(FORMAT_STAMP "${CMAKE_BINARY_DIR}/clang-format.stamp")
-
-    add_custom_command(
-        OUTPUT "${FORMAT_STAMP}"
-        COMMAND ${CLANG_FORMAT} -i ${FORMAT_SOURCE_FILES}
-        COMMAND ${CMAKE_COMMAND} -E touch "${FORMAT_STAMP}"
-        DEPENDS ${FORMAT_SOURCE_FILES}
-        COMMENT "Running clang-format..."
+    add_custom_target(format
+        COMMAND ${CLANG_FORMAT} -i ${SYNPLE_FORMAT_SOURCE_FILES}
+        COMMENT "Formatting Synple sources..."
         VERBATIM
     )
-
-    add_custom_target(format ALL DEPENDS "${FORMAT_STAMP}")
+    add_custom_target(format-check
+        COMMAND ${CLANG_FORMAT} --dry-run --Werror ${FORMAT_CHECK_SOURCE_FILES}
+        COMMENT "Checking Synple and engine formatting..."
+        VERBATIM
+    )
 else()
     message(STATUS "clang-format not found — skipping format target")
 endif()
@@ -60,10 +87,10 @@ endif()
 # Requires a full build (BUILD_PLUGIN=ON) so that compile_commands.json
 # contains entries for all files, including those that depend on juce_audio_basics.
 file(GLOB_RECURSE ANALYSIS_SOURCE_FILES
-    "${CMAKE_CURRENT_SOURCE_DIR}/source/dsp/*.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/source/midi/*.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/source/synth/*.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/source/math/*.cpp"
+    "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/dsp/*.cpp"
+    "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/midi/*.cpp"
+    "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/synth/*.cpp"
+    "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/math/*.cpp"
 )
 
 # ─── clang-tidy ───────────────────────────────────────────────────────────────
@@ -104,95 +131,6 @@ else()
     message(STATUS "iwyu_tool not found — skipping iwyu target")
 endif()
 
-# ─── Layer libraries ──────────────────────────────────────────────────────────
-
-add_library(synple_math INTERFACE)
-target_include_directories(synple_math INTERFACE source)
-
-add_library(synple_midi STATIC
-    source/midi/MidiLearnMap.cpp
-    source/midi/MidiProcessor.cpp
-)
-target_include_directories(synple_midi PUBLIC source)
-
-add_library(synple_dsp STATIC
-    source/dsp/AudioBuffer.cpp
-    source/dsp/Filter.cpp
-    source/dsp/Goertzel.cpp
-    source/dsp/Mean.cpp
-    source/dsp/NoiseGenerator.cpp
-    source/dsp/Rms.cpp
-)
-target_include_directories(synple_dsp PUBLIC source)
-target_link_libraries(synple_dsp PUBLIC synple_math)
-
-add_library(synple_synth STATIC
-    source/synth/Envelope.cpp
-    source/synth/PolyBlepOscillator.cpp
-    source/synth/PulseOscillator.cpp
-    source/synth/SawtoothOscillator.cpp
-    source/synth/Output.cpp
-    source/synth/Presets.cpp
-    source/synth/SineOscillator.cpp
-    source/synth/Synth.cpp
-    source/synth/Voice.cpp
-)
-target_include_directories(synple_synth PUBLIC source)
-target_link_libraries(synple_synth PUBLIC synple_dsp synple_midi synple_math)
-
-set_target_properties(synple_midi synple_dsp synple_synth PROPERTIES POSITION_INDEPENDENT_CODE ON)
-
-# ─── Tests ────────────────────────────────────────────────────────────────────
-# Test binaries link only pure-C++ layer libraries; no JUCE or GTK needed.
-enable_testing()
-include(CTest)
-
-CPMAddPackage(
-    NAME Catch2
-    VERSION 3.5.2
-    GITHUB_REPOSITORY catchorg/Catch2
-)
-
-add_executable(MidiTests  tests/MidiLearnMapTest.cpp tests/MidiProcessorTest.cpp)
-add_executable(DspTests   tests/AudioBufferTest.cpp tests/FilterTest.cpp)
-add_executable(SynthTests
-    tests/PolyBlepOscillatorTest.cpp
-    tests/PulseOscillatorTest.cpp
-    tests/SawtoothOscillatorTest.cpp
-    tests/SineOscillatorTest.cpp
-)
-
-target_link_libraries(MidiTests  PRIVATE synple_midi  Catch2::Catch2WithMain)
-target_link_libraries(DspTests   PRIVATE synple_dsp   Catch2::Catch2WithMain)
-target_link_libraries(SynthTests PRIVATE synple_synth Catch2::Catch2WithMain)
-
-set(kTestTargets MidiTests DspTests SynthTests)
-
-if (ENABLE_SANITIZERS)
-    set(kSanitizerFlags -fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all)
-    foreach(LIB IN ITEMS synple_midi synple_dsp synple_synth)
-        target_compile_options(${LIB} PRIVATE ${kSanitizerFlags})
-        target_link_options(${LIB} PRIVATE -fsanitize=address,undefined)
-    endforeach()
-    foreach(TARGET IN LISTS kTestTargets)
-        target_compile_options(${TARGET} PRIVATE ${kSanitizerFlags})
-        target_link_options(${TARGET} PRIVATE -fsanitize=address,undefined)
-    endforeach()
-endif()
-
-include("${Catch2_SOURCE_DIR}/extras/Catch.cmake")
-
-foreach(TARGET IN LISTS kTestTargets)
-    catch_discover_tests(${TARGET})
-    add_custom_command(
-        TARGET ${TARGET} POST_BUILD
-        COMMAND "$<TARGET_FILE:${TARGET}>"
-        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-        COMMENT "Running ${TARGET}..."
-        VERBATIM
-    )
-endforeach()
-
 # ─── Plugin ───────────────────────────────────────────────────────────────────
 if (BUILD_PLUGIN)
 
@@ -214,31 +152,12 @@ CPMAddPackage(
 )
 
 set(SourceFiles
-    source/dsp/AudioBuffer.h
-    source/dsp/Filter.h
-    source/dsp/Goertzel.h
-    source/dsp/LinearSmoothedValue.h
-    source/dsp/NoiseGenerator.h
     source/juce/Parameters.cpp
     source/juce/Parameters.h
     source/juce/PluginEditor.cpp
     source/juce/PluginEditor.h
     source/juce/PluginProcessor.cpp
     source/juce/PluginProcessor.h
-    source/math/constants.h
-    source/midi/MidiProcessor.h
-    source/midi/MidiState.h
-    source/midi/NoteHandler.h
-    source/synth/Envelope.h
-    source/synth/GlideMode.h
-    source/synth/Oscillator.h
-    source/synth/Output.h
-    source/synth/Parameters.h
-    source/synth/Preset.h
-    source/synth/Presets.h
-    source/synth/SineOscillator.h
-    source/synth/Synth.h
-    source/synth/Voice.h
 )
 
 juce_add_plugin(${PROJECT_NAME}
@@ -266,6 +185,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SourceFiles})
 target_sources(${PROJECT_NAME} PRIVATE ${SourceFiles})
 
 # Add source directory to include paths to avoid relative includes
+target_include_directories(${PROJECT_NAME} BEFORE PRIVATE "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source")
 target_include_directories(${PROJECT_NAME} PRIVATE source)
 
 target_compile_definitions(${PROJECT_NAME}
@@ -290,7 +210,7 @@ target_link_libraries(${PROJECT_NAME}
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags
         WebViewFiles
-        synple_synth
+        Synple::Synth
 )
 
 file(COPY "${CMAKE_BINARY_DIR}/_deps/juce-src/modules/juce_gui_extra/native/javascript/"
