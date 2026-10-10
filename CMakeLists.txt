@@ -20,7 +20,15 @@ set(CPM_DOWNLOAD_LOCATION "${CMAKE_BINARY_DIR}/cmake/CPM_${CPM_DOWNLOAD_VERSION}
 
 if (NOT EXISTS "${CPM_DOWNLOAD_LOCATION}")
     message(STATUS "Downloading CPM.cmake to ${CPM_DOWNLOAD_LOCATION}")
-    file(DOWNLOAD "https://github.com/cpm-cmake/CPM.cmake/releases/download/v${CPM_DOWNLOAD_VERSION}/CPM.cmake" "${CPM_DOWNLOAD_LOCATION}")
+    file(DOWNLOAD
+        "https://github.com/cpm-cmake/CPM.cmake/releases/download/v${CPM_DOWNLOAD_VERSION}/CPM.cmake"
+        "${CPM_DOWNLOAD_LOCATION}"
+        STATUS CPM_DOWNLOAD_STATUS
+    )
+    list(GET CPM_DOWNLOAD_STATUS 0 CPM_DOWNLOAD_RESULT)
+    if (NOT CPM_DOWNLOAD_RESULT EQUAL 0)
+        message(FATAL_ERROR "Could not download CPM.cmake: ${CPM_DOWNLOAD_STATUS}")
+    endif()
 endif ()
 
 include("${CPM_DOWNLOAD_LOCATION}")
