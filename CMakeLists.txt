@@ -52,7 +52,7 @@ else()
     set(SYNPLE_ENGINE_SOURCE_DIR_REAL "${SynpleEngine_SOURCE_DIR}")
 endif()
 
-foreach(ENGINE_TARGET IN ITEMS Synple::Math Synple::Midi Synple::Dsp Synple::Synth)
+foreach(ENGINE_TARGET IN ITEMS Jape::Math Jape::Midi Jape::Dsp Jape::Synth)
     if (NOT TARGET ${ENGINE_TARGET})
         message(FATAL_ERROR "The engine project must define the ${ENGINE_TARGET} target")
     endif()
@@ -218,7 +218,7 @@ target_link_libraries(${PROJECT_NAME}
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags
         WebViewFiles
-        Synple::Synth
+        Jape::Synth
 )
 
 file(COPY "${CMAKE_BINARY_DIR}/_deps/juce-src/modules/juce_gui_extra/native/javascript/"
