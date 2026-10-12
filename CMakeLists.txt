@@ -65,17 +65,7 @@ if (CLANG_FORMAT)
         "${CMAKE_CURRENT_SOURCE_DIR}/source/juce/*.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/source/juce/*.h"
     )
-    file(GLOB_RECURSE ENGINE_FORMAT_SOURCE_FILES
-        "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/dsp/*.cpp"
-        "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/dsp/*.h"
-        "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/midi/*.cpp"
-        "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/midi/*.h"
-        "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/synth/*.cpp"
-        "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/synth/*.h"
-        "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/math/*.cpp"
-        "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/math/*.h"
-    )
-    set(FORMAT_CHECK_SOURCE_FILES ${SYNPLE_FORMAT_SOURCE_FILES} ${ENGINE_FORMAT_SOURCE_FILES})
+    set(FORMAT_CHECK_SOURCE_FILES ${SYNPLE_FORMAT_SOURCE_FILES})
 
     add_custom_target(format
         COMMAND ${CLANG_FORMAT} -i ${SYNPLE_FORMAT_SOURCE_FILES}
@@ -84,7 +74,7 @@ if (CLANG_FORMAT)
     )
     add_custom_target(format-check
         COMMAND ${CLANG_FORMAT} --dry-run --Werror ${FORMAT_CHECK_SOURCE_FILES}
-        COMMENT "Checking Synple and engine formatting..."
+        COMMENT "Checking Synple formatting..."
         VERBATIM
     )
 else()
