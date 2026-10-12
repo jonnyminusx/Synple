@@ -47,12 +47,12 @@ else()
     CPMAddPackage(
         NAME SynpleEngine
         GITHUB_REPOSITORY jonnyminusx/Jape
-        GIT_TAG 39646bfc021fb2d65887a83db070940c1aaeeef8
+        GIT_TAG 15fb141e1b9f30773811fe9e41dc8728b4493dad
     )
     set(SYNPLE_ENGINE_SOURCE_DIR_REAL "${SynpleEngine_SOURCE_DIR}")
 endif()
 
-foreach(ENGINE_TARGET IN ITEMS Synple::Math Synple::Midi Synple::Dsp Synple::Synth)
+foreach(ENGINE_TARGET IN ITEMS Jape::Math Jape::Midi Jape::Dsp Jape::Synth)
     if (NOT TARGET ${ENGINE_TARGET})
         message(FATAL_ERROR "The engine project must define the ${ENGINE_TARGET} target")
     endif()
@@ -65,17 +65,7 @@ if (CLANG_FORMAT)
         "${CMAKE_CURRENT_SOURCE_DIR}/source/juce/*.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/source/juce/*.h"
     )
-    file(GLOB_RECURSE ENGINE_FORMAT_SOURCE_FILES
-        "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/dsp/*.cpp"
-        "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/dsp/*.h"
-        "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/midi/*.cpp"
-        "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/midi/*.h"
-        "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/synth/*.cpp"
-        "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/synth/*.h"
-        "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/math/*.cpp"
-        "${SYNPLE_ENGINE_SOURCE_DIR_REAL}/source/math/*.h"
-    )
-    set(FORMAT_CHECK_SOURCE_FILES ${SYNPLE_FORMAT_SOURCE_FILES} ${ENGINE_FORMAT_SOURCE_FILES})
+    set(FORMAT_CHECK_SOURCE_FILES ${SYNPLE_FORMAT_SOURCE_FILES})
 
     add_custom_target(format
         COMMAND ${CLANG_FORMAT} -i ${SYNPLE_FORMAT_SOURCE_FILES}
@@ -84,7 +74,7 @@ if (CLANG_FORMAT)
     )
     add_custom_target(format-check
         COMMAND ${CLANG_FORMAT} --dry-run --Werror ${FORMAT_CHECK_SOURCE_FILES}
-        COMMENT "Checking Synple and engine formatting..."
+        COMMENT "Checking Synple formatting..."
         VERBATIM
     )
 else()
@@ -218,7 +208,7 @@ target_link_libraries(${PROJECT_NAME}
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags
         WebViewFiles
-        Synple::Synth
+        Jape::Synth
 )
 
 file(COPY "${CMAKE_BINARY_DIR}/_deps/juce-src/modules/juce_gui_extra/native/javascript/"
