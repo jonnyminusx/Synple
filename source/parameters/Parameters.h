@@ -3,6 +3,9 @@
 #include "synth/Parameters.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 
+namespace synple
+{
+
 class Parameters
 {
   public:
@@ -93,3 +96,5 @@ class Parameters
     juce::AudioProcessorValueTreeState::ParameterLayout buildLayout();
     juce::AudioProcessorValueTreeState apvts_;
 };
+
+} // namespace synple
