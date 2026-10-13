@@ -64,6 +64,8 @@ if (CLANG_FORMAT)
     file(GLOB_RECURSE SYNPLE_FORMAT_SOURCE_FILES
         "${CMAKE_CURRENT_SOURCE_DIR}/source/juce/*.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/source/juce/*.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/parameters/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/parameters/*.h"
     )
     set(FORMAT_CHECK_SOURCE_FILES ${SYNPLE_FORMAT_SOURCE_FILES})
 
@@ -150,8 +152,11 @@ CPMAddPackage(
 )
 
 set(SourceFiles
-    source/juce/Parameters.cpp
-    source/juce/Parameters.h
+    source/parameters/Parameters.cpp
+    source/parameters/Parameters.h
+    source/parameters/Preset.h
+    source/parameters/Presets.cpp
+    source/parameters/Presets.h
     source/juce/PluginEditor.cpp
     source/juce/PluginEditor.h
     source/juce/PluginProcessor.cpp

@@ -1,8 +1,11 @@
 #include "Parameters.h"
-#include "ParameterIds.h"
+#include "juce/ParameterIds.h"
 #include "synth/Parameters.h"
 #include "synth/Synth.h"
 #include <cmath>
+
+namespace synple
+{
 
 namespace
 {
@@ -527,3 +530,5 @@ void Parameters::fillParameterArray(juce::RangedAudioParameter** params) const
     params[32] = osc1PulseWidthParam_;
     params[33] = osc2PulseWidthParam_;
 }
+
+} // namespace synple

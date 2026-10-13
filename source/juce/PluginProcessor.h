@@ -1,9 +1,9 @@
 #pragma once
 
 #include "ParameterIds.h"
-#include "Parameters.h"
 #include "midi/MidiLearnMap.h"
-#include "synth/Presets.h"
+#include "parameters/Parameters.h"
+#include "parameters/Presets.h"
 #include "synth/Synth.h"
 #include <array>
 #include <juce_audio_processors/juce_audio_processors.h>
@@ -71,9 +71,9 @@ class SynpleAudioProcessor final : public juce::AudioProcessor, private juce::Va
     void initialiseLearnableParams();
 
     synth::Synth synth_;
-    Parameters parameters_;
+    synple::Parameters parameters_;
     std::atomic<bool> parametersChanged_{false};
-    synth::Presets presets_;
+    synple::Presets presets_;
     int currentProgram_;
 
     midi::MidiLearnMap midiLearnMap_{};

@@ -88,7 +88,8 @@ The Jape repository's workflow owns engine tests and sanitizer runs.
 ### Layer separation
 
 ```
-source/juce/   — JUCE plugin layer (AudioProcessor, AudioProcessorEditor, Parameters)
+source/juce/   — JUCE plugin layer (AudioProcessor, AudioProcessorEditor)
+source/parameters/ — Synple host parameters and factory presets
 Jape/source/synth/ — Pure synth engine (no JUCE dependencies)
 Jape/source/midi/  — MIDI message processing (MidiProcessor, MidiState, NoteHandler, CC type alias)
 Jape/source/dsp/   — JUCE-free DSP primitives
@@ -105,7 +106,7 @@ source/ui/     — WebView frontend (HTML/JS)
 
 ### Parameter system
 
-- `source/juce/Parameters` owns the `AudioProcessorValueTreeState` and exposes typed accessors (e.g. `envelope()`, `filterQ()`). Raw parameter pointers are stored privately; public accessors map raw values to usable units.
+- `source/parameters/Parameters` owns the `AudioProcessorValueTreeState` and exposes typed accessors (e.g. `envelope()`, `filterQ()`). Raw parameter pointers are stored privately; public accessors map raw values to usable units.
 - `source/juce/ParameterIDs.h` defines all parameter IDs as `juce::ParameterID` constants — use these everywhere instead of string literals.
 - `Jape/source/synth/Parameters.h` is a plain struct holding computed values that the synth engine reads each render block. `Synth` stores one instance; `PluginProcessor` maps from the JUCE parameter layer into it via `update()`.
 
@@ -117,7 +118,7 @@ The editor uses JUCE's WebView integration:
 
 ### Presets
 
-`Jape/source/synth/Presets` stores factory presets as arrays of normalised parameter values. `PluginProcessor` implements `getNumPrograms` / `setCurrentProgram` using this class.
+`source/parameters/Presets` stores Synple's factory programs as raw parameter values in host parameter order. `PluginProcessor` implements `getNumPrograms` / `setCurrentProgram` using this catalog.
 
 ## Code review guidelines
 
