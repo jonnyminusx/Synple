@@ -47,7 +47,7 @@ else()
     CPMAddPackage(
         NAME SynpleEngine
         GITHUB_REPOSITORY jonnyminusx/Jape
-        GIT_TAG 15fb141e1b9f30773811fe9e41dc8728b4493dad
+        GIT_TAG 0.1.2
     )
     set(SYNPLE_ENGINE_SOURCE_DIR_REAL "${SynpleEngine_SOURCE_DIR}")
 endif()
